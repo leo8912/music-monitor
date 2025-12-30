@@ -1,0 +1,28 @@
+[project]
+name = "music-monitor"
+version = "0.1.0"
+description = "A plugin-based monitor system for music/video creators"
+authors = [
+    {name = "User", email = "user@example.com"},
+]
+dependencies = [
+    "pyncm>=1.8.1",
+    "qqmusic-api-python>=0.4.1",
+    "bilibili-api-python>=16.2.0",
+    "SQLAlchemy>=2.0.0",
+    "APScheduler>=3.10.0",
+    "requests>=2.31.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "loguru>=0.7.0",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = false

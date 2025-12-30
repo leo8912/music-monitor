@@ -1,0 +1,15 @@
+.git
+.gitignore
+.venv
+__pycache__
+node_modules
+dist
+web/node_modules
+web/dist
+*.log
+.env
+music_monitor.db
+config.yaml
+tests
+docs
+tools

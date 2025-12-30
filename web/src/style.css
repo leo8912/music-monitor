@@ -1,0 +1,155 @@
+/* Apple Design System Tokens */
+:root {
+  /* Colors */
+  --bg-app: #F5F5F7;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: rgba(0, 0, 0, 0.02);
+
+  --text-primary: #1D1D1F;
+  --text-secondary: #86868B;
+  --text-tertiary: #D2D2D7;
+
+  --accent-primary: #FA233B;
+  /* Apple Music Red-Pink */
+  --accent-netease: #E60026;
+  --accent-qq: #2EBD59;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.12);
+
+  /* Radius */
+  --radius-card: 18px;
+  --radius-btn: 99px;
+
+  /* Spacing */
+  --spacing-container: 1000px;
+}
+
+body {
+  font-family: var(--font-stack);
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow-y: scroll;
+}
+
+/* Utilities */
+.app-container {
+  max-width: var(--spacing-container);
+  margin: 0 auto;
+  padding: 0 24px 60px;
+}
+
+/* Typography Reset */
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D2D2D7;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #86868B;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-anim {
+  animation: fadeInUp 0.4s ease forwards;
+  opacity: 0;
+  /* Initial state hidden */
+}
+
+/* Generate stagger delays for up to 20 items */
+.stagger-anim:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.stagger-anim:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.stagger-anim:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.stagger-anim:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.stagger-anim:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.stagger-anim:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.stagger-anim:nth-child(7) {
+  animation-delay: 0.35s;
+}
+
+.stagger-anim:nth-child(8) {
+  animation-delay: 0.4s;
+}
+
+.stagger-anim:nth-child(9) {
+  animation-delay: 0.45s;
+}
+
+.stagger-anim:nth-child(10) {
+  animation-delay: 0.5s;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: #f0f0f0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f7f7f7 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
