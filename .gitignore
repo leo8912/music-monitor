@@ -33,3 +33,4 @@ web/dist/
 # OS
 .DS_Store
 Thumbs.db
+verify_login.py

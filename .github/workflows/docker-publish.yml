@@ -12,7 +12,9 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  # IMAGE_NAME: ${{ github.repository }}
+  # Override to match Docker Hub username
+  IMAGE_NAME: lbh1230/music-monitor
 
 
 jobs:
