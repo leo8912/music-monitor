@@ -201,7 +201,56 @@ const handleChangePassword = async () => {
 
 // Profile State
 const showProfileModal = ref(false)
-const showPasswordForm = ref(false) // Toggle inside profile
+const showPasswordForm = ref(false)
+const showEditProfile = ref(false) // Toggle profile edit mode
+
+const profileForm = ref({
+    username: '',
+    avatar: ''
+})
+const updatingProfile = ref(false)
+const currentUser = ref({ name: 'Administrator', avatar: '', role: '超级管理员' })
+
+// Fetch latest profile info when opening modal
+watch(showProfileModal, async (val) => {
+    if (val) {
+        try {
+            const res = await axios.get('/api/check_auth')
+            if (res.data.authenticated) {
+                currentUser.value.name = res.data.user
+                currentUser.value.avatar = res.data.avatar || ''
+                // Init form
+                profileForm.value.username = res.data.user
+                profileForm.value.avatar = res.data.avatar || ''
+            }
+        } catch (e) {
+            console.error("Fetch profile failed", e)
+        }
+    }
+})
+
+const handleUpdateProfile = async () => {
+    if (!profileForm.value.username) {
+         message.warning("用户名不能为空")
+         return
+    }
+    
+    updatingProfile.value = true
+    try {
+        await axios.post('/api/update_profile', profileForm.value)
+        message.success("个人资料已更新")
+        
+        // Update local view
+        currentUser.value.name = profileForm.value.username
+        currentUser.value.avatar = profileForm.value.avatar
+        showEditProfile.value = false
+        
+    } catch (e) {
+        message.error("更新失败: " + (e.response?.data?.detail || e.message))
+    } finally {
+        updatingProfile.value = false
+    }
+}
 
 const handleLogout = async () => {
     try {
@@ -834,11 +883,39 @@ const formatDate = (dateStr) => {
                     <!-- User Card -->
                     <div class="profile-card">
                         <div class="profile-avatar">
-                            <n-icon size="40"><PersonCircleOutline /></n-icon>
+                            <img v-if="currentUser.avatar" :src="currentUser.avatar" class="avatar-img" />
+                            <n-icon v-else size="40"><PersonCircleOutline /></n-icon>
                         </div>
                         <div class="profile-info">
-                            <div class="profile-name">Administrator</div>
-                            <div class="profile-role">超级管理员</div>
+                            <div class="profile-name">{{ currentUser.name }}</div>
+                            <div class="profile-role">{{ currentUser.role }}</div>
+                        </div>
+                        <div class="profile-action">
+                             <n-button size="small" round secondary @click="showEditProfile = !showEditProfile">
+                                 {{ showEditProfile ? '取消' : '编辑' }}
+                             </n-button>
+                        </div>
+                    </div>
+
+                    <!-- Edit Profile Form -->
+                    <div v-if="showEditProfile" class="ios-group-title">编辑资料</div>
+                    <div v-if="showEditProfile" class="ios-group">
+                         <div class="ios-item" style="background: transparent; padding: 0;">
+                             <div class="ios-form-stack" style="margin: 0; border-top: none;">
+                                <div class="stack-row">
+                                    <span class="label">用户名</span>
+                                    <input type="text" v-model="profileForm.username" class="ios-text-input" placeholder="输入新的用户名" />
+                                </div>
+                                <div class="stack-row">
+                                    <span class="label">头像URL</span>
+                                    <input type="text" v-model="profileForm.avatar" class="ios-text-input" placeholder="输入头像图片链接" />
+                                </div>
+                             </div>
+                             <div style="padding: 12px 16px;">
+                                 <n-button type="primary" block round @click="handleUpdateProfile" :loading="updatingProfile">
+                                     保存更新
+                                 </n-button>
+                             </div>
                         </div>
                     </div>
 
@@ -1599,6 +1676,12 @@ iframe {
     align-items: center;
     justify-content: center;
     margin-right: 16px;
+    overflow: hidden; /* Ensure image fits */
+}
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 .profile-info {
     flex: 1;

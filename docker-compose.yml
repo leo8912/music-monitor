@@ -1,15 +1,14 @@
-version: '3.8'
-
 services:
-  monitor:
-    build: .
-    image: music-monitor:latest
+  music-monitor:
+    image: lbh1230/music-monitor:latest
     container_name: music-monitor
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./config.yaml:/app/config.yaml # 映射配置文件
       - ./data:/data # 映射数据目录 (数据库在这里)
     environment:
       - DATABASE_URL=sqlite:////data/music_monitor.db
       - TZ=Asia/Shanghai
-    network_mode: host # Useful for avoiding network issues with some APIs
+    network_mode: bridge
+    ports:
+      - "18000:8000" # 将容器的8000端口映射到主机的18000端口
