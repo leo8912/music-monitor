@@ -9,7 +9,7 @@ import {
 import { 
   TrashOutline, SearchOutline, AddOutline, RefreshOutline, PlayCircleOutline, 
   LogoGithub, CheckmarkCircleOutline,
-  CloseOutline, SettingsOutline
+  CloseOutline, SettingsOutline, PersonCircleOutline, LogOutOutline
 } from '@vicons/ionicons5'
 
 
@@ -149,31 +149,67 @@ const saveSettings = async () => {
 }
 
 const testNotify = async (channel) => {
-    // Auto-save first if changed? Or just use current form data?
-    // User expects to test *current* input. Backend reads form config.
-    // However, backend endpoint reads from *file* or *memory*.
-    // We should probably save first implicitly or send config.
-    // For simplicity, let's ask user to save first, OR we temporarily update config in backend.
-    // Actually, `test_notify` in backend re-reads `config` object which is in memory. 
-    // But `settingsForm` is local. We should invoke `update_settings` (save) first?
-    // Let's trying sending config in body? API currently reads `config` global.
-    // Solution: Just warn user to save. Or auto-save.
-    
-    // Better: Send the credentials in the test request body? 
-    // Implementation in main.py reads from `config` global.
-    // Let's do a quick save-in-background logic.
-    
+    // ... existing ...
     try {
         testingNotify.value = channel
-        // quick save current form state to backend memory
+        // quick save
         await axios.post('/api/settings', settingsForm.value)
-        
         const res = await axios.post(`/api/test_notify/${channel}`)
         message.success(res.data.message)
     } catch (e) {
         message.error("测试失败: " + (e.response?.data?.detail || e.message))
     } finally {
         testingNotify.value = null
+    }
+}
+
+// Change Password State
+const passwordForm = ref({
+    old_password: '',
+    new_password: '',
+    confirm_password: ''
+})
+const changingPassword = ref(false)
+
+const handleChangePassword = async () => {
+    if (!passwordForm.value.old_password || !passwordForm.value.new_password) {
+        message.warning("请填写完整")
+        return
+    }
+    if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
+        message.error("两次新密码输入不一致")
+        return
+    }
+    
+    changingPassword.value = true
+    try {
+        await axios.post('/api/change_password', {
+            old_password: passwordForm.value.old_password,
+            new_password: passwordForm.value.new_password
+        })
+        message.success("修改成功，正在通过新密码重新登录...")
+        // Wait a bit then redirect
+        setTimeout(() => {
+            window.location.href = '/login'
+        }, 1500)
+    } catch (e) {
+        message.error("修改失败: " + (e.response?.data?.detail || e.message))
+    } finally {
+        changingPassword.value = false
+    }
+}
+
+// Profile State
+const showProfileModal = ref(false)
+const showPasswordForm = ref(false) // Toggle inside profile
+
+const handleLogout = async () => {
+    try {
+        await axios.post('/api/logout')
+        message.success("已退出登录")
+        setTimeout(() => window.location.href = '/login', 500)
+    } catch (e) {
+        message.error("退出失败")
     }
 }
 
@@ -418,6 +454,10 @@ const formatDate = (dateStr) => {
                 <div class="header-actions">
                     <button class="nav-btn" :class="{ spinning: loading }" @click="triggerScan" title="立即同步">
                         <n-icon size="20"><RefreshOutline /></n-icon>
+                    </button>
+                    <!-- Profile Button -->
+                    <button class="nav-btn" @click="showProfileModal = true" title="个人中心">
+                        <n-icon size="20"><PersonCircleOutline /></n-icon>
                     </button>
                     <button class="nav-btn" @click="openSettings" title="设置">
                         <n-icon size="20"><SettingsOutline /></n-icon>
@@ -774,6 +814,79 @@ const formatDate = (dateStr) => {
                     <n-button type="primary" block round size="large" @click="saveSettings" :loading="savingSettings" class="ios-save-btn">
                         保存更改
                     </n-button>
+                </div>
+            </div>
+        </n-modal>
+        
+        <!-- Profile Modal -->
+        <n-modal v-model:show="showProfileModal" class="settings-modal-ios profile-modal" :mask-closable="true">
+            <div class="ios-settings-container profile-container">
+                <!-- Header -->
+                <div class="ios-header">
+                    <div class="ios-title">个人中心</div>
+                    <div class="ios-close-btn" @click="showProfileModal = false">
+                        <n-icon size="20"><CloseOutline /></n-icon>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="ios-content">
+                    <!-- User Card -->
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <n-icon size="40"><PersonCircleOutline /></n-icon>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name">Administrator</div>
+                            <div class="profile-role">超级管理员</div>
+                        </div>
+                    </div>
+
+                    <div class="ios-group-title">账户管理</div>
+                    <div class="ios-group">
+                        <!-- Change Password Toggle -->
+                        <div class="ios-item cursor-pointer" @click="showPasswordForm = !showPasswordForm">
+                            <div class="ios-row-main">
+                                <div class="ios-label">修改密码</div>
+                                <div class="ios-arrow" :class="{ rotated: showPasswordForm }">›</div>
+                            </div>
+                        </div>
+
+                        <!-- Password Form (Collapsible) -->
+                         <div v-if="showPasswordForm" class="ios-item" style="background: transparent; padding: 0;">
+                             <div class="ios-form-stack" style="margin: 0; border-top: none;">
+                                <div class="stack-row">
+                                    <span class="label">当前密码</span>
+                                    <input type="password" v-model="passwordForm.old_password" class="ios-text-input" placeholder="输入旧密码" />
+                                </div>
+                                <div class="stack-row">
+                                    <span class="label">新密码</span>
+                                    <input type="password" v-model="passwordForm.new_password" class="ios-text-input" placeholder="输入新密码" />
+                                </div>
+                                <div class="stack-row">
+                                    <span class="label">确认密码</span>
+                                    <input type="password" v-model="passwordForm.confirm_password" class="ios-text-input" placeholder="再次输入新密码" />
+                                </div>
+                             </div>
+                             <div style="padding: 12px 16px;">
+                                 <n-button type="warning" block round @click="handleChangePassword" :loading="changingPassword">
+                                     确认修改
+                                 </n-button>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="ios-group">
+                        <div class="ios-item cursor-pointer" @click="handleLogout">
+                            <div class="ios-row-main" style="color: #FF3B30;">
+                                <div class="ios-label" style="color: #FF3B30;">
+                                    <n-icon style="margin-right:8px"><LogOutOutline /></n-icon>
+                                    退出登录
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </n-modal>
@@ -1465,4 +1578,55 @@ iframe {
 .log-level.debug { color: #808080; margin-right: 6px; }
 
 .log-empty { color: #555; text-align: center; margin-top: 100px; }
+
+/* Profile Styles */
+.profile-card {
+    display: flex;
+    align-items: center;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #f2f2f7;
+    color: #8E8E93;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+.profile-info {
+    flex: 1;
+}
+.profile-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin-bottom: 4px;
+}
+.profile-role {
+    font-size: 14px;
+    color: #86868b;
+}
+
+.cursor-pointer { cursor: pointer; }
+
+.ios-arrow {
+    font-size: 20px;
+    color: #C7C7CC;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.ios-arrow.rotated {
+    transform: rotate(90deg);
+}
+
+.profile-container {
+    height: auto; /* Fit content */
+    max-height: 80vh;
+}
 </style>

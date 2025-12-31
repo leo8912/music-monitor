@@ -59,6 +59,44 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+import secrets
+import re
+
+def ensure_security_config():
+    """Ensure secret_key is secure and not default."""
+    try:
+        with open("config.yaml", "r", encoding='utf-8') as f:
+            content = f.read()
+        
+        # Check current secret
+        match = re.search(r'secret_key:\s*["\']?([^"\']+)["\']?', content)
+        if match:
+            current_secret = match.group(1).strip()
+            # If default or weak
+            if current_secret in ["secret_key_for_session_encryption", "default_secret_key", "CHANGE_THIS_TO_RANDOM_SECRET"]:
+                new_secret = secrets.token_urlsafe(32)
+                logger.warning(f"Detected weak secret_key. Rotated to new random key.")
+                
+                # Replace in content (preserve whitespace/comments)
+                new_content = re.sub(
+                    r'(secret_key:\s*)(["\']?)([^"\']+)(["\']?)', 
+                    f'\\1"{new_secret}"', 
+                    content
+                )
+                
+                with open("config.yaml", "w", encoding='utf-8') as f:
+                    f.write(new_content)
+                
+                return new_secret, True
+            return current_secret, False
+    except Exception as e:
+        logger.error(f"Security config check failed: {e}")
+    return "default_secret_key", False
+
 async def process_media_item(media: MediaInfo, db: Session):
     """Check if media is new, save to DB, and notify."""
     # 1. Check exact match (same source, same ID)
@@ -275,11 +313,14 @@ async def auth_middleware(request: Request, call_next):
     return response
 
 # Add Middleware (Session) - Must be added last to run first!
-try:
-    _temp_conf = load_config()
-    _secret = _temp_conf.get('auth', {}).get('secret_key', 'default_secret_key')
-except:
-    _secret = 'default_secret_key'
+# Add Middleware (Session) - Must be added last to run first!
+# Security: Rotate secret if default
+_secret, _updated = ensure_security_config()
+if _updated:
+    # If updated, reload config object globally
+    try:
+        config = load_config() 
+    except: pass
 
 app.add_middleware(SessionMiddleware, secret_key=_secret, max_age=86400*30) # 30 days
 
@@ -300,6 +341,60 @@ async def login(req: LoginRequest, request: Request):
 async def logout(request: Request):
     request.session.clear()
     return {"message": "Logged out"}
+
+@app.post("/api/change_password")
+async def change_password(req: ChangePasswordRequest, request: Request):
+    global config
+    auth_cfg = config.get('auth', {})
+    if not auth_cfg.get('enabled', False):
+         raise HTTPException(status_code=400, detail="Auth not enabled")
+    
+    # 1. Verify old password
+    if req.old_password != auth_cfg.get('password'):
+        raise HTTPException(status_code=401, detail="旧密码错误")
+    
+    # 2. Update config file
+    try:
+        with open("config.yaml", "r", encoding='utf-8') as f:
+            content = f.read()
+            
+        # Regex replace password
+        # Look for password: "..." inside auth block is hard with simple regex 
+        # But assuming standard indentation from previous view: "  password: "..."
+        # We'll use a specific regex that assumes 'password:' key
+        
+        # Check if password matches old password to be safe
+        # Pattern: password:\s*["']?OLD_PASSWORD["']?
+        old_esc = re.escape(req.old_password)
+        pattern = fr'(password:\s*)(["\']?)({old_esc})(["\']?)'
+        
+        if not re.search(pattern, content):
+             logger.error("Could not find password in config file to replace")
+             # Fallback: simple replace if regex fails (risky if password appears elsewhere)
+             # Let's try to be precise with indentation if possible or just report error
+             raise Exception("Config file password pattern mismatch")
+
+        new_content = re.sub(
+            pattern,
+            f'\\1"{req.new_password}"',
+            content,
+            count=1 # Only replace first occurrence (should be ok)
+        )
+        
+        with open("config.yaml", "w", encoding='utf-8') as f:
+            f.write(new_content)
+            
+        # 3. Reload global config
+        config = load_config()
+        
+        # 4. Logout user
+        request.session.clear()
+        
+        return {"message": "密码修改成功，请重新登录"}
+        
+    except Exception as e:
+        logger.error(f"Failed to change password: {e}")
+        raise HTTPException(status_code=500, detail=f"修改失败: {str(e)}")
 
 @app.get("/api/check_auth")
 async def check_auth(request: Request):
