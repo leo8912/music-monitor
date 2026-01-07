@@ -20,13 +20,18 @@ from plugins.qqmusic import QQMusicMonitor
 from plugins.bilibili import BilibiliMonitor, BilibiliSearcher
 from notifiers.wecom import WeComNotifier
 from fastapi import Request, Response, Query
-from wechatpy.crypto import WeChatCrypto
+from wechatpy.crypto import WeChatCrypto, PrpCrypto
 from wechatpy import parse_message, create_reply
 from wechatpy.exceptions import InvalidSignatureException
 import xmltodict
 from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 from pydantic import BaseModel
+
+
+class FixedWeChatCrypto(WeChatCrypto):
+    def check_signature(self, signature, timestamp, nonce, echo_str):
+        return self._check_signature(signature, timestamp, nonce, echo_str, PrpCrypto)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -1084,7 +1089,7 @@ async def wecom_callback(
         return Response("Config Error", status_code=500)
         
     try:
-        crypto = WeChatCrypto(token, aes_key, corp_id)
+        crypto = FixedWeChatCrypto(token, aes_key, corp_id)
     except Exception as e:
         logger.error(f"Crypto init failed: {e}")
         return Response("Crypto Init Failed", status_code=500)
