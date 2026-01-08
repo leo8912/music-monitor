@@ -110,7 +110,7 @@ def ensure_security_config():
 async def process_media_item(media: MediaInfo, db: Session):
     """Check if media is new, save to DB, and notify."""
     # 1. Check exact match (same source, same ID)
-    # 1. Check exact match (same source, same ID)
+
     key = media.unique_key()
     existing = db.query(MediaRecord).filter_by(unique_key=key).first()
     if existing:
@@ -331,7 +331,7 @@ async def auth_middleware(request: Request, call_next):
     return response
 
 # Add Middleware (Session) - Must be added last to run first!
-# Add Middleware (Session) - Must be added last to run first!
+
 # Security: Rotate secret if default
 _secret, _updated = ensure_security_config()
 if _updated:
@@ -1001,47 +1001,101 @@ async def handle_wecom_command(text: str) -> str:
     try:
         logger.info(f"Processing WeCom command: {text}")
         text = text.strip()
+        cmd_lower = text.lower()
         
+        # 0. Help Command
+        if cmd_lower in ["菜单", "帮助", "help", "guide", "指令", "?"]:
+            return (
+                "🤖 Music Monitor 指令助手\n"
+                "---------------------\n"
+                "🔍 添加歌手\n"
+                "直接发送歌手名字 (如: 周杰伦)\n\n"
+                "📋 查看列表\n"
+                "发送: 列表 / list\n\n"
+                "🗑️ 取消订阅\n"
+                "发送: 删除 [名字] (如: 删除周杰伦)\n\n"
+                "❓ 获取帮助\n"
+                "发送: 菜单 / 帮助"
+            )
+
+        # 0.1 List Command
+        if cmd_lower in ["列表", "list", "ls"]:
+            artists = []
+            mon_cfg = config.get('monitor', {})
+            for source in ['netease', 'qqmusic', 'bilibili']:
+                if source in mon_cfg:
+                    for u in mon_cfg[source].get('users', []):
+                         name = u.get('name', str(u['id']))
+                         # Dedup by name for display?
+                         artists.append(name)
+            
+            unique_artists = sorted(list(set(artists)))
+            count = len(unique_artists)
+            
+            if count == 0:
+                 return "📭 当前暂无关注任何歌手。"
+            
+            # Limit display to prevent huge messages
+            display_list = unique_artists[:30]
+            msg = f"📝 当前关注列表 ({count}人):\n---------------------\n" + "\n".join(display_list)
+            if count > 30:
+                msg += f"\n...\n(还有 {count-30} 位未显示)"
+            return msg
+
         # 1. Delete Command (删除/remove/delete)
-        if text.startswith(("删除", "remove", "delete")):
+        if text.startswith(("删除", "remove", "delete", "del")):
             # Extract name
             parts = text.split(" ", 1)
-            if len(parts) < 2 and len(text) > 2:
-                # Handle "删除周杰伦" (no space)
-                name = text.replace("删除", "").replace("remove", "").replace("delete", "").strip()
-            elif len(parts) >= 2:
-                name = parts[1].strip()
+            name = ""
+            if len(parts) < 2:
+                 # Try strict replace if no space
+                 for prefix in ["删除", "remove", "delete", "del"]:
+                     if text.startswith(prefix):
+                         name = text[len(prefix):].strip()
+                         break
             else:
+                name = parts[1].strip()
+            
+            if not name:
                 return "❌ 请指定要删除的歌手，例如：删除周杰伦"
             
             # Search and remove from config
             removed_count = 0
             mon_cfg = config.get('monitor', {})
-            for source in ['netease', 'qqmusic']:
+            found_sources = []
+            
+            for source in ['netease', 'qqmusic', 'bilibili']:
                 if source in mon_cfg:
                     users = mon_cfg[source].get('users', [])
                     initial_len = len(users)
+                    # Filter
                     mon_cfg[source]['users'] = [u for u in users if u.get('name') != name]
+                    
                     if len(mon_cfg[source]['users']) < initial_len:
                         removed_count += 1
+                        found_sources.append(source)
             
             if removed_count > 0:
                 with open("config.yaml", "w", encoding='utf-8') as f:
                      yaml.dump(config, f, allow_unicode=True)
-                return f"✅ 已删除歌手: {name} (从 {removed_count} 个来源移除)"
+                return f"🗑️ 已取消关注: {name}\n(移除源: {', '.join(found_sources)})"
             else:
-                return f"⚠️ 未找到歌手: {name}"
+                return f"⚠️ 未找到已关注的歌手: {name}"
 
         # 2. Add Command (Default) -> "周杰伦"
         else:
             name = text
+            # Reject if typical wrong command
+            if len(name) < 1: return "❓"
+            
             # Reuse find_artist_ids
             found = await find_artist_ids(name)
             if not found:
-                 return f"⚠️ 未找到歌手: {name}，请检查名字是否正确。"
+                 return f"⚠️ 未找到歌手: {name}\n请检查名字是否正确。"
             
             # Add to config
-            added_names = []
+            added_details = []
+            
             for item in found:
                 source_cfg = config['monitor'].get(item['source'])
                 if not source_cfg: continue
@@ -1057,12 +1111,12 @@ async def handle_wecom_command(text: str) -> str:
                     new_user = {"id": item['id'], "name": item['name']}
                     if item.get('avatar'): new_user['avatar'] = item['avatar']
                     source_cfg.setdefault('users', []).append(new_user)
-                    added_names.append(f"{item['source']}:{item['name']}")
+                    added_details.append(f"{item['source']}")
                     
-            if added_names:
+            if added_details:
                 with open("config.yaml", "w", encoding='utf-8') as f:
                      yaml.dump(config, f, allow_unicode=True)
-                return f"✅ 关注成功: {', '.join(added_names)}"
+                return f"✅ 关注成功: {name}\n包含平台: {', '.join(added_details)}"
             else:
                 return f"ℹ️ 已经关注过了: {name}"
 

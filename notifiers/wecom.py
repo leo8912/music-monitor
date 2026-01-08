@@ -50,32 +50,33 @@ class WeComNotifier(BaseNotifier):
         source_name = source_map.get(media.source, media.source)
         
         # New "Card + Emoji" Style
-        # Title: 🎵 Song Name
-        card_title = f"🎵 {media.title}"
+        # Title: 🎉 新歌发布 | Song Name
+        card_title = f"🎉 新歌发布 | {media.title}"
         
         # Description:
-        # 👤 Artist
-        # 💿 Album
-        # 📅 Time | 🔗 Source
+        # 🎙️ 歌手: Artist
+        # 💿 专辑: Album
+        # 🗓️ 时间: Date
+        # 📺 来源: Source
         
         desc_lines = [
-            f"👤 <div class=\"highlight\">{media.author}</div>",
-            f"💿 {media.album or '单曲'}",
-            f"📅 {media.publish_time.strftime('%Y-%m-%d') if hasattr(media.publish_time, 'strftime') else media.publish_time}",
-            f"🔗 {source_name}"
+            f"🎙️ 歌手: <div class=\"highlight\">{media.author}</div>",
+            f"💿 专辑: {media.album or '单曲'}",
+            f"🗓️ 时间: {media.publish_time.strftime('%Y-%m-%d') if hasattr(media.publish_time, 'strftime') else media.publish_time}",
+            f"📺 来源: {source_name}"
         ]
         
         if media.trial_url:
-             desc_lines.append(f"\n📺 <b>已包含 B站试听链接</b>")
+             desc_lines.append(f"\n✨ <b>已匹配试听，点击直达</b>")
         
         description = "\n".join(desc_lines)
         
         if media.trial_url:
             main_url = media.trial_url
-            btn_txt = "立即试听 (Bilibili)"
         else:
             main_url = media.url
-            btn_txt = "前往收听"
+            
+        btn_txt = "▶️ 立即播放"
         
         payload = {
             "touser": "@all",
@@ -112,7 +113,7 @@ class WeComNotifier(BaseNotifier):
             "msgtype": "text",
             "agentid": self.agent_id,
             "text": {
-                "content": "🎉 音乐监控系统: 这是一条测试消息。\nMusic Monitor: This is a test message."
+                "content": "👋 嗨！Music Monitor 通知服务连接正常 🚀\nMusic Monitor: Notification service connected."
             }
         }
         

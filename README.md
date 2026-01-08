@@ -1,15 +1,15 @@
 # 🎵 Music Monitor (音乐人新歌监控系统)
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green?logo=fastapi)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
 ![Vue 3](https://img.shields.io/badge/Frontend-Vue%203%20%2B%20Vite-42b883?logo=vue.js)
 ![Docker](https://img.shields.io/badge/Deploy-Docker-2496ed?logo=docker)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 Music Monitor 是一个集成了 **多平台音乐监控、自动提醒、智能Web管理** 的全栈解决方案。它能自动追踪你关注的歌手在 **网易云音乐**、**QQ音乐** 和 **Bilibili** 的最新发布动态，并通过企业微信或 Telegram 即时推送通知。
 
-![Dashboard Preview](docs/screenshot_dashboard.png)
-*(这里可以放一张界面截图)*
+<!-- ![Dashboard Preview](docs/screenshot_dashboard.png) -->
+<!-- *(这里可以放一张界面截图)* -->
 
 ## ✨ 核心特性
 
@@ -76,6 +76,10 @@ Music Monitor 是一个集成了 **多平台音乐监控、自动提醒、智能
 ## ⚙️ 配置文件说明 (`config.yaml`)
 
 ```yaml
+global:
+  check_interval_minutes: 60  # 全局默认检查间隔
+  log_level: INFO
+
 auth:
   enabled: true             # 是否开启登录鉴权
   username: "admin"
@@ -89,6 +93,13 @@ monitor:
     users:
       - id: '6452'          # 歌手ID
         name: 周杰伦
+  qqmusic:
+    enabled: true
+    interval: 60
+    users:
+    # 示例: QQ音乐歌手ID (mid)
+    # - id: 0025NhlN2yWrP4
+    #   name: 周杰伦
   bilibili:
     enabled: true
     interval: 30
@@ -102,7 +113,22 @@ notify:
     corp_id: "ww..."        # 企业ID
     agent_id: "1000001"     # 应用ID
     secret: "..."           # 应用Secret
+  telegram:
+    enabled: false
+    bot_token: "..."
+    chat_id: "..."
 ```
+
+## 💬 企业微信交互指令
+
+配置好企业微信回调后，你可以在应用中直接发送消息来管理监控列表：
+
+| 指令 | 示例 | 说明 |
+| :--- | :--- | :--- |
+| **🔍 添加/搜索** | `周杰伦` | 直接发送歌手姓名，自动搜索并添加 |
+| **📋 查看列表** | `列表` / `list` | 查看当前已关注的所有歌手 |
+| **🗑️ 删除/取消** | `删除周杰伦` | 取消关注指定歌手 |
+| **🤖 获取帮助** | `菜单` / `帮助` | 查看所有可用指令 |
 
 ## 🛠️ 技术栈
 

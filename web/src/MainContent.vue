@@ -76,6 +76,18 @@ const sysStatus = ref('')
 const nextRunTime = ref(null)
 const showVideoModal = ref(false)
 const currentBvid = ref(null)
+const oneWord = ref('')
+
+const fetchOneWord = async () => {
+    try {
+        // Hitokoto API: https://developer.hitokoto.cn/
+        // c=j (Comics), c=k (Life), c=i (Poetry), c=d (Literature)
+        const res = await axios.get('https://v1.hitokoto.cn/?c=i&c=d&c=k')
+        oneWord.value = `“${res.data.hitokoto}”`
+    } catch (e) {
+        oneWord.value = '“生活不止眼前的苟且，还有诗和远方”'
+    }
+}
 
 // Settings State
 const showSettingsModal = ref(false)
@@ -111,9 +123,9 @@ const checkChannelStatus = async (channel) => {
         const res = await axios.get(`/api/check_notify_status/${channel}`)
         channelStatus.value[channel] = res.data.connected
         if (res.data.connected) {
-            message.success(`${channel === 'wecom' ? '企业微信' : 'Telegram'} 连接正常`)
+            message.success(`${channel === 'wecom' ? '企业微信' : 'Telegram'} 连接正常 🟢`)
         } else {
-            message.warning("连接测试失败，请检查配置")
+            message.warning("连接测试失败 🔴，请检查配置")
         }
     } catch (e) {
         channelStatus.value[channel] = false
@@ -291,9 +303,9 @@ const handlePlay = async (song) => {
     if (bvid) {
         currentBvid.value = bvid
         showVideoModal.value = true
-        message.success('找到了！正在播放')
+        message.success('找到了！正在播放 ▶️')
     } else {
-        message.warning('未找到相关视频')
+        message.warning('未找到相关视频 😕')
     }
 }
 
@@ -448,9 +460,9 @@ const updateStatusText = () => {
     const diff = new Date(nextRunTime.value) - now
     if (diff > 0) {
         const min = Math.ceil(diff / 60000)
-        sysStatus.value = `下次同步: ${min}分钟后`
+        sysStatus.value = `⏱️ 下次同步: ${min}分钟后`
     } else {
-        sysStatus.value = '正在同步中...'
+        sysStatus.value = '🔄 正在同步中...'
     }
 }
 
@@ -467,6 +479,7 @@ onMounted(async () => {
   await fetchArtists()
   await fetchHistory()
   await fetchStatus()
+  fetchOneWord()
   setInterval(updateStatusText, 60000) // Update minute every min
 })
 
@@ -494,24 +507,24 @@ const formatDate = (dateStr) => {
         <header class="app-header">
             <div class="header-content">
                 <div class="brand-section">
-                    <h1>音乐监控助手</h1>
+                    <h1>🎵 Music Monitor</h1>
                     <div class="status-badge" v-if="sysStatus">
                         <div class="status-dot"></div>
                         {{ sysStatus }}
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="nav-btn" :class="{ spinning: loading }" @click="triggerScan" title="立即同步">
+                    <button class="nav-btn" :class="{ spinning: loading }" @click="triggerScan" title="🔄 立即同步">
                         <n-icon size="20"><RefreshOutline /></n-icon>
                     </button>
                     <!-- Profile Button -->
-                    <button class="nav-btn" @click="showProfileModal = true" title="个人中心">
+                    <button class="nav-btn" @click="showProfileModal = true" title="👤 个人中心">
                         <n-icon size="20"><PersonCircleOutline /></n-icon>
                     </button>
-                    <button class="nav-btn" @click="openSettings" title="设置">
+                    <button class="nav-btn" @click="openSettings" title="⚙️ 系统设置">
                         <n-icon size="20"><SettingsOutline /></n-icon>
                     </button>
-                    <button class="nav-btn primary" @click="showAddModal = true" title="添加歌手">
+                    <button class="nav-btn primary" @click="showAddModal = true" title="➕ 添加歌手">
                          <n-icon size="22"><AddOutline /></n-icon>
                     </button>
                 </div>
@@ -521,7 +534,7 @@ const formatDate = (dateStr) => {
         <!-- Artist Row (Horizontal Scroll on Mobile, Grid on Desktop) -->
         <section class="artist-section">
             <h2 class="section-title">
-                监听列表
+                🎧 监听列表
                 <span class="count">{{ mergedArtists.length }}</span>
             </h2>
             <div class="artist-grid-wrapper">
@@ -571,10 +584,11 @@ const formatDate = (dateStr) => {
         <!-- Feed Section -->
         <section class="feed-section">
             <h2 class="section-title">
-                {{ selectedArtistName ? selectedArtistName : '最新动态' }}
+                {{ selectedArtistName ? `🎵 ${selectedArtistName}` : '📢 最新动态' }}
+                <span v-if="!selectedArtistName && oneWord" class="one-word-badge">{{ oneWord }}</span>
                 <n-button v-if="selectedArtistName" text size="tiny" class="clear-filter-btn" @click="selectArtist({name: selectedArtistName})">
                     <template #icon><n-icon><CloseOutline /></n-icon></template>
-                    显示全部
+                    ❎ 清除筛选
                 </n-button>
             </h2>
             
@@ -589,10 +603,10 @@ const formatDate = (dateStr) => {
             <div class="song-table" v-else-if="history.length > 0">
                     <div class="table-header">
                         <div class="col-cover"></div>
-                        <div class="col-track">歌曲</div>
-                        <div class="col-artist">歌手</div>
-                        <div class="col-album">专辑</div>
-                        <div class="col-time">发布时间</div>
+                        <div class="col-track">🎵 歌曲</div>
+                        <div class="col-artist">👤 歌手</div>
+                        <div class="col-album">💿 专辑</div>
+                        <div class="col-time">📅 发布时间</div>
                         <div class="col-action"></div>
                     </div>
                     
@@ -645,7 +659,7 @@ const formatDate = (dateStr) => {
                 </div>
                 
                 <div v-else class="empty-state">
-                    <n-empty description="暂无最新动态，好消息是也没错过什么" size="large" />
+                    <n-empty description="📭 暂无最新动态，岁月静好" size="large" />
                 </div>
         </section>
 
@@ -671,7 +685,7 @@ const formatDate = (dateStr) => {
             <div class="ios-settings-container">
                 <!-- Header -->
                 <div class="ios-header">
-                    <div class="ios-title">系统设置</div>
+                    <div class="ios-title">⚙️ 控制中心</div>
                     <div class="ios-close-btn" @click="showSettingsModal = false">
                         <n-icon size="20"><CloseOutline /></n-icon>
                     </div>
@@ -681,7 +695,7 @@ const formatDate = (dateStr) => {
                 <div class="ios-content">
                     <n-tabs v-model:value="activeSettingsTab" type="segment" animated class="ios-tabs">
                         <!-- Tab 1: Monitor Services -->
-                        <n-tab-pane name="monitor" tab="监听源">
+                        <n-tab-pane name="monitor" tab="📡 监听源">
                             <div class="ios-group-title">数据源开关与频率</div>
                             <div class="ios-group">
                                 <div class="ios-item" v-for="(cfg, key) in settingsForm.monitor" :key="key">
@@ -706,7 +720,7 @@ const formatDate = (dateStr) => {
                         </n-tab-pane>
 
                         <!-- Tab 2: Notifications -->
-                        <n-tab-pane name="notify" tab="推送通道">
+                        <n-tab-pane name="notify" tab="🔔 推送通道">
                             <!-- Channel Selector -->
                             <div class="ios-segmented-control">
                                 <div 
@@ -1711,5 +1725,18 @@ iframe {
 .profile-container {
     height: auto; /* Fit content */
     max-height: 80vh;
+}
+
+.one-word-badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 400;
+    color: #86868B;
+    background: transparent;
+    margin-left: 12px;
+    font-style: italic;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    vertical-align: middle;
+    opacity: 0.8;
 }
 </style>
