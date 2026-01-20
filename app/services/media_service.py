@@ -199,35 +199,71 @@ async def run_check(plugin_name: str):
     
     logger.info(f"检查完成: {plugin_name}")
 
-async def find_artist_ids(name):
-    """Find artist IDs in both Netease and QQ Music."""
+async def find_artist_ids(artist_name: str) -> List[dict]:
+    """Smart search artist IDs across all platforms."""
     results = []
+    errors = []  # 记录每个平台的错误
     
-    # Netease
+    # 1. Netease Search
     try:
-        data = await run_in_threadpool(pyncm.apis.cloudsearch.GetSearchResult, name, stype=100)
-        if 'result' in data and 'artists' in data['result'] and data['result']['artists']:
-            first = data['result']['artists'][0]
-            # Verify name match to avoid weird partial matches? 
-            # For now accept the top result.
+        from pyncm import apis
+        ne_res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, artist_name, stype=100, limit=5)
+        if ne_res.get('code') == 200 and ne_res.get('result', {}).get('artists'):
+            first = ne_res['result']['artists'][0]
+            uid = str(first['id'])
+            param_name = first.get('name')
+            avatar = first.get('picUrl', '').replace('http://', 'https://')
+            
             results.append({
-                "source": "netease", 
-                "id": str(first['id']), 
-                "name": first['name'],
-                "avatar": first.get('picUrl', '')
+                "source": "netease",
+                "id": uid,
+                "name": param_name,
+                "avatar": avatar
             })
-            logger.info(f"Smart Search Netease: Found {first['name']} ({first['id']})")
+            logger.info(f"Smart Search Netease: Found {param_name} ({uid})")
+        else:
+            errors.append("网易云: 未找到结果")
     except Exception as e:
-        logger.error(f"Netease search failed: {e}")
-
-    # QQ Music
+        logger.warning(f"Netease search failed: {e}")
+        errors.append(f"网易云: {str(e)[:50]}")
+    
+    # 2. QQMusic Search
     try:
-        data = await search_by_type(name, SearchType.SINGER)
-        if data:
-            first = data[0]
-            # QQ keys: mid, singerName/name
-            mid = first.get('mid', first.get('singerMID'))
-            param_name = first.get('name', first.get('singerName'))
+        from qqmusic_api import search
+        from qqmusic_api.search import SearchType
+        
+        qq_res = None
+        
+        # 优先尝试歌手搜索
+        try:
+            qq_res = await search.search_by_type(keyword=artist_name, search_type=SearchType.SINGER, num=5)
+        except Exception as e:
+            logger.warning(f"QQMusic SINGER search failed: {e}, trying SONG search...")
+            
+        # 如果歌手搜索失败或无结果，尝试歌曲搜索 (Fallback)
+        if not qq_res:
+            try:
+                # 搜歌曲，然后取第一首歌的歌手
+                song_res = await search.search_by_type(keyword=artist_name, search_type=SearchType.SONG, num=5)
+                if song_res and isinstance(song_res, list) and len(song_res) > 0:
+                     first_song = song_res[0]
+                     singers = first_song.get('singer', [])
+                     if singers:
+                         # 构造一个类似歌手搜索结果的结构
+                         s = singers[0]
+                         qq_res = [{
+                             'singerMID': s.get('mid'),
+                             'singerName': s.get('name')
+                         }]
+                         logger.info(f"Fallback to SONG search success: {s.get('name')}")
+            except Exception as ex:
+                 logger.warning(f"QQMusic SONG fallback failed: {ex}")
+
+        # search_by_type 返回的是 list，不是 dict
+        if qq_res and isinstance(qq_res, list) and len(qq_res) > 0:
+            first = qq_res[0]
+            mid = first.get('singerMID') or first.get('mid')
+            param_name = first.get('singerName') or first.get('name')
             avatar = ""
             if mid:
                  avatar = f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
@@ -239,11 +275,24 @@ async def find_artist_ids(name):
                 "avatar": avatar
             })
             logger.info(f"Smart Search QQMusic: Found {param_name} ({mid})")
+        else:
+            errors.append("QQ音乐: 未找到结果")
     except Exception as e:
-        logger.error(f"QQMusic search failed: {e}")
-        
-
-    return results
+        logger.warning(f"QQMusic search failed: {e}")
+        errors.append(f"QQ音乐: {str(e)[:50]}")
+    
+    # 返回结果并提示
+    if results:
+        if errors:
+            logger.warning(f"部分平台搜索成功 ({len(results)}/2): {'; '.join(errors)}")
+        else:
+            logger.info(f"所有平台搜索成功，找到{len(results)}个结果")
+        return results
+    else:
+        # 所有平台都失败
+        error_msg = f"所有平台搜索均失败: {'; '.join(errors)}"
+        logger.error(error_msg)
+        raise Exception(error_msg)
 
 async def check_file_integrity():
     """Background job: Verify existence of local audio files and clean DB if missing."""

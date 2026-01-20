@@ -22,15 +22,17 @@ class NeteaseMonitor(MonitorPlugin):
         results = []
         
         try:
-            # 获取歌手热门歌曲 (Top 500 songs)
-            data = await run_in_threadpool(apis.artist.GetArtistSongs, user_id, limit=500)
+            # 获取歌手热门歌曲 (默认最多1000首)
+            # GetArtistTracks参数: (artist_id, offset=0, total=True, limit=1000, order='hot')
+            data = await run_in_threadpool(apis.artist.GetArtistTracks, user_id)
             
             if data.get('code') != 200:
                 logger.error(f"网易云 API 错误: {data}")
                 return []
 
             songs = data.get('songs', [])
-            logger.info(f"网易云返回 {len(songs)} 首歌曲")
+            total = data.get('total', len(songs))
+            logger.info(f"网易云返回 {len(songs)} 首歌曲 (歌手共 {total} 首)")
             
             for song in songs:
                 # publishTime is in milliseconds

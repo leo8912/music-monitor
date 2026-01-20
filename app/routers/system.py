@@ -1,16 +1,33 @@
 import logging
 import yaml
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
 # Core Imports
 from core.config import config
 from core.scheduler import scheduler
 from core.logger import api_log_handler
 from core.event_bus import event_bus
+from core.websocket import manager
 from notifiers.wecom import WeComNotifier
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+@router.websocket("/ws/progress")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive, wait for client 'ping' or just block
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        try:
+            manager.disconnect(websocket)
+        except: pass
+
 
 @router.get("/api/settings")
 async def get_settings():

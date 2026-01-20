@@ -128,3 +128,46 @@ def ensure_security_config():
         logger.error(f"Security config check failed: {e}")
         # Return random temp secret
         return secrets.token_urlsafe(32), False
+
+def add_monitored_user(source: str, user_id: str, name: str) -> bool:
+    """Add a new user to monitor config and save."""
+    try:
+        # 1. Update In-Memory Config
+        if 'monitor' not in config: config['monitor'] = {}
+        if source not in config['monitor']: config['monitor'][source] = {'enabled': True, 'users': []}
+        
+        users = config['monitor'][source].get('users', [])
+        # Check duplicate
+        for u in users:
+            if str(u.get('id')) == str(user_id):
+                return False # Already exists
+        
+        users.append({'id': str(user_id), 'name': name})
+        config['monitor'][source]['users'] = users
+        
+        # 2. Save to File
+        with open(CONFIG_FILE_PATH, "r", encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+            
+        if 'monitor' not in data: data['monitor'] = {}
+        if source not in data['monitor']: data['monitor'][source] = {'enabled': True, 'users': []}
+        
+        # Ensure we don't duplicate in file if it desynced
+        file_users = data['monitor'][source].get('users', [])
+        exists = False
+        for u in file_users:
+            if str(u.get('id')) == str(user_id):
+                exists = True
+                break
+        
+        if not exists:
+            file_users.append({'id': str(user_id), 'name': name})
+            data['monitor'][source]['users'] = file_users
+            
+            with open(CONFIG_FILE_PATH, "w", encoding='utf-8') as f:
+                yaml.safe_dump(data, f, allow_unicode=True, default_flow_style=False)
+                
+        return True
+    except Exception as e:
+        logger.error(f"Failed to add monitored user: {e}")
+        return False

@@ -35,6 +35,17 @@ async def download_audio_endpoint(req: DownloadRequest):
     
     logger.info(f"收到下载请求: {req.title} - {req.artist}")
     
+    from core.websocket import manager
+
+    async def progress_report(msg: str):
+        try:
+            await manager.broadcast({
+                "type": "toast",
+                "level": "info",
+                "message": msg
+            })
+        except: pass
+
     try:
         result = await dl.download(
             song_id=req.song_id,
@@ -43,7 +54,8 @@ async def download_audio_endpoint(req: DownloadRequest):
             artist=req.artist,
             album=req.album,
             pic_url=req.pic_url,
-            quality=999
+            quality=999,
+            progress_callback=progress_report
         )
         
         if result:
@@ -58,30 +70,11 @@ async def download_audio_endpoint(req: DownloadRequest):
                 if record:
                     record.local_audio_path = result.get("local_path")
                     record.audio_quality = result.get("quality")
-                    # audio_downloader doesn't explicitly return 'lyric' text in the dict unless we added it?
-                    # wait, let's check audio_downloader.py return
-                    # It returns: local_path, quality, size, format, has_lyric. 
-                    # It does NOT return the actual lyric text in the dict, but it injects it into file.
-                    # Wait, DB needs lyrics... 
-                    # Checking AudioDownloader, it has local var `lyric` but doesn't return it in dict.
-                    # I should fix this too if I want to save lyrics to DB? 
-                    # But for now let's fix the crash first. 
-                    # Actually, if I want to update DB lyrics, I need to return it.
-                    # Or rely on the fact that it was injected? 
-                    # The previous code tried to access result.lyric.
-                    # Let's check if I should add it to return dict in AudioDownloader later?
-                    # For now safe access.
                     
-                    # NOTE: result from downloader:
-                    # { "local_path": ..., "quality": ..., "size": ..., "format": ..., "has_lyric": ... }
-                    # It does MISS 'lyric' key. 
-                    # So result.get("lyric") will be None.
-                    # And that's fine for now to avoid crash.
-                    
-                    # record.lyrics = result.get("lyric") 
-                    # if result.get("lyric"): ...
-                    
-                    # Actually, let's just use get() to be safe.
+                    # Update lyric if available
+                    if result.get("lyric"):
+                        record.lyrics = result.get("lyric")
+                        record.lyrics_updated_at = datetime.now()
                     
                     db.commit()
                     logger.info(f"数据库记录已更新: {req.title}")
@@ -96,6 +89,11 @@ async def download_audio_endpoint(req: DownloadRequest):
                 "has_lyric": result.get("has_lyric")
             }
         else:
+            await manager.broadcast({
+                "type": "toast",
+                "level": "error",
+                "message": "😔 未找到有效音源或下载中断"
+            })
             raise HTTPException(status_code=500, detail="Download failed (downloader returned None)")
             
     except Exception as e:
@@ -105,8 +103,9 @@ async def download_audio_endpoint(req: DownloadRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
 @router.get("/api/audio/{filename:path}")
-def serve_audio(filename: str):
+async def serve_audio(filename: str):
     """Serve audio file from cache with correct Content-Disposition."""
     # Check Favorites first (Priority)
     fav_dir = config.get('storage', {}).get('favorites_dir', 'favorites')
@@ -120,22 +119,78 @@ def serve_audio(filename: str):
     if os.path.exists(fav_path):
         file_path = fav_path
     elif not os.path.exists(file_path):
-        # Auto-repair: Clear local_audio_path in DB if file is missing
+        # -------------------------------------------------------------
+        # 优化体验：如果文件不存在但数据库有记录，尝试立即重新下载
+        # -------------------------------------------------------------
+        from core.audio_downloader import AudioDownloader
+        from core.websocket import manager
+        
+        db = SessionLocal()
         try:
-            db = SessionLocal()
-            records = db.query(MediaRecord).filter(MediaRecord.local_audio_path.like(f"%{filename}")).all()
-            if records:
-                for r in records:
-                    logger.warning(f"File missing, clearing DB record: {filename} (ID: {r.id})")
-                    r.local_audio_path = None
-                    r.audio_quality = None
-                db.commit()
+            # 查找关联的记录
+            record = db.query(MediaRecord).filter(MediaRecord.local_audio_path.like(f"%{filename}")).first()
+            
+            if record:
+                logger.info(f"File missing for {record.title} (ID:{record.media_id}), attempting immediate re-download...")
+                
+                # 定义并使用 WebSocket 回调
+                async def progress_report(msg: str):
+                    try:
+                        await manager.broadcast({
+                            "type": "toast",  # 前端识别类型
+                            "level": "info",
+                            "message": msg
+                        })
+                    except: pass
+
+                # 触发下载 (阻塞等待)
+                dl = AudioDownloader()
+                # download 方法需要 song_id, source 等参数
+                result = await dl.download(
+                    song_id=record.media_id,
+                    source=record.source,
+                    title=record.title,
+                    artist=record.author,
+                    album=record.album,
+                    pic_url=record.cover,
+                    quality=999,
+                    progress_callback=progress_report
+                )
+                
+                if result and result.get('local_path') and os.path.exists(result['local_path']):
+                     logger.info(f"Buffered/Downloaded successfully: {filename}")
+                     real_path = result['local_path']
+                     real_filename = os.path.basename(real_path)
+                     
+                     # 检查文件名是否发生变化 (例如 .flac -> .mp3)
+                     if real_filename != filename:
+                         logger.info(f"File extension changed ({filename} -> {real_filename}), redirecting...")
+                         return RedirectResponse(f"/api/audio/{real_filename}")
+                     
+                     # 同步更新 file_path 变量以便后续 FileResponse 使用
+                     # 注意：外层的 file_path 是基于 filename 构造的，如果没变就不需要更新
+                     pass
+            else:
+                 logger.warning(f"File not found and no DB record matches key: {filename}")
+                 # 只有当确实找不到记录时，才考虑清理旧的错误路径？
+                 # 为了防止死循环，这里可以尝试把这个路径置空
+                 pass
+
         except Exception as e:
-            logger.error(f"Auto-repair failed: {e}")
+            logger.error(f"Auto-download failed: {e}")
         finally:
             db.close()
-            
-        raise HTTPException(status_code=404, detail="Audio file not found")
+
+        # 再次检查文件是否存在
+        # 如果刚才发生了重定向，这里不会执行
+        
+        # 重新计算 file_path (虽然如果文件名变了应该已经 redirect 了)
+        # 但如果文件名没变，我们需要确保 file_path 指向的是存在的文件
+        file_path = os.path.join(AUDIO_CACHE_DIR, filename)
+        
+        if not os.path.exists(file_path):
+             # 只有努力过了还是没有，才放弃
+             raise HTTPException(status_code=404, detail="Audio file not found")
          
     # Determine media type
     media_type = "audio/mpeg"

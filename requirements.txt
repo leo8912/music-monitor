@@ -13,3 +13,7 @@ uvicorn>=0.20.0
 wechatpy
 cryptography
 itsdangerous
+mutagen
+aiofiles
+xmltodict
+python-multipart

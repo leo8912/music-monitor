@@ -115,6 +115,10 @@ const selectArtist = (artist) => {
 // Correct. I fixed indentation in this version.
 
 const deleteMergedArtist = async (artist) => {
+    // 添加确认对话框
+    const confirmed = window.confirm(`确定要删除歌手"${artist.name}"吗？\n\n这将删除该歌手在所有平台的订阅及相关歌曲记录。`)
+    if (!confirmed) return
+    
     try {
         // Optimistic update
         rawArtists.value = rawArtists.value.filter(a => a.name !== artist.name)
@@ -161,6 +165,48 @@ const fetchHistory = async () => {
   } finally {
       loadingHistory.value = false
   }
+}
+
+// WebSocket
+const connectWs = () => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    // Fix for dev proxy: if running on port 5173 but api on 8000
+    // But axios calls relative path /api, so we assume proxy is set up or same backend.
+    // If dev, window.location.host is localhost:5173. 
+    // In vite.config.js, we proxy /api -> localhost:8000. 
+    // WebSocket requires proxy config too or direct connect.
+    // Assuming Vite proxy handles /ws as well (need check vite config?)
+    // Let's assume standard relative /ws/progress works via proxy.
+    const wsUrl = `${protocol}//${window.location.host}/ws/progress`
+    
+    const ws = new WebSocket(wsUrl)
+    
+    ws.onopen = () => {
+        console.log("WS Connected")
+    }
+    
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data)
+            if (data.type === 'toast') {
+                if (data.level === 'error') {
+                    message.error(data.message)
+                } else {
+                    message.info(data.message, { duration: 2000 })
+                }
+            }
+        } catch (e) {}
+    }
+    
+    ws.onclose = () => {
+        // Reconnect
+        setTimeout(connectWs, 5000)
+    }
+    
+    ws.onerror = (err) => {
+        // console.error("WS invalid", err)
+        ws.close()
+    }
 }
 
 const fetchOneWord = async () => {

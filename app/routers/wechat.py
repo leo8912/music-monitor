@@ -69,158 +69,266 @@ async def wechat_callback(request: Request, msg_signature: str, timestamp: str, 
         return Response("success")
         
     content = msg.content.strip()
-    reply_content = "收到指令"
+    user_id = msg.source # WeCom UserID
     
-    # Process Command
-    if content.startswith("喜欢") or content.startswith("收藏"):
-        # Format: 喜欢 SongName
-        keyword = content[2:].strip()
-        if keyword:
-            reply_content = await handle_favorite_command(keyword)
+    reply_content = ""
+    
+    # Session Cache (Global)
+    # Global Session
+    global search_session
+    if 'search_session' not in globals():
+        search_session = {}
+        
+    # 1. Handle Selection (Number)
+    if content.isdigit():
+        idx = int(content) - 1
+        if user_id in search_session:
+            session = search_session[user_id]
+            # Check expiry (5 mins)
+            if (datetime.now() - session['time']).total_seconds() > 300:
+                reply_content = "⚠️ 搜索结果已过期，请重新搜索。"
+                del search_session[user_id]
+            elif 0 <= idx < len(session['results']):
+                # Dispatch based on type
+                stype = session.get('type', 'song')
+                target = session['results'][idx]
+                
+                import asyncio
+                if stype == 'song':
+                    asyncio.create_task(background_download_and_fav(target, user_id))
+                    reply_content = f"🚀 已收到，开始下载并收藏第 {idx+1} 首：\n{target['title']} - {format_artist(target['artist'])}"
+                elif stype == 'artist':
+                    asyncio.create_task(background_add_artist(target, user_id))
+                    reply_content = f"🚀 已收到，正在添加歌手监控：\n{target['name']} ({target['source']})"
+                
+                del search_session[user_id]
+            else:
+                reply_content = f"⚠️ 请输入有效的序号 (1-{len(session['results'])})"
         else:
-            reply_content = "请提供歌曲名，例如：喜欢 晴天"
-            
-    elif content.startswith("下载"):
-        keyword = content[2:].strip()
-        if keyword:
-            reply_content = await handle_download_command(keyword)
-        else:
-            reply_content = "请提供歌曲名，例如：下载 晴天"
+            # Treat number as query if no session? Or tell user no session?
+            # Let's verify if it might be a song name (some songs have number names).
+            # But usually it's selection.
+            reply_content = "⚠️ 无待选列表，请先发送歌名或歌手名搜索。"
+
+    # 2. Handle Commands
     else:
-        # Default: Download if it looks like a song name?
-        # User said: "发送 歌曲名就自动下载到指定文件夹"
-        # So treat as download.
-        reply_content = await handle_download_command(content)
+        # Determine intent
+        # Default -> Artist Search
+        # Explicit "下载/喜欢/收藏" -> Song Search
+        
+        intent = "artist"
+        keyword = content
+        
+        for prefix in ["下载", "喜欢", "收藏", "搜歌", "歌曲"]:
+            if content.startswith(prefix):
+                intent = "song"
+                keyword = content[len(prefix):].strip()
+                break
+        
+        if not keyword:
+            reply_content = "请提供关键词"
+        else:
+            if intent == "song":
+                reply_content = await handle_song_search(keyword, user_id)
+            else:
+                reply_content = await handle_artist_search(keyword, user_id)
 
     reply = create_reply(reply_content, msg)
     encrypted_xml = crypto.encrypt_message(reply.render(), nonce, timestamp)
     return Response(content=encrypted_xml, media_type="application/xml")
 
-async def handle_favorite_command(keyword: str) -> str:
+def format_artist(artist_field):
+    if isinstance(artist_field, list):
+        return "/".join(artist_field)
+    return str(artist_field)
+
+async def handle_song_search(keyword: str, user_id: str) -> str:
     dl = AudioDownloader()
-    # Search top 1
-    # Search all sources? Or default netease?
-    results = await dl.search_songs(keyword, "", source="netease", count=1)
-    if not results:
-        # Try QQ
-        results = await dl.search_songs(keyword, "", source="qqmusic", count=1)
+    search_results = []
     
-    if not results:
-        return f"未找到歌曲: {keyword}"
-        
-    song = results[0]
-    title = song['title']
-    artist = " ".join(song['artist']) if isinstance(song['artist'], list) else song['artist']
-    unique_key = f"{song['source']}_{song['id']}"
-    
-    # Create/Get Record
-    db = SessionLocal()
+    # Netease
     try:
-        record = db.query(MediaRecord).filter_by(unique_key=unique_key).first()
-        if not record:
-             record = MediaRecord(
-                unique_key=unique_key,
-                source=song['source'],
-                media_type="audio",
-                media_id=song['id'],
-                title=title,
-                author=artist,
-                album=song.get('album'),
-                cover=None, # Need to fetch? Logic inside fetch handles it 
-                publish_time=datetime.now()
-             )
-             db.add(record)
-             db.commit()
-             db.refresh(record)
-             
-        # Toggle Favorite (Force True)
-        res = await FavoritesService.toggle_favorite(db, unique_key, force_state=True)
-        if res['success']:
-            return f"✅ 已收藏: {title} - {artist}"
+        res_ne = await dl.search_songs(keyword, "", source="netease", count=5)
+        if res_ne: search_results.extend(res_ne)
+    except: pass
+    
+    # QQ
+    try:
+        res_qq = await dl.search_songs(keyword, "", source="qqmusic", count=5)
+        if res_qq: search_results.extend(res_qq)
+    except: pass
+    
+    if not search_results:
+        return f"😔 未找到关于 '{keyword}' 的歌曲"
+        
+    # Cache Session
+    global search_session
+    if 'search_session' not in globals(): search_session = {}
+    
+    search_session[user_id] = {
+        "type": "song",
+        "keyword": keyword,
+        "results": search_results[:5], # Limit total choice to 5? User said default 5.
+                                       # Wait, if we fetch 5 from each, we have 10.
+                                       # Let's show top 5-8 mixed.
+        "time": datetime.now()
+    }
+    
+    if len(search_results) > 8:
+        search_results = search_results[:8]
+    
+    # Build text
+    reply = f"🔎 找到以下歌曲（回复序号下载）：\n"
+    for i, song in enumerate(search_session[user_id]['results']): # Use stored results
+        if i >= 8: break
+        src_icon = "🎵" if song['source'] == 'netease' else "🐧"
+        artist = format_artist(song['artist'])
+        reply += f"{i+1}. {src_icon} {song['title']} - {artist}\n"
+        
+    return reply
+
+async def handle_artist_search(keyword: str, user_id: str) -> str:
+    
+    results = []
+    
+    # Netease
+    try:
+        ne_res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, keyword, stype=100, limit=3)
+        if ne_res.get('code') == 200 and ne_res.get('result', {}).get('artists'):
+            for ar in ne_res['result']['artists']:
+                results.append({
+                    "source": "netease",
+                    "id": str(ar['id']),
+                    "name": ar['name'],
+                    "avatar": ar.get('picUrl')
+                })
+    except Exception as e:
+        logger.warning(f"Artist search error (NE): {e}")
+
+    # QQ
+    try:
+        qq_res = await search.search_by_type(keyword=keyword, search_type=SearchType.SINGER, num=3)
+        if qq_res and isinstance(qq_res, list):
+            for ar in qq_res:
+                mid = ar.get('singerMID') or ar.get('mid')
+                name = ar.get('singerName') or ar.get('name')
+                if mid and name:
+                     results.append({
+                        "source": "qqmusic",
+                        "id": mid,
+                        "name": name,
+                        "avatar": f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
+                    })
+    except Exception as e:
+        logger.warning(f"Artist search error (QQ): {e}")
+        
+    if not results:
+        return f"😔 未找到歌手 '{keyword}'"
+        
+    # Cache Session
+    global search_session
+    if 'search_session' not in globals(): search_session = {}
+    
+    search_session[user_id] = {
+        "type": "artist",
+        "keyword": keyword,
+        "results": results[:5],
+        "time": datetime.now()
+    }
+    
+    # Build text
+    reply = f"🎤 找到以下歌手（回复序号添加监控）：\n"
+    for i, ar in enumerate(search_session[user_id]['results']):
+        src_icon = "🎵" if ar['source'] == 'netease' else "🐧"
+        reply += f"{i+1}. {src_icon} {ar['name']} (ID: {ar['id']})\n"
+        
+    return reply
+
+
+async def background_add_artist(target, user_id):
+    try:
+        name = target['name']
+        source = target['source']
+        uid = target['id']
+        
+        # Add to Config
+        success = add_monitored_user(source, uid, name)
+        
+        if success:
+            await WeComNotifier().send_text(f"✅ 已添加 {name} 到 {source} 监控列表！\n正在尝试同步新歌...", [user_id])
+            # Trigger Sync
+            await sync_artist_immediate(name, source, target.get('avatar'), notify=True)
         else:
-            return f"❌ 收藏失败: {res.get('message')}"
+             await WeComNotifier().send_text(f"⚠️ 添加失败：{name} 可能已存在", [user_id])
+             
     except Exception as e:
-        logger.error(f"Fav cmd error: {e}")
-        return f"处理异常: {str(e)}"
-    finally:
-        db.close()
+        logger.error(f"Bg add artist error: {e}")
+        await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
 
-async def handle_download_command(keyword: str) -> str:
-    # Similar to favorite but just download
-    # Logic: Search -> Download
-    dl = AudioDownloader()
-    results = await dl.search_songs(keyword, "", source="netease", count=1)
-    if not results:
-        results = await dl.search_songs(keyword, "", source="qqmusic", count=1)
-        
-    if not results:
-        return f"未找到歌曲: {keyword}"
-        
-    song = results[0]
+async def background_download_and_fav(song, user_id):
     title = song['title']
-    artist = " ".join(song['artist']) if isinstance(song['artist'], list) else song['artist']
+    artist = format_artist(song['artist'])
     
-    # Trigger download
-    # We can reuse download logic or simply call download
-    # Note: AudioDownloader.download doesn't strictly depend on DB, but for consistency we should update DB.
-    
-    try:
-         # Async download
-         # Ideally background task? But user might want confirmation.
-         # For responsiveness, we can await it if it's fast (search is fast, download might be slow).
-         # If download is slow (>5s), WeCom might timeout (5s limit for passive reply).
-         # CRITICAL: WeCom passive reply timeout is 5s.
-         # So we should probably background the download and reply "Start downloading".
-         # Or assume it works.
-         
-         # Creating a background task
-         import asyncio
-         asyncio.create_task(background_download(song))
-         
-         return f"🚀 开始下载: {title} - {artist}"
-    except Exception as e:
-        return f"启动下载失败: {e}"
-
-async def background_download(song):
     try:
         dl = AudioDownloader()
-        title = song['title']
-        artist = " ".join(song['artist']) if isinstance(song['artist'], list) else song['artist']
         
         # Download
+        # This might take time
+        # TODO: Add progress notify if really needed? 
+        # But this is "Background", users expect it to just popup when done.
+        
         res = await dl.download(
             source=song['source'],
             song_id=song['id'],
             title=title,
             artist=artist,
-            album=song.get('album'),
+            album=song.get('album', ''),
             quality=999
         )
         
-        if res:
-            # Update DB
-             db = SessionLocal()
-             try:
-                unique_key = f"{song['source']}_{song['id']}"
-                record = db.query(MediaRecord).filter_by(unique_key=unique_key).first()
-                if not record:
-                    record = MediaRecord(
-                        unique_key=unique_key,
-                        source=song['source'],
-                        media_type="audio",
-                        media_id=song['id'],
-                        title=title,
-                        author=artist,
-                        album=song.get('album'),
-                        publish_time=datetime.now()
-                    )
-                    db.add(record)
-                
-                record.local_audio_path = res['local_path']
-                record.audio_quality = res['quality']
+        if not res:
+            await WeComNotifier().send_text(f"❌ 下载失败：{title}\n原因：未找到有效资源", [user_id])
+            return
+
+        # Update DB & Favorite
+        db = SessionLocal()
+        try:
+            unique_key = f"{song['source']}_{song['id']}"
+            record = db.query(MediaRecord).filter_by(unique_key=unique_key).first()
+            if not record:
+                record = MediaRecord(
+                    unique_key=unique_key,
+                    source=song['source'],
+                    media_type="audio",
+                    media_id=song['id'],
+                    title=title,
+                    author=artist,
+                    album=song.get('album'),
+                    publish_time=datetime.now()
+                )
+                db.add(record)
                 db.commit()
-             finally:
-                 db.close()
-            # Notify? WeCom Active Notify?
+                db.refresh(record)
+            
+            # Update path
+            record.local_audio_path = res['local_path']
+            record.audio_quality = res['quality']
+            
+            # Move to favorites (Add to favorite list)
+            # This triggers file copy inside FavoritesService
+            fav_res = await FavoritesService.toggle_favorite(db, unique_key, force_state=True)
+            
+            db.commit()
+            
+            final_msg = f"✅ 下载并收藏成功！\n🎵 {title} - {artist}\n📁 已存入精选集"
+            await WeComNotifier().send_text(final_msg, [user_id])
+            
+        except Exception as e:
+            logger.error(f"DB/Fav Error: {e}")
+            await WeComNotifier().send_text(f"⚠️ 下载成功但收藏失败：{e}", [user_id])
+        finally:
+            db.close()
+            
     except Exception as e:
-        logger.error(f"Bg download error: {e}")
+        logger.error(f"Bg task error: {e}")
+        await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])

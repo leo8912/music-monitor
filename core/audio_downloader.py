@@ -10,7 +10,7 @@ import re
 import time
 import logging
 import io
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Callable, Awaitable
 from dataclasses import dataclass
 
 # 引入 mutagen 处理音频标签
@@ -538,7 +538,8 @@ class AudioDownloader:
         artist: str,
         album: str = "",
         pic_url: str = "",
-        quality: int = 999
+        quality: int = 999,
+        progress_callback: Optional[Callable[[str], Awaitable[None]]] = None
     ) -> Optional[Dict]:
         """
         下载音频文件 (包含元数据)
@@ -550,26 +551,29 @@ class AudioDownloader:
         if lib_rel_path:
             full_lib_path = os.path.join(self.library_dir, lib_rel_path)
             logger.info(f"本地媒体库已存在: {full_lib_path}")
-            
-            # 获取文件信息
-            size = os.path.getsize(full_lib_path)
-            ext = os.path.splitext(full_lib_path)[1].lower().replace('.', '')
-            
-            # 返回特定格式，以区别于 cache
-            # 前端/API 需要处理 "LIBRARY/" 前缀
+            if progress_callback: await progress_callback("📂 从本地媒体库加载...")
             return {
                 "local_path": f"LIBRARY/{lib_rel_path}", 
-                "quality": 999, # 假设本地库为高音质
-                "size": size,
-                "format": ext
+                "quality": 999, 
+                "size": os.path.getsize(full_lib_path),
+                "format": os.path.splitext(full_lib_path)[1].lower().replace('.', '')
             }
         
-        # 1. 检查本地缓存 (audio_cache)
-        # 即使 DB 里的路径被清空了，文件可能还在
+        # 1. 检查本地缓存
         cached_filename = self.get_cached_path(artist, title)
         if cached_filename:
+            if progress_callback: await progress_callback("⚡ 从缓存/收藏加载...")
+            
             full_path = os.path.join(self.cache_dir, cached_filename)
-            logger.info(f"本地缓存已存在 (恢复): {full_path}")
+            # If not in cache, check favorites (since get_cached_path might find it there)
+            if not os.path.exists(full_path):
+                from core.config import config
+                fav_dir = config.get('storage', {}).get('favorites_dir', 'favorites')
+                fav_path = os.path.join(fav_dir, cached_filename)
+                if os.path.exists(fav_path):
+                    full_path = fav_path
+
+            logger.info(f"本地已存在 (恢复): {full_path}")
             return {
                 "local_path": cached_filename,
                 "quality": 999 if cached_filename.endswith(".flac") else 320, # 估算
@@ -579,6 +583,7 @@ class AudioDownloader:
             }
 
         # 2. 获取下载链接
+        if progress_callback: await progress_callback("🔍 正在全网搜索最佳音源...")
         audio_info = await self._fetch_audio_url(source, song_id, quality, title=title, artist=artist, album=album)
         if not audio_info:
             logger.warning(f"无法获取音频链接: {title}")
@@ -597,6 +602,7 @@ class AudioDownloader:
             
         # 3. 下载音频到内存
         logger.info(f"正在下载音频流...")
+        if progress_callback: await progress_callback("⬇️ 正在下载音频内容...")
         audio_data = await self._download_content(audio_info.url)
         if not audio_data:
             return None
@@ -604,6 +610,7 @@ class AudioDownloader:
         # 4. 获取歌词
         lyric = None
         logger.info(f"正在获取歌词...")
+        if progress_callback: await progress_callback("🎵 正在解析并匹配歌词...")
         lyric = await self._fetch_lyric(title, artist)
         if lyric:
             logger.info(f"歌词获取成功: {title}")
@@ -614,10 +621,12 @@ class AudioDownloader:
         cover_data = None
         if pic_url:
             logger.info(f"正在下载封面图...")
+            if progress_callback: await progress_callback("🖼️ 正在处理封面图片...")
             cover_data = await self._download_cover(pic_url)
             
         # 6. 写入文件
         logger.info(f"写入文件: {local_path}")
+        if progress_callback: await progress_callback("💾 正在写入文件并注入元数据...")
         async with aiofiles.open(local_path, 'wb') as f:
             await f.write(audio_data)
             
@@ -632,17 +641,40 @@ class AudioDownloader:
         # 在线程池中运行 mutagen (它是同步 IO)
         await asyncio.to_thread(self._inject_metadata, local_path, metadata)
         
+        if progress_callback: await progress_callback("✅ 准备就绪，即将播放！")
         return {
             "local_path": os.path.basename(local_path),
             "quality": audio_info.quality,
             "size": len(audio_data),
             "format": audio_info.format,
-            "has_lyric": bool(lyric)  # 是否有歌词
+            "has_lyric": bool(lyric),
+            "lyric": lyric # Return content for DB update
         }
 
     def get_cached_path(self, artist: str, title: str) -> Optional[str]:
-        """检查缓存"""
+        """检查缓存 (包括收藏目录)"""
+        # 0. Check Favorites
+        from core.config import config
+        fav_dir = config.get('storage', {}).get('favorites_dir', 'favorites')
+        if not os.path.isabs(fav_dir) and fav_dir.startswith("/config"):
+             # Handle absolute path docker case if needed, but config usually has abs or rel.
+             pass
+             
+        # Normalize favorites lookup
+        safe_artist = self._sanitize_filename(artist)
+        safe_title = self._sanitize_filename(title)
+        
         for ext in ['flac', 'mp3']:
+            target_name = f"{safe_artist} - {safe_title}.{ext}"
+            
+            # 1. Favorites
+            if os.path.exists(fav_dir):
+                fav_path = os.path.join(fav_dir, target_name)
+                if os.path.exists(fav_path) and os.path.getsize(fav_path) > 1024:
+                    logger.info(f"Found in favorites: {fav_path}")
+                    return target_name # Return basename, serve_audio will handle lookup
+            
+            # 2. Cache
             path = self._get_local_path(artist, title, ext)
             if os.path.exists(path) and os.path.getsize(path) > 1024:
                 return os.path.basename(path)

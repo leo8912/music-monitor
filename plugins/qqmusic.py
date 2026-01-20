@@ -89,10 +89,23 @@ class QQMusicMonitor(MonitorPlugin):
                 album_mid = album_data.get('mid', '') if isinstance(album_data, dict) else ''
                 album_name = album_data.get('name', '') if isinstance(album_data, dict) else ''
                 
+                # -------------------------------------------------------------
+                # 过滤逻辑：丢弃无效歌曲
+                # 安全性优化：只有当 专辑名、专辑MID、发布时间 全部缺失时才视为垃圾数据
+                # -------------------------------------------------------------
+                is_trash = (not album_name) and (not album_mid) and (not pub_time_str)
+                if is_trash:
+                    logger.debug(f"跳过无效数据(无专辑/无时间): {song_name} (mid={mid})")
+                    continue
+                
                 # 构造封面URL
                 cover_url = ''
                 if album_mid:
                     cover_url = f"https://y.gtimg.cn/music/photo_new/T002R300x300M000{album_mid}.jpg"
+                
+                # 尝试从GD Studio获取备用封面
+                if not cover_url:
+                    cover_url = await self._fetch_cover_from_gdstudio(song_name, singer_name)
                 
                 # 如果主要方法没有封面，使用gdstudio API作为备用
                 if not cover_url:

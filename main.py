@@ -34,12 +34,34 @@ from pydantic import BaseModel
 
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+LOG_DIR = "/config/logs" if os.path.exists("/config") else "logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG_FILE = os.path.join(LOG_DIR, "application.log")
+
+from logging.handlers import TimedRotatingFileHandler
+
+# Basic Config (Console)
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        TimedRotatingFileHandler(
+            LOG_FILE, 
+            when='midnight', 
+            interval=1, 
+            backupCount=10, 
+            encoding='utf-8'
+        )
+    ]
+)
+
 # Suppress noisy logs from third-party libraries
 logging.getLogger("apscheduler").setLevel(logging.WARNING)
-logging.getLogger("apscheduler.executors.default").setLevel(logging.ERROR) # Suppress "Run time of job ... was missed"
+logging.getLogger("apscheduler.executors.default").setLevel(logging.ERROR)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("qqmusic_api").setLevel(logging.WARNING)
+logging.getLogger("watchfiles").setLevel(logging.WARNING)
 
 # Trigger Reload
 logger = logging.getLogger(__name__)
@@ -294,6 +316,21 @@ logger.addHandler(api_log_handler)
 logging.getLogger("uvicorn").addHandler(api_log_handler)
 
 
+
+# Mount Frontend (only if exists, for production)
+# In Docker, we copy to /app/web/dist
+if os.path.exists("web/dist"):
+    app.mount("/assets", StaticFiles(directory="web/dist/assets"), name="assets")
+    
+    # Catch-all for SPA
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # API routes are handled above.
+        file_path = f"web/dist/{full_path}"
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+            
+        return FileResponse("web/dist/index.html")
 
 if __name__ == "__main__":
     import uvicorn

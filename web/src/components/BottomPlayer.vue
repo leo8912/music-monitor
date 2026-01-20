@@ -40,7 +40,6 @@
           <div class="song-info">
             <div class="song-title-row">
               <div class="song-title" :title="info.title">{{ info.title || '未知歌曲' }}</div>
-              <div class="song-title" :title="info.title">{{ info.title || '未知歌曲' }}</div>
               <!-- Heart moved to right section -->
               <button class="action-btn repair-btn" @click.stop="$emit('repair')" title="歌曲错误？点击修复"><i class="fas fa-exclamation-triangle"></i></button>
             </div>
