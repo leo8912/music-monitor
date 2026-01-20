@@ -664,16 +664,81 @@ async def get_mobile_metadata(id: str, sign: str, expires: str):
         if not record:
              raise HTTPException(status_code=404, detail="Song not found")
              
+        # Auto-extract metadata from file if missing
+        if record.local_audio_path and os.path.exists(record.local_audio_path):
+            try:
+                import mutagen
+                from mutagen.flac import FLAC, Picture
+                from mutagen.id3 import ID3, APIC, USLT
+                from mutagen.mp3 import MP3
+                import hashlib
+                
+                ext = os.path.splitext(record.local_audio_path)[1].lower()
+                needs_save = False
+                
+                # 1. Extract Cover
+                if not record.cover:
+                    cover_data = None
+                    if ext == '.flac':
+                        try:
+                            audio = FLAC(record.local_audio_path)
+                            if audio.pictures:
+                                cover_data = audio.pictures[0].data
+                        except: pass
+                    elif ext == '.mp3':
+                        try:
+                            audio = MP3(record.local_audio_path, ID3=ID3)
+                            for tag in audio.tags.values():
+                                if isinstance(tag, APIC):
+                                    cover_data = tag.data
+                                    break
+                        except: pass
+                    
+                    if cover_data:
+                        h = hashlib.md5(cover_data).hexdigest()
+                        cover_filename = f"{h}.jpg"
+                        upload_dir = "uploads/covers"
+                        if not os.path.exists(upload_dir):
+                            os.makedirs(upload_dir, exist_ok=True)
+                        cover_path = os.path.join(upload_dir, cover_filename)
+                        if not os.path.exists(cover_path):
+                            with open(cover_path, 'wb') as f:
+                                f.write(cover_data)
+                        record.cover = f"/uploads/covers/{cover_filename}"
+                        needs_save = True
+
+                # 2. Extract Lyrics
+                if not record.lyrics:
+                    lyrics_text = None
+                    if ext == '.flac':
+                        try:
+                            audio = FLAC(record.local_audio_path)
+                            if 'lyrics' in audio:
+                                lyrics_text = audio['lyrics'][0]
+                        except: pass
+                    elif ext == '.mp3':
+                        try:
+                            audio = MP3(record.local_audio_path, ID3=ID3)
+                            for key in audio.tags.keys():
+                                if key.startswith("USLT"):
+                                    lyrics_text = audio.tags[key].text
+                                    break
+                        except: pass
+                        
+                    if lyrics_text:
+                        record.lyrics = lyrics_text
+                        needs_save = True
+                
+                if needs_save:
+                    db.commit()
+            except Exception as e:
+                print(f"Metadata extraction warning: {e}")
+
         # Construct Audio URL (use filename logic)
-        # We need filename. If local path exists, get filename.
         audio_url = ""
         if record.local_audio_path:
             filename = os.path.basename(record.local_audio_path)
             audio_url = f"/api/audio/{filename}"
-        else:
-            # Maybe fallback to official? Or return empty to signal "Processing"?
-            # If Mobile Player is opened immediately after download trigger, it might be downloading.
-            pass
             
         return {
             "title": record.title,
@@ -682,7 +747,10 @@ async def get_mobile_metadata(id: str, sign: str, expires: str):
             "cover": record.cover,
             "lyrics": record.lyrics,
             "audio_url": audio_url,
-            "source": record.source
+            "source": record.source,
+            "is_favorite": record.is_favorite,
+            "id": record.media_id,
+            "unique_key": record.unique_key
         }
         
     finally:

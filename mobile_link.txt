@@ -1,0 +1,1 @@
+http://localhost:8000/#/mobile/play?id=manual_%E5%AE%BF%E7%BE%BD%E9%98%B3_%E6%88%91%E4%B8%8D%E8%A6%81%E5%8E%9F%E8%B0%85%E4%BD%A0&sign=de7a59ed3df5f4aa9e8b8d3a12f23776816086bda76c6ce260d4d4cae0cbd1c2&expires=1769157569

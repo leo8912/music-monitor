@@ -21,6 +21,7 @@ from qqmusic_api.search import SearchType
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+from urllib.parse import quote
 from core.wechat import FixedWeChatCrypto
 
 def get_crypto():
@@ -402,9 +403,14 @@ async def background_download_and_fav(song, user_id):
                 db.commit()
                 db.refresh(record)
             
-            # Update path
+            # Update path and metadata
             record.local_audio_path = res['local_path']
             record.audio_quality = res['quality']
+            
+            # 更新封面（优先使用下载结果中的封面，其次使用 song 对象中的）
+            cover_url = res.get('cover') or song.get('cover') or record.cover or "https://p2.music.126.net/tGHU62DTszbTsM7vzNgHjw==/109951165631226326.jpg"
+            if not record.cover:
+                record.cover = cover_url
             
             # Move to favorites (Add to favorite list)
             fav_res = await FavoritesService.toggle_favorite(db, unique_key, force_state=True)
@@ -421,29 +427,17 @@ async def background_download_and_fav(song, user_id):
             # Handle trailing slash
             if base_url.endswith('/'): base_url = base_url[:-1]
             
-            magic_url = f"{base_url}/#/mobile/play?id={sign_params['id']}&sign={sign_params['sign']}&expires={sign_params['expires']}"
+            magic_url = f"{base_url}/#/mobile/play?id={quote(sign_params['id'])}&sign={sign_params['sign']}&expires={sign_params['expires']}"
             
-            # Use News Message for nice card
-            # Or Text Card? TextCard href is easier.
-            # But News is nicer with Image.
-            # Let's use News (Articles) with cover image.
-            
-            cover_url = song.get('cover') or "https://via.placeholder.com/300x300?text=Music"
-            
-            article = {
-                "title": f"下载完成: {title}",
-                "description": f"歌手: {artist}\n点击立即播放 (72小时有效)",
-                "image": cover_url,
-                "url": magic_url # Magic Link
-            }
-            
-            from wechatpy.replies import ArticlesReply
-            # We don't have 'msg' here to reply directly. We use Notifier.
-            # Notifier needs support for News. 
-            # My WeComNotifier has send_news_message?
-            # Let's check WeComNotifier.
-            
-            await WeComNotifier().send_news_message([article], [user_id])
+            # 发送图文消息通知
+            await WeComNotifier().send_news_message(
+                title=f"✅ 下载完成: {title}",
+                description=f"🎙️ 歌手: {artist}\n💾 已加入收藏\n\n点击立即播放（72小时有效）",
+                url=magic_url,
+                pic_url=cover_url,
+                user_ids=[user_id]
+            )
+
             
         except Exception as e:
             logger.error(f"DB/Fav Error: {e}")

@@ -13,6 +13,8 @@ if os.path.exists("/config/config.yaml"):
     CONFIG_FILE_PATH = "/config/config.yaml"
 elif os.path.exists("config.yaml"):
     CONFIG_FILE_PATH = "config.yaml"
+elif os.path.exists("config/config.yaml"):
+    CONFIG_FILE_PATH = "config/config.yaml"
 else:
     # Fallback or create new
     CONFIG_FILE_PATH = "/config/config.yaml" if os.path.isdir("/config") else "config.yaml"

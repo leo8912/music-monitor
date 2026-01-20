@@ -136,8 +136,18 @@ async def handle_new_content(media):
              if ext_url and ext_url.startswith('http'):
                  # Ensure no trailing slash
                  ext_url = ext_url.rstrip('/')
-                 # Construct deep link
-                 target_url = f"{ext_url}?source={media.source}&songId={media.media_id}"
+                 
+                 # Try to generate mobile player link
+                 try:
+                     from core.security import generate_signed_url_params
+                     # unique_key should be available on media object
+                     u_key = getattr(media, 'unique_key', f"{media.source}:{media.media_id}")
+                     sign_params = generate_signed_url_params(u_key)
+                     target_url = f"{ext_url}/#/mobile/play?id={quote(sign_params['id'])}&sign={sign_params['sign']}&expires={sign_params['expires']}"
+                 except Exception as ex:
+                     logger.warning(f"Failed to generate mobile link: {ex}")
+                     # Fallback to simple deep link
+                     target_url = f"{ext_url}?source={media.source}&songId={media.media_id}"
 
              # Prepare description for News card (simpler is better for News card description as it's small text under title)
              # But user wants a specific format?
@@ -327,6 +337,13 @@ logger.addHandler(api_log_handler)
 logging.getLogger("uvicorn").addHandler(api_log_handler)
 
 
+
+    # API routes are handled above.
+    
+# Mount Uploads
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Mount Frontend (only if exists, for production)
 # In Docker, we copy to /app/web/dist

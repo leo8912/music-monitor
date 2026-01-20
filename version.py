@@ -2,8 +2,8 @@
 版本信息模块
 自动读取并提供版本号信息
 """
-__backend_version__ = "1.0.0"
-__frontend_version__ = "1.0.0"
+__backend_version__ = "1.1.0"
+__frontend_version__ = "1.1.0"
 __build_date__ = "2026-01-20"
 
 def get_version_info():

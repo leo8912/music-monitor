@@ -192,7 +192,7 @@ class WeComNotifier(BaseNotifier):
                 else:
                     logger.info(f"企业微信推送成功: {title}")
 
-    async def send_news_message(self, title: str, description: str, url: str, pic_url: str):
+    async def send_news_message(self, title: str, description: str, url: str, pic_url: str, user_ids: list[str] = None):
         """Send a News (Article) message with a large header image."""
         if not self.corp_id or not self.secret:
              logger.warning("WeCom config missing, skipping.")
@@ -209,8 +209,11 @@ class WeComNotifier(BaseNotifier):
         if not pic_url:
             pic_url = "https://p2.music.126.net/tGHU62DTszbTsM7vzNgHjw==/109951165631226326.jpg"
 
+        # 确定发送对象
+        touser = "|".join(user_ids) if user_ids else "@all"
+
         payload = {
-            "touser": "@all",
+            "touser": touser,
             "msgtype": "news",
             "agentid": self.agent_id,
             "news": {
