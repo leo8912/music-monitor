@@ -1,18 +1,14 @@
 global:
   check_interval_minutes: 60
   log_level: INFO
+  external_url: ''
 auth:
   enabled: true
   username: "admin"
   password: "password"
   secret_key: "CHANGE_THIS_SECRET_KEY" # 务必修改此密钥
 monitor:
-  bilibili:
-    enabled: true
-    interval: 30
-    users:
-    - id: '546195'
-      name: Old Tomato
+
   netease:
     enabled: true
     interval: 60

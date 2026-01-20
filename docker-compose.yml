@@ -4,11 +4,12 @@ services:
     container_name: music-monitor
     restart: always
     volumes:
-      - ./config.yaml:/app/config.yaml # 映射配置文件
-      - ./data:/data # 映射数据目录 (数据库在这里)
+      - ./config:/config # 核心配置目录 (config.yaml, db, uploads)
+      - ./cache:/audio_cache # 缓存目录
+      - ./favorites:/favorites # 收藏目录
     environment:
-      - DATABASE_URL=sqlite:////data/music_monitor.db
+      - DATABASE_URL=sqlite:////config/music_monitor.db
       - TZ=Asia/Shanghai
     network_mode: bridge
     ports:
-      - "18000:8000" # 将容器的8000端口映射到主机的18000端口
+      - "18000:8000" # 端口映射

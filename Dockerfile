@@ -31,10 +31,10 @@ RUN cp config.example.yaml config.yaml
 COPY --from=frontend /app/web/dist /app/web/dist
 
 # Environment defaults
-ENV DATABASE_URL=sqlite:////data/music_monitor.db
+ENV DATABASE_URL=sqlite:////config/music_monitor.db
 ENV TZ=Asia/Shanghai
 
-VOLUME /data
+VOLUME /config
 
 EXPOSE 8000
 

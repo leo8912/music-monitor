@@ -15,6 +15,10 @@ config.yaml
 *.db
 *.sqlite3
 
+# Audio Cache & Favorites
+audio_cache/
+favorites/
+
 # Node/Vue
 node_modules/
 dist/

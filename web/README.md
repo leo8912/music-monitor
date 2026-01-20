@@ -31,3 +31,4 @@ npm run build
 - `src/api/`: API 客户端服务
 
 如需查看完整的项目文档，请参考 [项目根目录 README](../README.md)。
+感恩GD音乐台(music.gdstudio.xyz)

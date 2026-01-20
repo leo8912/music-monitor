@@ -1,14 +1,25 @@
 /* Apple Design System Tokens */
 :root {
-  /* Colors */
+  /* Typography - 统一字体体系 */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC",
+    "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
+
+  /* 兼容旧引用 */
+  --font-stack: var(--font-sans);
+
+  /* Colors - Light Mode */
+  --bg-body: #F5F5F7;
   --bg-app: #F5F5F7;
   --bg-card: #FFFFFF;
   --bg-card-hover: rgba(0, 0, 0, 0.02);
 
   --text-primary: #1D1D1F;
-  --text-secondary: #86868B;
+  --text-secondary: #636366;
+  /* 提升对比度: 原 #86868B */
   --text-tertiary: #D2D2D7;
 
+  /* Accent Colors */
   --accent-primary: #FA233B;
   /* Apple Music Red-Pink */
   --accent-netease: #E60026;
@@ -25,6 +36,45 @@
 
   /* Spacing */
   --spacing-container: 1000px;
+}
+
+/* Dark Mode - Apple Music Style */
+:root[data-theme="dark"] {
+  --bg-body: #000000;
+  --bg-app: #000000;
+  --bg-card: #1C1C1E;
+  /* Secondary Grouped Background */
+  --bg-card-hover: #2C2C2E;
+
+  /* 优化文字亮度，避免 HDR 屏幕刺眼 */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(235, 235, 245, 0.6);
+  --text-tertiary: rgba(235, 235, 245, 0.3);
+
+  /* Shadows - Dark Mode */
+  --shadow-sm: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  /* Border-like shadow for separation */
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-float: 0 20px 50px rgba(0, 0, 0, 0.8);
+
+  /* Borders */
+  --border-color: #38383A;
+}
+
+/* 深色模式滚动条 */
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #58585E;
+}
+
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #7C7C80;
+}
+
+/* 深色模式骨架屏 */
+:root[data-theme="dark"] .skeleton {
+  background: #1C1C1E;
+  background: linear-gradient(90deg, #1C1C1E 25%, #2C2C2E 50%, #1C1C1E 75%);
+  background-size: 200% 100%;
 }
 
 body {

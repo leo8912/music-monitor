@@ -46,7 +46,7 @@ class WeComNotifier(BaseNotifier):
         url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
         
         # Helper to get source name
-        source_map = {'netease': '网易云音乐', 'qqmusic': 'QQ音乐', 'bilibili': 'Bilibili'}
+        source_map = {'netease': '网易云音乐', 'qqmusic': 'QQ音乐'}
         source_name = source_map.get(media.source, media.source)
         
         # New "Card + Emoji" Style
@@ -123,3 +123,77 @@ class WeComNotifier(BaseNotifier):
                 if res.get('errcode') != 0:
                     raise Exception(f"WeCom API Error: {res}")
                 return True
+
+    async def send_text_card(self, title: str, description: str, url: str, btntxt: str = "详情"):
+        """Send a versatile text card."""
+        if not self.corp_id or not self.secret:
+             logger.warning("WeCom config missing, skipping.")
+             return
+
+        token = await self._get_token()
+        if not token:
+            logger.error("无法获取企业微信 Token")
+            return
+
+        api_url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
+        
+        payload = {
+            "touser": "@all",
+            "msgtype": "textcard",
+            "agentid": self.agent_id,
+            "textcard": {
+                "title": title,
+                "description": description,
+                "url": url, 
+                "btntxt": btntxt
+            }
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api_url, json=payload) as resp:
+                res = await resp.json()
+                if res.get('errcode') != 0:
+                    logger.error(f"企业微信发送失败: {res}")
+                else:
+                    logger.info(f"企业微信推送成功: {title}")
+
+    async def send_news_message(self, title: str, description: str, url: str, pic_url: str):
+        """Send a News (Article) message with a large header image."""
+        if not self.corp_id or not self.secret:
+             logger.warning("WeCom config missing, skipping.")
+             return
+
+        token = await self._get_token()
+        if not token:
+            logger.error("无法获取企业微信 Token")
+            return
+
+        api_url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
+        
+        # Fallback to default image if empty
+        if not pic_url:
+            pic_url = "https://p2.music.126.net/tGHU62DTszbTsM7vzNgHjw==/109951165631226326.jpg"
+
+        payload = {
+            "touser": "@all",
+            "msgtype": "news",
+            "agentid": self.agent_id,
+            "news": {
+                "articles": [
+                    {
+                       "title": title,
+                       "description": description,
+                       "url": url,
+                       "picurl": pic_url
+                    }
+                ]
+            }
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api_url, json=payload) as resp:
+                res = await resp.json()
+                if res.get('errcode') != 0:
+                    logger.error(f"企业微信发送图文失败: {res}")
+                else:
+                    logger.info(f"企业微信图文推送成功: {title}")

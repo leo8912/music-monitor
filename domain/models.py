@@ -20,7 +20,6 @@ class MediaInfo:
     author: str  # Singer or Uploader name
     source: str  # "netease", "qqmusic", "bilibili"
     album: Optional[str] = None # Album name
-    trial_url: Optional[str] = None  # Bilibili or other free link
     
     def unique_key(self) -> str:
         """Generate a global unique key for deduplication"""

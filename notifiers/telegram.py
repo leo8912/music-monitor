@@ -24,12 +24,10 @@ class TelegramNotifier(BaseNotifier):
         # Use MarkdownV2 or HTML. Let's use HTML for easier link handling.
         
         # Helper to get source name
-        source_map = {'netease': '网易云音乐', 'qqmusic': 'QQ音乐', 'bilibili': 'Bilibili'}
+        source_map = {'netease': '网易云音乐', 'qqmusic': 'QQ音乐'}
         source_name = source_map.get(media.source, media.source)
         
         links_part = ""
-        if media.trial_url:
-            links_part += f"\n\n📺 <a href='{media.trial_url}'><b>免费试听 (Bilibili)</b></a>"
             
         # Standard Link
         links_part += f"\n🔗 <a href='{media.url}'>前往 {source_name} 收听</a>"

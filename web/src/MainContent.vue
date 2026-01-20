@@ -1,266 +1,60 @@
-
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
-import { 
-  NGrid, NGridItem, NButton, NAvatar, NModal, NInput, NIcon, NSpin, NEmpty, useMessage,
-  NSwitch, NInputNumber, NSelect, NTabs, NTabPane
-} from 'naive-ui'
-import { 
-  TrashOutline, SearchOutline, AddOutline, RefreshOutline, PlayCircleOutline, 
-  LogoGithub, CheckmarkCircleOutline,
-  CloseOutline, SettingsOutline, PersonCircleOutline, LogOutOutline
+import { useMessage, NIcon } from 'naive-ui'
+import {
+  RefreshOutline, PersonCircleOutline, SettingsOutline, AddOutline,
+  MoonOutline, SunnyOutline
 } from '@vicons/ionicons5'
+import { saveTheme, themeMode } from './utils/theme'
 
+// Components
+import BottomPlayer from './components/BottomPlayer.vue'
+import ArtistGrid from './components/ArtistGrid.vue'
+import SongList from './components/SongList.vue'
+import SettingsModal from './components/settings/SettingsModalV2.vue'
+import ProfileModal from './components/ProfileModal.vue'
+import AddArtistModal from './components/AddArtistModal.vue'
+import UserDropdown from './components/UserDropdown.vue'
+import RepairModal from './components/RepairModal.vue'
 
 const message = useMessage()
+
+// State
 const rawArtists = ref([]) 
 const history = ref([])
-// ...
-const logs = ref([])
-const refreshingLogs = ref(false)
-const logContainer = ref(null)
-const activeSettingsTab = ref('monitor') // Bind to n-tabs
-let logPoller = null
-
-// 1. fetchLogs (Moved UP for hoisting)
-const fetchLogs = async () => {
-    // refreshingLogs.value = true // Don't show loading spinner on auto-poll to avoid flicker
-    try {
-        const res = await axios.get('/api/logs')
-        
-        // Smart Scroll Logic
-        let shouldScroll = false
-        if (logContainer.value) {
-            const el = logContainer.value
-            if (el.scrollHeight - el.scrollTop - el.clientHeight < 50) {
-                shouldScroll = true
-            }
-        }
-        
-        logs.value = res.data
-        
-        if (shouldScroll) {
-            nextTick(() => {
-                if (logContainer.value) {
-                    logContainer.value.scrollTop = logContainer.value.scrollHeight
-                }
-            })
-        }
-    } catch (e) {} finally {
-        refreshingLogs.value = false
-    }
-}
-
-// 2. Log Polling Logic
-const startLogPolling = () => {
-    stopLogPolling()
-    fetchLogs() // Immediate fetch
-    logPoller = setInterval(fetchLogs, 2000)
-}
-
-const stopLogPolling = () => {
-    if (logPoller) {
-        clearInterval(logPoller)
-        logPoller = null
-    }
-}
-
-const selectedArtistName = ref(null) 
-const showAddModal = ref(false)
-const newArtistName = ref('')
-const adding = ref(false)
+// const isDark = ref(false) - Removed, using global themeMode
 const loading = ref(false)
 const loadingHistory = ref(false)
 const sysStatus = ref('')
 const nextRunTime = ref(null)
-const showVideoModal = ref(false)
-const currentBvid = ref(null)
 const oneWord = ref('')
 
-const fetchOneWord = async () => {
-    try {
-        // Hitokoto API: https://developer.hitokoto.cn/
-        // c=j (Comics), c=k (Life), c=i (Poetry), c=d (Literature)
-        const res = await axios.get('https://v1.hitokoto.cn/?c=i&c=d&c=k')
-        oneWord.value = `“${res.data.hitokoto}”`
-    } catch (e) {
-        oneWord.value = '“生活不止眼前的苟且，还有诗和远方”'
-    }
-}
+// Player State
+const currentAudioUrl = ref('')
+const currentSong = ref({})
+const isPlayerLoading = ref(false)
+const isDark = ref(false) // Theme toggle state
 
-// Settings State
+// UI State
+const selectedArtistName = ref(null) 
+const showAddModal = ref(false)
 const showSettingsModal = ref(false)
-const savingSettings = ref(false)
-const testingNotify = ref(null) // 'wecom' | 'telegram' | null
-const settingsForm = ref({
-    global: { check_interval_minutes: 60, log_level: 'INFO' },
-    monitor: {},
-    notify: { wecom: {}, telegram: {} }
-})
-const logOptions = [
-    { label: 'INFO', value: 'INFO' },
-    { label: 'DEBUG', value: 'DEBUG' },
-    { label: 'WARNING', value: 'WARNING' }
-]
-
-const getServiceName = (key) => {
-    const maps = { 'netease': '网易云音乐', 'qqmusic': 'QQ 音乐', 'bilibili': 'Bilibili' }
-    return maps[key] || key
-}
-
-// Notification UI State
-const activeNotifyChannel = ref('wecom')
-const channelConfig = computed(() => settingsForm.value.notify[activeNotifyChannel.value])
-const checkingStatus = ref(false)
-const channelStatus = ref({ wecom: null, telegram: null }) // null=unknown, true=ok, false=error
-
-const checkChannelStatus = async (channel) => {
-    checkingStatus.value = true
-    try {
-        // save first
-        await axios.post('/api/settings', settingsForm.value)
-        const res = await axios.get(`/api/check_notify_status/${channel}`)
-        channelStatus.value[channel] = res.data.connected
-        if (res.data.connected) {
-            message.success(`${channel === 'wecom' ? '企业微信' : 'Telegram'} 连接正常 🟢`)
-        } else {
-            message.warning("连接测试失败 🔴，请检查配置")
-        }
-    } catch (e) {
-        channelStatus.value[channel] = false
-        message.error("连接检测出错: " + e.message)
-    } finally {
-        checkingStatus.value = false
-    }
-}
-
-const openSettings = async () => {
-    try {
-        message.loading('加载配置中...')
-        const res = await axios.get('/api/settings')
-        settingsForm.value = res.data
-        showSettingsModal.value = true
-        message.destroyAll()
-    } catch (e) {
-        message.error('加载配置失败')
-    }
-}
-
-const saveSettings = async () => {
-    savingSettings.value = true
-    try {
-        await axios.post('/api/settings', settingsForm.value)
-        message.success('配置已保存 (部分设置可能需要重启生效)')
-        showSettingsModal.value = false
-    } catch (e) {
-        message.error('保存失败: ' + e.message)
-    } finally {
-        savingSettings.value = false
-    }
-}
-
-const testNotify = async (channel) => {
-    // ... existing ...
-    try {
-        testingNotify.value = channel
-        // quick save
-        await axios.post('/api/settings', settingsForm.value)
-        const res = await axios.post(`/api/test_notify/${channel}`)
-        message.success(res.data.message)
-    } catch (e) {
-        message.error("测试失败: " + (e.response?.data?.detail || e.message))
-    } finally {
-        testingNotify.value = null
-    }
-}
-
-// Change Password State
-const passwordForm = ref({
-    old_password: '',
-    new_password: '',
-    confirm_password: ''
-})
-const changingPassword = ref(false)
-
-const handleChangePassword = async () => {
-    if (!passwordForm.value.old_password || !passwordForm.value.new_password) {
-        message.warning("请填写完整")
-        return
-    }
-    if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
-        message.error("两次新密码输入不一致")
-        return
-    }
-    
-    changingPassword.value = true
-    try {
-        await axios.post('/api/change_password', {
-            old_password: passwordForm.value.old_password,
-            new_password: passwordForm.value.new_password
-        })
-        message.success("修改成功，正在通过新密码重新登录...")
-        // Wait a bit then redirect
-        setTimeout(() => {
-            window.location.href = '/login'
-        }, 1500)
-    } catch (e) {
-        message.error("修改失败: " + (e.response?.data?.detail || e.message))
-    } finally {
-        changingPassword.value = false
-    }
-}
-
-// Profile State
 const showProfileModal = ref(false)
-const showPasswordForm = ref(false)
-const showEditProfile = ref(false) // Toggle profile edit mode
+const showRepairModal = ref(false)
 
-const profileForm = ref({
-    username: '',
-    avatar: ''
-})
-const updatingProfile = ref(false)
-const currentUser = ref({ name: 'Administrator', avatar: '', role: '超级管理员' })
+// User State
+const user = ref({ username: 'My Music', avatar: '' })
 
-// Fetch latest profile info when opening modal
-watch(showProfileModal, async (val) => {
-    if (val) {
-        try {
-            const res = await axios.get('/api/check_auth')
-            if (res.data.authenticated) {
-                currentUser.value.name = res.data.user
-                currentUser.value.avatar = res.data.avatar || ''
-                // Init form
-                profileForm.value.username = res.data.user
-                profileForm.value.avatar = res.data.avatar || ''
-            }
-        } catch (e) {
-            console.error("Fetch profile failed", e)
-        }
-    }
-})
-
-const handleUpdateProfile = async () => {
-    if (!profileForm.value.username) {
-         message.warning("用户名不能为空")
-         return
-    }
-    
-    updatingProfile.value = true
+const fetchUser = async () => {
     try {
-        await axios.post('/api/update_profile', profileForm.value)
-        message.success("个人资料已更新")
-        
-        // Update local view
-        currentUser.value.name = profileForm.value.username
-        currentUser.value.avatar = profileForm.value.avatar
-        showEditProfile.value = false
-        
+        const res = await axios.get('/api/check_auth')
+        if (res.data.authenticated) {
+            user.value.username = res.data.user
+            user.value.avatar = res.data.avatar
+        }
     } catch (e) {
-        message.error("更新失败: " + (e.response?.data?.detail || e.message))
-    } finally {
-        updatingProfile.value = false
+        // console.warn("Fetch user failed")
     }
 }
 
@@ -274,42 +68,7 @@ const handleLogout = async () => {
     }
 }
 
-const handlePlay = async (song) => {
-    // 1. Check if we already have a B link in trial_url
-    let bvid = null
-    if (song.trial_url && song.trial_url.includes('BV')) {
-        const match = song.trial_url.match(/(BV\w+)/)
-        if (match) bvid = match[1]
-    }
-    
-    // 2. If no BVID, ask backend to match one
-    if (!bvid) {
-        message.loading(`正在 B 站搜索相关视频...`)
-        try {
-            const res = await axios.get('/api/match_bilibili', {
-                params: { artist: song.author, title: song.title }
-            })
-            if (res.data.bvid) {
-                bvid = res.data.bvid
-            }
-        } catch (e) {
-            console.error(e)
-            // Fallback to search page if not found
-            window.open(`https://search.bilibili.com/all?keyword=${song.author} ${song.title}`, '_blank')
-            return
-        }
-    }
-    
-    if (bvid) {
-        currentBvid.value = bvid
-        showVideoModal.value = true
-        message.success('找到了！正在播放 ▶️')
-    } else {
-        message.warning('未找到相关视频 😕')
-    }
-}
-
-// Merged Artists Logic
+// 1. Artists Logic
 const mergedArtists = computed(() => {
     const map = new Map()
     rawArtists.value.forEach(a => {
@@ -329,15 +88,6 @@ const mergedArtists = computed(() => {
     return Array.from(map.values())
 })
 
-const DEFAULT_AVATAR = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
-
-const getArtistAvatar = (artistName) => {
-    const found = mergedArtists.value.find(a => a.name === artistName)
-    if (found && found.avatar) return found.avatar.replace('300x300', '800x800')
-    return DEFAULT_AVATAR
-}
-
-
 const fetchArtists = async () => {
     try {
         const res = await axios.get('/api/artists')
@@ -347,43 +97,22 @@ const fetchArtists = async () => {
     }
 }
 
-const fetchHistory = async () => {
-  loadingHistory.value = true
-  try {
-    const params = {}
-    if (selectedArtistName.value) {
-        params.author = selectedArtistName.value
-        // If sorting needed, backend handles it
-    }
-    const res = await axios.get('/api/history', { params })
-    history.value = res.data.map(item => ({
-      ...item,
-      // Format date nicely: "2023.12.25"
-      publish_time: new Date(item.publish_time).toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '.')
-    }))
-  } catch (e) {
-    console.error(e)
-  } finally {
-      loadingHistory.value = false
-  }
-}
-
-const addArtistSmart = async () => {
-    if (!newArtistName.value.trim()) return;
-    
-    adding.value = true
-    try {
-        const res = await axios.post('/api/artists', { name: newArtistName.value })
-        showAddModal.value = false
-        newArtistName.value = ''
-        await fetchArtists()
-        message.success(res.data.message || "已添加")
-    } catch (e) {
-        message.error("添加失败: " + (e.response?.data?.detail || e.message))
-    } finally {
-        adding.value = false
+const selectArtist = (artist) => {
+    if (selectedArtistName.value === artist.name) {
+        selectedArtistName.value = null // Toggle off
+    } else {
+        selectedArtistName.value = artist.name
+        fetchHistory()
     }
 }
+// Note: selectArtist now calls fetchHistory inside block? or watch?
+// In Step 1061 it was:
+// selectArtist... then fetchHistory() outside if/else?
+// "selectArtist = (artist) => { ... fetchHistory() }"
+// My previous code:
+// if (...) null else name;
+// fetchHistory()
+// Correct. I fixed indentation in this version.
 
 const deleteMergedArtist = async (artist) => {
     try {
@@ -414,12 +143,166 @@ const triggerCheck = async (artist) => {
     }
 }
 
+// 2. History & Feed Logic
+const fetchHistory = async () => {
+  loadingHistory.value = true
+  try {
+    const params = {}
+    if (selectedArtistName.value) {
+        params.author = selectedArtistName.value
+    }
+    const res = await axios.get('/api/history', { params })
+    history.value = res.data.map(item => ({
+      ...item,
+      publish_time: item.publish_time
+    }))
+  } catch (e) {
+    console.error(e)
+  } finally {
+      loadingHistory.value = false
+  }
+}
+
+const fetchOneWord = async () => {
+    try {
+        const res = await axios.get('https://v1.hitokoto.cn/?c=i&c=d&c=k')
+        oneWord.value = `“${res.data.hitokoto}”`
+    } catch (e) {
+        oneWord.value = '“生活不止眼前的苟且，还有诗和远方”'
+    }
+}
+
+// 3. Player Logic
+const handlePlay = async (song) => {
+    isPlayerLoading.value = true // Start loading
+    // 立即设置当前歌曲，确保 Dock 提前弹出
+    currentSong.value = song
+    
+    // 播放本地音频文件
+    // 1. 检查是否有本地缓存
+    if (song.local_audio_path) {
+        // 有缓存,直接播放
+        const audioUrl = `/api/audio/${encodeURIComponent(song.local_audio_path)}?t=${Date.now()}`
+        // currentSong.value = song // Removed: already set above
+        currentAudioUrl.value = audioUrl
+        message.success('正在播放 ▶️')
+        isPlayerLoading.value = false // End loading
+    } else {
+        // 无缓存,自动下载
+        message.loading('正在下载音频...')
+        try {
+            const res = await axios.post('/api/download_audio', {
+                source: song.source,
+                song_id: song.media_id,
+                title: song.title,
+                artist: song.author,
+                album: song.album || '',
+                pic_url: song.cover || ''
+            })
+            
+            if (res.data.local_path) {
+                // 下载成功,播放
+                const audioUrl = `/api/audio/${encodeURIComponent(res.data.local_path)}?t=${Date.now()}`
+                
+                // 更新歌曲记录（本地乐观更新）
+                song.local_audio_path = res.data.local_path
+                song.audio_quality = res.data.quality
+                
+                // currentSong.value = song // Removed: already set above
+                currentAudioUrl.value = audioUrl
+                
+                message.success(`下载完成,正在播放 (${res.data.quality}k) ▶️`)
+            } else {
+                message.error('下载失败')
+            }
+        } catch (e) {
+            console.error(e)
+            message.error('下载失败: ' + (e.response?.data?.detail || e.message))
+        } finally {
+            isPlayerLoading.value = false // End loading
+        }
+    }
+}
+
+const handlePrev = () => {
+     if (!currentSong.value || !history.value || !history.value.length) return
+     let idx = history.value.findIndex(res => res.unique_key === currentSong.value.unique_key)
+     if (idx < 0 && currentSong.value.media_id) idx = history.value.findIndex(res => res.media_id === currentSong.value.media_id && res.source === currentSong.value.source)
+     
+     if (idx < 0) { handlePlay(history.value[0]); return }
+     
+     let prevIdx = idx - 1
+     if (prevIdx < 0) prevIdx = history.value.length - 1
+     handlePlay(history.value[prevIdx])
+}
+
+const handleNext = () => {
+     if (!currentSong.value || !history.value || !history.value.length) return
+     let idx = history.value.findIndex(res => res.unique_key === currentSong.value.unique_key)
+     if (idx < 0) idx = history.value.findIndex(res => res.media_id === currentSong.value.media_id && res.source === currentSong.value.source)
+     
+     let nextIdx = idx + 1
+     if (nextIdx >= history.value.length) nextIdx = 0
+     handlePlay(history.value[nextIdx])
+}
+
+const handleError = () => {
+     isPlayerLoading.value = false // End loading
+     // Auto-repair logic on frontend
+     if (currentSong.value && currentSong.value.local_audio_path) {
+         message.warning("检测到文件丢失，正在自动重新下载...")
+         // Clear local cache state
+         currentSong.value.local_audio_path = null
+         currentSong.value.audio_quality = null
+         // Retry play (triggers download)
+         handlePlay(currentSong.value)
+     } else {
+         message.error("播放失败")
+     }
+}
+
+
+const handleToggleFavorite = async () => {
+    if (!currentSong.value) return
+    const song = currentSong.value
+    // Optimistic Update
+    const originalState = song.is_favorite
+    song.is_favorite = !originalState
+    
+    // API Call
+    try {
+        const res = await axios.post('/api/favorites/toggle', {
+            source: song.source,
+            song_id: song.media_id,
+            title: song.title,
+            artist: song.author || song.artist,
+            album: song.album,
+            pic_url: song.cover || song.cover_url
+        })
+        if (res.data.success) {
+            message.success(res.data.state ? '已添加收藏 ❤️' : '已取消收藏')
+            song.is_favorite = res.data.state
+            // Sync history list state if present
+            if (history.value) {
+                const historyItem = history.value.find(h => h.unique_key === song.unique_key)
+                if (historyItem) historyItem.is_favorite = res.data.state
+            }
+        } else {
+             message.error(res.data.message || '操作失败')
+             song.is_favorite = originalState // Revert
+        }
+    } catch (e) {
+        message.error('操作失败')
+        song.is_favorite = originalState // Revert
+    }
+}
+
+// 4. System Logic
 const triggerScan = async () => {
     loading.value = true
     message.loading('开始全局同步...')
     try {
-        // Trigger all plugins
-        const plugins = ['netease', 'qqmusic', 'bilibili']
+        const plugins = ['netease', 'qqmusic']
         await Promise.all(plugins.map(p => axios.post(`/api/check/${p}`)))
         message.success('全局同步完成')
         fetchHistory()
@@ -428,15 +311,6 @@ const triggerScan = async () => {
     } finally {
         loading.value = false
     }
-}
-
-const selectArtist = (artist) => {
-    if (selectedArtistName.value === artist.name) {
-        selectedArtistName.value = null // Toggle off
-    } else {
-        selectedArtistName.value = artist.name
-    }
-    fetchHistory()
 }
 
 const fetchStatus = async () => {
@@ -466,39 +340,58 @@ const updateStatusText = () => {
     }
 }
 
-// Watch both tab and modal visibility (Moved here to ensure variables are initialized)
-watch([activeSettingsTab, showSettingsModal], ([tab, visible]) => {
-    if (visible && tab === 'logs') {
-        startLogPolling()
-    } else {
-        stopLogPolling()
-    }
-})
+// Helper to toggle theme
+const toggleTheme = () => {
+    const newTheme = themeMode.value === 'dark' ? 'light' : 'dark'
+    saveTheme(newTheme)
+    axios.post('/api/settings', {
+        global: { theme: newTheme }
+    }).catch(e => console.warn('Theme sync failed:', e))
+}
 
+// Lifecycle
 onMounted(async () => {
+  // Theme is handled globally by App.vue calling initTheme()
+
+  fetchUser() // Fetch user info
   await fetchArtists()
   await fetchHistory()
   await fetchStatus()
   fetchOneWord()
-  setInterval(updateStatusText, 60000) // Update minute every min
+  setInterval(updateStatusText, 60000)
+
+  // Check for deep link params
+  const params = new URLSearchParams(window.location.search)
+  const source = params.get('source')
+  const songId = params.get('songId')
+
+  if (source && songId) {
+      // Find in history first (fastest)
+      let song = history.value.find(s => s.source === source && s.media_id === songId)
+      
+      if (song) {
+          message.info('正在跳转到目标歌曲...')
+          handlePlay(song)
+          // Clean URL
+          window.history.replaceState({}, '', '/')
+      } else {
+          console.warn("Deep link song not found in recent history")
+      }
+  }
+
+  // Check for artist deep link (from notification)
+  const deepArtist = params.get('artist') || params.get('author')
+  if (deepArtist) {
+      // Wait for artists to load
+      const exists = mergedArtists.value.find(a => a.name === deepArtist)
+      if (exists) {
+          selectArtist(exists)
+          message.info(`已定位到歌手: ${deepArtist}`)
+          window.history.replaceState({}, '', '/')
+      }
+  }
 })
 
-const formatDate = (dateStr) => {
-    if (!dateStr) return '-'
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diff = now - date
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    
-    if (days === 0) return '今天'
-    if (days === 1) return '昨天'
-    if (days < 30) return `${days}天前`
-    
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    return `${year === now.getFullYear() ? '' : year + '/'}${month}/${day}`
-}
 </script>
 
 <template>
@@ -508,499 +401,104 @@ const formatDate = (dateStr) => {
             <div class="header-content">
                 <div class="brand-section">
                     <h1>🎵 Music Monitor</h1>
-                    <div class="status-badge" v-if="sysStatus">
-                        <div class="status-dot"></div>
+                    <p class="status-subtitle" v-if="sysStatus">
+                        <span class="status-dot-status"></span>
                         {{ sysStatus }}
-                    </div>
+                    </p>
                 </div>
-                <div class="header-actions">
-                    <button class="nav-btn" :class="{ spinning: loading }" @click="triggerScan" title="🔄 立即同步">
-                        <n-icon size="20"><RefreshOutline /></n-icon>
+                <div class="nav-buttons">
+                    <!-- Primary Action -->
+                    <button class="nav-btn primary" @click="showAddModal = true" title="添加订阅" style="margin-right: 8px;">
+                         <n-icon size="20"><AddOutline /></n-icon>
+                         <span class="btn-text">添加订阅</span>
                     </button>
-                    <!-- Profile Button -->
-                    <button class="nav-btn" @click="showProfileModal = true" title="👤 个人中心">
-                        <n-icon size="20"><PersonCircleOutline /></n-icon>
-                    </button>
-                    <button class="nav-btn" @click="openSettings" title="⚙️ 系统设置">
-                        <n-icon size="20"><SettingsOutline /></n-icon>
-                    </button>
-                    <button class="nav-btn primary" @click="showAddModal = true" title="➕ 添加歌手">
-                         <n-icon size="22"><AddOutline /></n-icon>
-                    </button>
+
+                    <!-- Tools -->
+                    <div class="tool-group">
+                        <button class="nav-btn" :class="{ spinning: loading }" @click="triggerScan" title="立即同步">
+                            <n-icon size="20"><RefreshOutline /></n-icon>
+                        </button>
+                        <button class="nav-btn" @click="toggleTheme" :title="themeMode === 'dark' ? '切换浅色' : '切换深色'">
+                            <n-icon size="20">
+                                <SunnyOutline v-if="themeMode === 'dark'" />
+                                <MoonOutline v-else />
+                            </n-icon>
+                        </button>
+                    </div>
+
+                    <!-- User Menu -->
+                    <UserDropdown 
+                        :username="user?.username || 'My Music'"
+                        :avatar="user?.avatar"
+                        @open-settings="showSettingsModal = true"
+                        @open-profile="showProfileModal = true"
+                        @logout="handleLogout"
+                    />
                 </div>
             </div>
         </header>
 
-        <!-- Artist Row (Horizontal Scroll on Mobile, Grid on Desktop) -->
-        <section class="artist-section">
-            <h2 class="section-title">
-                🎧 监听列表
-                <span class="count">{{ mergedArtists.length }}</span>
-            </h2>
-            <div class="artist-grid-wrapper">
-                 <div v-for="artist in mergedArtists" :key="artist.name" 
-                      class="artist-item" 
-                      :class="{ active: selectedArtistName === artist.name }"
-                      @click="selectArtist(artist)">
-                      
-                      <div class="avatar-container">
-                          <img :src="getArtistAvatar(artist.name)" class="artist-avatar" loading="lazy" />
-                          
-                          <!-- Platform Badges (Tiny) -->
-                          <div class="platform-badges">
-                              <div v-if="artist.sources.includes('netease')" class="badge netease"></div>
-                              <div v-if="artist.sources.includes('qqmusic')" class="badge qq"></div>
-                          </div>
-                          
-                          <!-- Hover Overlay -->
-                          <div class="avatar-overlay">
-                              <div class="overlay-actions">
-                                  <button class="mini-btn update" @click.stop="triggerCheck(artist)" title="更新">
-                                      <n-icon><RefreshOutline /></n-icon>
-                                  </button>
-                                  <button class="mini-btn delete" @click.stop="deleteMergedArtist(artist)" title="删除">
-                                      <n-icon><TrashOutline /></n-icon>
-                                  </button>
-                              </div>
-                          </div>
-                      </div>
-                      
-                      <div class="artist-name">{{ artist.name }}</div>
-                 </div>
-                 
-                 <!-- Add Item (Quick Access) -->
-                 <div class="artist-item add-item" @click="showAddModal = true">
-                     <div class="avatar-container add-placeholder-img">
-                        <img :src="DEFAULT_AVATAR" class="artist-avatar" />
-                        <div class="add-icon-overlay">
-                             <n-icon size="32"><AddOutline /></n-icon>
-                        </div>
-                     </div>
-                     <div class="artist-name">添加</div>
-                 </div>
-            </div>
-        </section>
+        <!-- Components -->
+        <ArtistGrid 
+            :artists="mergedArtists" 
+            :selected-artist-name="selectedArtistName"
+            @select="selectArtist"
+            @update="triggerCheck"
+            @delete="deleteMergedArtist"
+            @add="showAddModal = true"
+        />
 
-        <!-- Feed Section -->
-        <section class="feed-section">
-            <h2 class="section-title">
-                {{ selectedArtistName ? `🎵 ${selectedArtistName}` : '📢 最新动态' }}
-                <span v-if="!selectedArtistName && oneWord" class="one-word-badge">{{ oneWord }}</span>
-                <n-button v-if="selectedArtistName" text size="tiny" class="clear-filter-btn" @click="selectArtist({name: selectedArtistName})">
-                    <template #icon><n-icon><CloseOutline /></n-icon></template>
-                    ❎ 清除筛选
-                </n-button>
-            </h2>
-            
-            <div v-if="loadingHistory" class="skeleton-table">
-                 <div v-for="i in 5" :key="i" class="table-row skeleton-row">
-                     <div class="col-cover skeleton"></div>
-                     <div class="col-track skeleton" style="width: 40%; height: 20px;"></div>
-                     <div class="col-artist skeleton" style="width: 20%; height: 20px; margin-left: auto;"></div>
-                 </div>
-            </div>
+        <SongList 
+            :history="history"
+            :loading="loadingHistory"
+            :selected-artist-name="selectedArtistName"
+            :one-word="oneWord"
+            @play="handlePlay"
+            @clear-filter="selectArtist({name: selectedArtistName})"
+        />
 
-            <div class="song-table" v-else-if="history.length > 0">
-                    <div class="table-header">
-                        <div class="col-cover"></div>
-                        <div class="col-track">🎵 歌曲</div>
-                        <div class="col-artist">👤 歌手</div>
-                        <div class="col-album">💿 专辑</div>
-                        <div class="col-time">📅 发布时间</div>
-                        <div class="col-action"></div>
-                    </div>
-                    
-                    <div v-for="(song, index) in history" :key="song.unique_key" 
-                         class="table-row stagger-anim"
-                         :style="{ animationDelay: `${index * 0.05}s` }">
-                        <!-- Cover -->
-                        <div class="col-cover">
-                            <div class="cover-wrapper">
-                                <img :src="song.cover || `https://ui-avatars.com/api/?name=${song.title}&length=1&background=random&size=128`" 
-                                     class="song-cover-img" 
-                                     loading="lazy" />
-                                <div class="play-overlay" @click.stop="handlePlay(song)">
-                                    <n-icon><PlayCircleOutline /></n-icon>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Track Info -->
-                        <div class="col-track">
-                             <div class="track-name" :title="song.title">{{ song.title }}
-                                 <span v-if="song.source === 'netease'" class="platform-dot netease" title="网易云"></span>
-                                 <span v-if="song.source === 'qqmusic'" class="platform-dot qq" title="QQ音乐"></span>
-                                 <span v-if="song.source === 'bilibili'" class="platform-dot bili" title="Bilibili"></span>
-                             </div>
-                        </div>
-                        
-                        <!-- Artist -->
-                        <div class="col-artist">
-                            {{ song.author }}
-                        </div>
-                        
-                        <!-- Album -->
-                        <div class="col-album" :title="song.album">
-                            {{ song.album || '-' }}
-                        </div>
-                        
-                        <!-- Time -->
-                        <div class="col-time" :title="song.publish_time">
-                            {{ formatDate(song.publish_time) }}
-                        </div>
-                        
-                        <!-- Action -->
-                        <div class="col-action">
-                             <a href="javascript:void(0)" @click.stop="handlePlay(song)" class="action-link">
-                                 播放
-                             </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div v-else class="empty-state">
-                    <n-empty description="📭 暂无最新动态，岁月静好" size="large" />
-                </div>
-        </section>
+        <!-- Modals -->
+        <SettingsModal v-model:show="showSettingsModal" />
+        <ProfileModal 
+            v-model:show="showProfileModal" 
+            @profile-updated="(data) => {
+                if (data.username) user.username = data.username
+                if (data.avatar) user.avatar = data.avatar
+            }"
+        />
+        <AddArtistModal v-model:show="showAddModal" @added="fetchArtists" />
+        <RepairModal v-if="currentSong?.title" v-model:show="showRepairModal" :song-info="currentSong" @repaired="(data) => {
+            currentSong.local_audio_path = data.local_path;
+            currentSong.audio_quality = data.quality;
+            handlePlay(currentSong);
+        }" />
 
-        <!-- Add Modal (Spotlight Style) -->
-        <n-modal v-model:show="showAddModal" class="spotlight-modal" :mask-closable="true">
-            <div class="spotlight-content">
-                <div class="spotlight-icon">
-                    <n-icon><SearchOutline /></n-icon>
-                </div>
-                <input 
-                    v-model="newArtistName" 
-                    class="spotlight-input" 
-                    placeholder="搜索并添加歌手 (如: 陈奕迅)..."  
-                    @keyup.enter="addArtistSmart"
-                    v-autofocus
-                />
-                <div class="spotlight-loader" v-if="adding">
-                    <n-spin size="small" />
-                </div>
-            </div>
-        </n-modal>
-        <n-modal v-model:show="showSettingsModal" class="settings-modal-ios" :mask-closable="true">
-            <div class="ios-settings-container">
-                <!-- Header -->
-                <div class="ios-header">
-                    <div class="ios-title">⚙️ 控制中心</div>
-                    <div class="ios-close-btn" @click="showSettingsModal = false">
-                        <n-icon size="20"><CloseOutline /></n-icon>
-                    </div>
-                </div>
+        <!-- Bottom Dock Player -->
+        <BottomPlayer 
+            :audioUrl="currentAudioUrl"
+            :info="currentSong"
+            :source="currentSong.source"
+            :mediaId="currentSong.media_id"
+            :isLoading="isPlayerLoading"
+            @prev="handlePrev"
+            @next="handleNext"
+            @ended="handleNext"
+            @error="handleError"
+            @repair="showRepairModal = true"
+            @toggle-favorite="handleToggleFavorite"
+        />
 
-                <!-- Content -->
-                <div class="ios-content">
-                    <n-tabs v-model:value="activeSettingsTab" type="segment" animated class="ios-tabs">
-                        <!-- Tab 1: Monitor Services -->
-                        <n-tab-pane name="monitor" tab="📡 监听源">
-                            <div class="ios-group-title">数据源开关与频率</div>
-                            <div class="ios-group">
-                                <div class="ios-item" v-for="(cfg, key) in settingsForm.monitor" :key="key">
-                                    <div class="ios-row-main">
-                                        <div class="ios-label">
-                                            {{ getServiceName(key) }}
-                                            <span class="ios-badge" :class="{ active: cfg.enabled }">
-                                                {{ cfg.enabled ? '运行中' : '已暂停' }}
-                                            </span>
-                                        </div>
-                                        <n-switch v-model:value="cfg.enabled" class="ios-switch" />
-                                    </div>
-                                    <div class="ios-row-sub" v-if="cfg.enabled">
-                                        <span>检查间隔</span>
-                                        <div class="ios-input-wrapper">
-                                            <n-input-number v-model:value="cfg.interval" size="small" :show-button="false" class="ios-number-input" />
-                                            <span class="unit">分钟</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </n-tab-pane>
-
-                        <!-- Tab 2: Notifications -->
-                        <n-tab-pane name="notify" tab="🔔 推送通道">
-                            <!-- Channel Selector -->
-                            <div class="ios-segmented-control">
-                                <div 
-                                    class="segment-item" 
-                                    :class="{ active: activeNotifyChannel === 'wecom' }"
-                                    @click="activeNotifyChannel = 'wecom'"
-                                >
-                                    企业微信
-                                </div>
-                                <div 
-                                    class="segment-item" 
-                                    :class="{ active: activeNotifyChannel === 'telegram' }"
-                                    @click="activeNotifyChannel = 'telegram'"
-                                >
-                                    Telegram
-                                </div>
-                            </div>
-                            
-                            <!-- Dynamic Channel Settings -->
-                            <div class="ios-group-title">
-                                {{ activeNotifyChannel === 'wecom' ? '企业微信设置' : 'Telegram 设置' }}
-                            </div>
-                            
-                            <div class="ios-group">
-                                <!-- Switch Row -->
-                                <div class="ios-item">
-                                    <div class="ios-row-main">
-                                        <div class="ios-label">
-                                            启用推送
-                                        </div>
-                                        <n-switch v-model:value="channelConfig.enabled" class="ios-switch" />
-                                    </div>
-                                </div>
-
-                                <!-- Status Row (Only if enabled) -->
-                                <div class="ios-item" v-if="channelConfig.enabled">
-                                    <div class="ios-row-main" style="justify-content: flex-start; gap: 12px;">
-                                        <div class="status-dot" :class="{ 
-                                            online: channelStatus[activeNotifyChannel] === true,
-                                            offline: channelStatus[activeNotifyChannel] === false 
-                                        }"></div>
-                                        <div class="status-text">
-                                            {{ channelStatus[activeNotifyChannel] === true ? 'API 联通正常' : (channelStatus[activeNotifyChannel] === false ? '连接失败' : '未检测状态') }}
-                                        </div>
-                                        <div style="flex: 1"></div>
-                                        <n-button 
-                                            size="tiny" round secondary
-                                            @click="checkChannelStatus(activeNotifyChannel)" 
-                                            :loading="checkingStatus">
-                                            检测联通性
-                                        </n-button>
-                                        <n-button 
-                                            size="tiny" round ghost type="primary"
-                                            @click="testNotify(activeNotifyChannel)" 
-                                            :loading="testingNotify === activeNotifyChannel">
-                                            发送测试消息
-                                        </n-button>
-                                    </div>
-                                </div>
-
-                                <!-- WeCom Forms -->
-                                <div class="ios-item" v-if="activeNotifyChannel === 'wecom' && channelConfig.enabled">
-                                     <div class="ios-form-stack">
-                                        <div class="stack-row">
-                                            <span class="label">Corp ID</span>
-                                            <input v-model="settingsForm.notify.wecom.corp_id" class="ios-text-input" placeholder="ww..." />
-                                        </div>
-                                        <div class="stack-row">
-                                            <span class="label">Secret</span>
-                                            <input type="password" v-model="settingsForm.notify.wecom.secret" class="ios-text-input" placeholder="•••••" />
-                                        </div>
-                                    <div class="stack-row">
-                                            <span class="label">Agent ID</span>
-                                            <input v-model="settingsForm.notify.wecom.agent_id" class="ios-text-input" placeholder="1000002" />
-                                        </div>
-                                        <div class="stack-row">
-                                            <span class="label">Token</span>
-                                            <input v-model="settingsForm.notify.wecom.token" class="ios-text-input" placeholder="用于回调验证" />
-                                        </div>
-                                        <div class="stack-row">
-                                            <span class="label">AES Key</span>
-                                            <input v-model="settingsForm.notify.wecom.aes_key" class="ios-text-input" placeholder="EncodingAESKey" />
-                                        </div>
-                                    </div>
-                                    <div class="ios-row-sub" style="margin-top: 10px; font-size: 13px; color: #86868b; padding-left: 16px;">
-                                        应用回调 URL: http://你的公网IP:8000/api/wecom/callback
-                                    </div>
-                                </div>
-
-                                <!-- Telegram Forms -->
-                                <div class="ios-item" v-if="activeNotifyChannel === 'telegram' && channelConfig.enabled">
-                                     <div class="ios-form-stack">
-                                        <div class="stack-row">
-                                            <span class="label">Bot Token</span>
-                                            <input type="password" v-model="settingsForm.notify.telegram.bot_token" class="ios-text-input" placeholder="123456:ABC..." />
-                                        </div>
-                                        <div class="stack-row">
-                                            <span class="label">Chat ID</span>
-                                            <input v-model="settingsForm.notify.telegram.chat_id" class="ios-text-input" placeholder="-100..." />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </n-tab-pane>
-
-                        <!-- Tab 3: System Logs -->
-                        <n-tab-pane name="logs" tab="系统日志">
-                            <div class="ios-group-title">
-                                运行日志
-                                <n-button size="tiny" text @click="fetchLogs" :loading="refreshingLogs" style="margin-left: 8px">
-                                    <template #icon><n-icon><RefreshOutline /></n-icon></template>
-                                    刷新
-                                </n-button>
-                            </div>
-                            <div class="ios-group" style="background: #1e1e1e; color: #fff;">
-                                <div class="log-console" ref="logContainer">
-                                    <div v-if="logs.length === 0" class="log-empty">暂无日志</div>
-                                    <div v-else v-for="(log, i) in logs" :key="i" class="log-line">
-                                        <span class="log-time">[{{ log.time }}]</span>
-                                        <span class="log-level" :class="log.level.toLowerCase()">{{ log.level }}</span>
-                                        <span class="log-source">{{ log.source }}:</span>
-                                        <span class="log-msg">{{ log.message }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </n-tab-pane>
-
-                        <!-- Tab 4: System (Orig Tab 3) -->
-                        <n-tab-pane name="system" tab="高级设置">
-                            <div class="ios-group-title">全局参数</div>
-                            <div class="ios-group">
-                                <div class="ios-item">
-                                    <div class="ios-row-main">
-                                        <div class="ios-label">默认检查间隔</div>
-                                        <div class="ios-input-wrapper">
-                                            <n-input-number v-model:value="settingsForm.global.check_interval_minutes" size="small" :show-button="false" class="ios-number-input" />
-                                            <span class="unit">分钟</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="ios-item">
-                                    <div class="ios-row-main">
-                                        <div class="ios-label">日志级别</div>
-                                        <n-select v-model:value="settingsForm.global.log_level" :options="logOptions" size="small" style="width: 100px" />
-                                    </div>
-                                </div>
-                            </div>
-                        </n-tab-pane>
-                    </n-tabs>
-                </div>
-
-                <!-- Footer Action -->
-                <div class="ios-footer">
-                    <n-button type="primary" block round size="large" @click="saveSettings" :loading="savingSettings" class="ios-save-btn">
-                        保存更改
-                    </n-button>
-                </div>
-            </div>
-        </n-modal>
-        
-        <!-- Profile Modal -->
-        <n-modal v-model:show="showProfileModal" class="settings-modal-ios profile-modal" :mask-closable="true">
-            <div class="ios-settings-container profile-container">
-                <!-- Header -->
-                <div class="ios-header">
-                    <div class="ios-title">个人中心</div>
-                    <div class="ios-close-btn" @click="showProfileModal = false">
-                        <n-icon size="20"><CloseOutline /></n-icon>
-                    </div>
-                </div>
-
-                <!-- Content -->
-                <div class="ios-content">
-                    <!-- User Card -->
-                    <div class="profile-card">
-                        <div class="profile-avatar">
-                            <img v-if="currentUser.avatar" :src="currentUser.avatar" class="avatar-img" />
-                            <n-icon v-else size="40"><PersonCircleOutline /></n-icon>
-                        </div>
-                        <div class="profile-info">
-                            <div class="profile-name">{{ currentUser.name }}</div>
-                            <div class="profile-role">{{ currentUser.role }}</div>
-                        </div>
-                        <div class="profile-action">
-                             <n-button size="small" round secondary @click="showEditProfile = !showEditProfile">
-                                 {{ showEditProfile ? '取消' : '编辑' }}
-                             </n-button>
-                        </div>
-                    </div>
-
-                    <!-- Edit Profile Form -->
-                    <div v-if="showEditProfile" class="ios-group-title">编辑资料</div>
-                    <div v-if="showEditProfile" class="ios-group">
-                         <div class="ios-item" style="background: transparent; padding: 0;">
-                             <div class="ios-form-stack" style="margin: 0; border-top: none;">
-                                <div class="stack-row">
-                                    <span class="label">用户名</span>
-                                    <input type="text" v-model="profileForm.username" class="ios-text-input" placeholder="输入新的用户名" />
-                                </div>
-                                <div class="stack-row">
-                                    <span class="label">头像URL</span>
-                                    <input type="text" v-model="profileForm.avatar" class="ios-text-input" placeholder="输入头像图片链接" />
-                                </div>
-                             </div>
-                             <div style="padding: 12px 16px;">
-                                 <n-button type="primary" block round @click="handleUpdateProfile" :loading="updatingProfile">
-                                     保存更新
-                                 </n-button>
-                             </div>
-                        </div>
-                    </div>
-
-                    <div class="ios-group-title">账户管理</div>
-                    <div class="ios-group">
-                        <!-- Change Password Toggle -->
-                        <div class="ios-item cursor-pointer" @click="showPasswordForm = !showPasswordForm">
-                            <div class="ios-row-main">
-                                <div class="ios-label">修改密码</div>
-                                <div class="ios-arrow" :class="{ rotated: showPasswordForm }">›</div>
-                            </div>
-                        </div>
-
-                        <!-- Password Form (Collapsible) -->
-                         <div v-if="showPasswordForm" class="ios-item" style="background: transparent; padding: 0;">
-                             <div class="ios-form-stack" style="margin: 0; border-top: none;">
-                                <div class="stack-row">
-                                    <span class="label">当前密码</span>
-                                    <input type="password" v-model="passwordForm.old_password" class="ios-text-input" placeholder="输入旧密码" />
-                                </div>
-                                <div class="stack-row">
-                                    <span class="label">新密码</span>
-                                    <input type="password" v-model="passwordForm.new_password" class="ios-text-input" placeholder="输入新密码" />
-                                </div>
-                                <div class="stack-row">
-                                    <span class="label">确认密码</span>
-                                    <input type="password" v-model="passwordForm.confirm_password" class="ios-text-input" placeholder="再次输入新密码" />
-                                </div>
-                             </div>
-                             <div style="padding: 12px 16px;">
-                                 <n-button type="warning" block round @click="handleChangePassword" :loading="changingPassword">
-                                     确认修改
-                                 </n-button>
-                             </div>
-                        </div>
-                    </div>
-
-                    <div class="ios-group">
-                        <div class="ios-item cursor-pointer" @click="handleLogout">
-                            <div class="ios-row-main" style="color: #FF3B30;">
-                                <div class="ios-label" style="color: #FF3B30;">
-                                    <n-icon style="margin-right:8px"><LogOutOutline /></n-icon>
-                                    退出登录
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </n-modal>
-
-        <!-- Video Player Modal -->
-        <n-modal v-model:show="showVideoModal" class="video-modal" :mask-closable="true">
-            <div class="video-content">
-                <iframe 
-                    v-if="currentBvid"
-                    :src="`//player.bilibili.com/player.html?bvid=${currentBvid}&page=1&high_quality=1&danmaku=0`" 
-                    allowfullscreen="allowfullscreen" 
-                    width="100%" 
-                    height="100%" 
-                    scrolling="no" 
-                    frameborder="0" 
-                    sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts">
-                </iframe>
-            </div>
-        </n-modal>
     </div>
 </template>
 
 <style scoped>
+/* App Layout */
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 120px; /* Bottom padding for player */
+}
+
 /* Header */
 .app-header {
     padding: 60px 0 40px;
@@ -1012,30 +510,32 @@ const formatDate = (dateStr) => {
 }
 .app-header h1 {
     font-size: 34px;
-    font-weight: 800; /* Bolder */
-    color: #1d1d1f; /* Apple dark gray */
-    letter-spacing: -0.025em; /* Tighter tracking */
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
     margin-right: 16px;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+    font-family: var(--font-sans);
 }
 .brand-section {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 }
-.status-badge {
+.status-subtitle {
     display: flex;
     align-items: center;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-secondary);
-    background: rgba(0,0,0,0.03);
-    padding: 6px 12px;
-    border-radius: 99px;
     gap: 6px;
+    margin: 0;
+    font-weight: 400;
 }
-.status-dot {
+.status-dot-status {
     width: 6px; height: 6px; background: #34C759; border-radius: 50%;
     box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.2);
 }
+
 /* Header Actions */
 .header-actions {
     display: flex;
@@ -1050,17 +550,18 @@ const formatDate = (dateStr) => {
     justify-content: center;
     border: none;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background-color: rgba(0,0,0,0.04); /* Ultra light gray */
-    color: #1d1d1f;
-    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    background-color: transparent; /* Transparent default */
+    color: var(--text-primary);
+    /* backdrop-filter: blur(10px); Removed blur for cleaner look */
 }
 .nav-btn:hover {
-    background-color: #e0e0e0;
+    background-color: var(--bg-card);
+    box-shadow: var(--shadow-sm);
     transform: scale(1.05);
 }
 .nav-btn.primary {
-    background-color: #FA2D48; /* Apple Music Red */
+    background-color: var(--accent-primary);
     color: #fff;
     box-shadow: 0 4px 12px rgba(250, 45, 72, 0.3);
 }
@@ -1073,670 +574,68 @@ const formatDate = (dateStr) => {
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* Sections */
-.section-title {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 24px;
+/* 深色模式调整 */
+:root[data-theme="dark"] .nav-btn {
+    background-color: transparent;
+}
+:root[data-theme="dark"] .nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Fade List Transition */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+/* Header Layout */
+.nav-buttons {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-/* Settings Modal */
-.setting-item {
-    background: #f9f9f9;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    border: 1px solid #eee;
-}
-.setting-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-.setting-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
+
+.tool-group {
     display: flex;
     align-items: center;
-}
-.sub-form {
-    padding-top: 12px;
-    border-top: 1px solid #eee;
+    gap: 12px;
 }
 
-/* Video Modal */
-.video-modal {
-    width: 85vw !important;
-    max-width: 1400px;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 32px 64px rgba(0,0,0,0.6);
-}
-.video-content {
-    width: 100%;
-    /* Force 16:9 Aspect Ratio based on width */
-    height: calc(85vw * 9 / 16);
-    max-height: calc(1400px * 9 / 16);
-    position: relative;
-}
-iframe {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+.divider {
+    /* Removed divider for cleaner look */
+    display: none;
 }
 
-/* Artist Grid (Minimalist) */
-.artist-grid-wrapper {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 32px 36px;
-    margin-bottom: 60px;
-}
-.artist-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-.artist-item:hover {
-    transform: translateY(-4px);
-}
-.avatar-container {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    position: relative;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Softer shadow */
-    background: #fff;
-}
-.artist-avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    transition: filter 0.2s;
-}
-.artist-item.active .artist-avatar {
-    box-shadow: 0 0 0 3px var(--accent-primary);
-}
-.platform-badges {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    display: flex;
-    gap: -4px;
-}
-.badge {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-}
-.badge.netease { background: var(--accent-netease); z-index: 2; }
-.badge.qq { background: var(--accent-qq); z-index: 1; margin-left: -4px; }
-
-/* Artist Hover Actions */
-.avatar-overlay {
-    position: absolute;
-    top: 0; left: 0;right: 0; bottom: 0;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s;
-    backdrop-filter: blur(2px);
-}
-.artist-item:hover .avatar-overlay {
-    opacity: 1;
-}
-.overlay-actions {
-    display: flex;
-    gap: 8px;
-}
-.mini-btn {
-    border: none;
-    background: rgba(255,255,255,0.9);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    color: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    transition: transform 0.1s;
-}
-.mini-btn:hover { transform: scale(1.1); background: #fff; }
-.mini-btn.delete { color: var(--accent-primary); }
-
-.artist-name {
+.btn-text {
     font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    text-align: center;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Feed Song Table (iTunes Style) */
-.song-table {
-    display: flex;
-    flex-direction: column;
-}
-.table-header {
-    display: flex;
-    padding: 0 16px 12px;
-    border-bottom: 1px solid #E5E5E5;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-}
-.table-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 16px;
-    border-radius: 8px;
-    margin-bottom: 2px;
-    transition: background 0.1s;
-}
-.table-row:hover {
-    background: #fff;
-    box-shadow: var(--shadow-sm);
-}
-
-/* Columns */
-.col-cover { width: 56px; margin-right: 16px; }
-.col-track { flex: 2; min-width: 0; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-.col-artist { flex: 1; min-width: 0; color: var(--text-primary); }
-.col-album { flex: 1.5; min-width: 0; color: var(--text-secondary); }
-.col-time { width: 100px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-.col-action { width: 60px; text-align: right; opacity: 0; transition: opacity 0.2s; }
-.table-row:hover .col-action { opacity: 1; }
-
-.cover-wrapper {
-    width: 48px; /* Slightly larger */
-    height: 48px;
-    position: relative;
-    border-radius: 8px; /* Softer radius */
-    overflow: hidden;
-    background: #f2f2f7;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    transition: transform 0.2s;
-}
-.song-cover-img { width: 100%; height: 100%; object-fit: cover; }
-.play-overlay {
-    position: absolute;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 20px;
-    opacity: 0;
-    cursor: pointer;
-}
-.cover-wrapper:hover .play-overlay { opacity: 1; }
-
-.track-name { 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-}
-.platform-dot {
-    width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0;
-}
-.platform-dot.netease { background-color: var(--accent-netease); }
-.platform-dot.qq { background-color: var(--accent-qq); }
-.platform-dot.bili { background-color: #00A1D6; } /* Official Bili Blue */
-
-.col-artist, .col-album {
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px;
-}
-.col-time { font-size: 13px; }
-
-.action-link {
-    font-size: 13px;
-    color: var(--accent-primary);
-    font-weight: 500;
-}
-
-/* Spotlight Modal */
-.spotlight-modal {
-    background: transparent;
-    box-shadow: none;
-}
-.spotlight-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: var(--shadow-float);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    width: 600px;
-    max-width: 90vw;
-    border: 1px solid rgba(0,0,0,0.05);
-}
-
-.spotlight-icon {
-    font-size: 24px;
-    color: var(--text-secondary);
-}
-
-.spotlight-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-size: 22px;
-    outline: none;
-    color: var(--text-primary);
-}
-.spotlight-input::placeholder {
-    color: var(--text-tertiary);
-}
-
-/* Skeleton Specific */
-.skeleton-table { padding: 0 16px; }
-.skeleton-row {
-    height: 64px;
-    align-items: center;
-    gap: 16px;
-}
-.skeleton-row .col-cover.skeleton {
-    width: 44px; height: 44px; border-radius: 6px;
-}
-.skeleton { background: rgba(0,0,0,0.06); border-radius: 4px; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-/* iOS Settings Modal */
-:deep(.settings-modal-ios) {
-    background: transparent !important;
-}
-:deep(.settings-modal-ios .n-modal-mask) {
-    background-color: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(20px);
-}
-
-.ios-settings-container {
-    width: 640px;
-    max-width: 90vw;
-    background: rgba(255, 255, 255, 0.82); /* Lighter, translucency */
-    backdrop-filter: blur(50px) saturate(180%);
-    border-radius: 16px; /* Smooth corners */
-    box-shadow: 0 40px 100px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.05); /* Softer deep shadow */
-    overflow: hidden;
-    position: relative;
-    /* Font */
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
-    color: #1d1d1f;
-}
-
-/* Header */
-.ios-header {
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* Faint separator */
-    background: rgba(255,255,255,0.0); /* Transparent header */
-}
-.ios-title {
-    font-size: 17px;
     font-weight: 600;
-    color: #1d1d1f;
-}
-.ios-close-btn {
-    position: absolute;
-    right: 12px;
-    width: 28px;
-    height: 28px;
-    background: rgba(118, 118, 128, 0.12);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-    color: #8E8E93;
-}
-.ios-close-btn:hover {
-    background: rgba(118, 118, 128, 0.24);
-    color: #1C1C1E;
+    margin-left: 6px;
 }
 
-/* Content */
-.ios-content {
-    padding: 20px;
-    max-height: 70vh;
-    overflow-y: auto;
-}
-
-/* Grouped List */
-.ios-group-title {
-    font-size: 20px; /* Larger, bolder headers */
-    text-transform: none; /* Normal case */
-    color: #1d1d1f;
-    margin: 32px 0 16px 4px;
-    font-weight: 700;
-    letter-spacing: -0.015em;
-}
-.ios-group-title:first-child { margin-top: 0; }
-
-.ios-group {
-    background: transparent; /* Remove container BG */
-    border-radius: 0;
-    overflow: visible;
-    margin-bottom: 16px;
-}
-.ios-item {
+.nav-btn.primary {
     padding: 0 16px;
-}
-/* Separator logic: add border-bottom to all except last */
-.ios-item:not(:last-child):after {
-    content: '';
-    display: block;
-    height: 1px;
-    background: rgba(60, 60, 67, 0.1);
-    margin-left: 0; /* Full width inside item? No, usually inset. */
-}
-.ios-item {
-    position: relative;
-    background: rgba(255, 255, 255, 0.6); /* Individual item translucency */
-    border-radius: 12px;
-    margin-bottom: 10px;
-    padding: 0 16px;
-    transition: background 0.2s;
-}
-.ios-item:hover {
-    background: rgba(255, 255, 255, 0.8);
-}
-.ios-item:after { display: none !important; } /* Remove separators */
-
-.ios-row-main {
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.ios-label {
-    font-size: 17px;
-    color: #000;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.ios-badge {
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    background: #F2F2F7;
-    color: #8E8E93;
-}
-.ios-badge.active {
-    background: #34C759;
-    color: #fff;
+    height: 36px;
+    border-radius: 18px;
+    background: var(--primary-color, #FA233B);
+    color: white;
+    width: auto; /* Override square width */
 }
 
-.ios-row-sub {
-    padding: 0 0 12px 0;
-    font-size: 14px;
-    color: #86868b;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.nav-btn.primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(250, 35, 59, 0.3);
 }
 
-/* Input Stack (Nested Form) */
-.ios-form-stack {
-    background: #F2F2F7;
-    padding: 10px 16px;
-    margin: 0 -16px; /* Bleed to edge of item */
-    border-top: 1px solid rgba(60, 60, 67, 0.1);
+/* Dark Mode Adapts */
+:root[data-theme="dark"] .tool-group {
+    background: transparent; /* Fix boxy background */
 }
 
-/* Number Input Wrapper */
-.ios-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.ios-number-input {
-    width: 80px;
-    text-align: center;
-}
-:deep(.ios-number-input .n-input) {
-    background-color: rgba(0,0,0,0.05); /* Slight BG for visibility */
-    border-radius: 6px;
-}
-:deep(.ios-number-input .n-input__input-el) {
-    text-align: center;
-}
-.unit {
-    color: #8E8E93;
-    font-size: 15px;
-}
-.stack-row {
-    display: flex;
-    align-items: center;
-    height: 44px;
-    border-bottom: 1px solid rgba(60, 60, 67, 0.1);
-}
-.stack-row:last-child { border-bottom: none; }
-.stack-row .label {
-    width: 100px;
-    font-size: 15px;
-    color: #000;
-}
-.ios-text-input {
-    flex: 1;
-    border: none;
-    background: rgba(0,0,0,0.05); /* Slight BG to look editable */
-    border-radius: 6px;
-    font-size: 15px;
-    color: #000;
-    outline: none;
-    text-align: left; /* Left align for easier editing */
-    padding: 4px 8px;
-    margin-right: 8px;
-    transition: background 0.2s;
-}
-.ios-text-input:focus {
-    background: rgba(0,0,0,0.08);
-}
-.ios-text-input::placeholder { color: #C7C7CC; }
-
-/* Custom Switch Override if needed (Naive UI switch is okay, but let's tweak) */
-.ios-switch { transform: scale(0.9); }
-
-/* Tabs Override */
-:deep(.ios-tabs .n-tabs-nav) {
-    background: transparent !important;
-    padding: 0 10px 10px;
-}
-/* Footer */
-.ios-footer {
-    padding: 20px 24px;
-    background: rgba(255,255,255,0.3);
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
-.ios-save-btn {
-    font-weight: 600;
-    font-size: 17px;
-    height: 48px; border-radius: 12px; /* Bigger button */
-    box-shadow: 0 4px 12px rgba(250, 45, 72, 0.25);
-}
-
-/* Segmented Control */
-.ios-segmented-control {
-    background: rgba(118, 118, 128, 0.12);
-    border-radius: 9px;
-    padding: 2px;
-    display: flex;
-    margin: 16px 16px 0 16px;
-}
-.segment-item {
-    flex: 1;
-    text-align: center;
-    padding: 6px 0;
-    font-size: 13px;
-    font-weight: 500;
-    color: #000;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.segment-item.active {
-    background: #fff;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04);
-}
-
-/* Status Indicator */
-.status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #E5E5EA; /* Gray for unknown */
-}
-.status-dot.online { background: #34C759; box-shadow: 0 0 6px rgba(52, 199, 89, 0.4); }
-.status-dot.offline { background: #FF3B30; }
-
-.status-text {
-    font-size: 13px;
-    color: #8E8E93;
-}
-
-/* Add Item & Overlay Specifics */
-.add-placeholder-img {
-    position: relative;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.add-icon-overlay {
-    position: absolute;
-    top:0; left:0; right:0; bottom:0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.artist-item.add-item:hover .add-icon-overlay {
-    opacity: 1;
-}
-.artist-item.add-item:hover .avatar-container {
-    transform: scale(1.08); /* Pop a bit more */
-    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-}
-
-.table-row:hover .cover-wrapper {
-     transform: scale(1.05) translateZ(0); /* Subtle pop for album art */
-}
-
-/* Log Console */
-.log-console {
-    height: 300px;
-    background: #1e1e1e;
-    overflow-y: auto;
-    padding: 12px;
-    font-family: Consolas, Monaco, "Courier New", monospace;
-    font-size: 12px;
-    line-height: 1.5;
-}
-.log-line {
-    word-break: break-all;
-    margin-bottom: 2px;
-}
-.log-time { color: #666; margin-right: 8px; }
-.log-source { color: #569cd6; margin-right: 6px; }
-.log-msg { color: #d4d4d4; }
-
-.log-level.info { color: #4ec9b0; margin-right: 6px; }
-.log-level.warning { color: #cca700; margin-right: 6px; }
-.log-level.error { color: #f44336; margin-right: 6px; }
-.log-level.debug { color: #808080; margin-right: 6px; }
-
-.log-empty { color: #555; text-align: center; margin-top: 100px; }
-
-/* Profile Styles */
-.profile-card {
-    display: flex;
-    align-items: center;
-    padding: 24px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 16px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-}
-.profile-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #f2f2f7;
-    color: #8E8E93;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 16px;
-    overflow: hidden; /* Ensure image fits */
-}
-.avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.profile-info {
-    flex: 1;
-}
-.profile-name {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1d1d1f;
-    margin-bottom: 4px;
-}
-.profile-role {
-    font-size: 14px;
-    color: #86868b;
-}
-
-.cursor-pointer { cursor: pointer; }
-
-.ios-arrow {
-    font-size: 20px;
-    color: #C7C7CC;
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-.ios-arrow.rotated {
-    transform: rotate(90deg);
-}
-
-.profile-container {
-    height: auto; /* Fit content */
-    max-height: 80vh;
-}
-
-.one-word-badge {
-    display: inline-block;
-    font-size: 13px;
-    font-weight: 400;
-    color: #86868B;
-    background: transparent;
-    margin-left: 12px;
-    font-style: italic;
-    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    vertical-align: middle;
-    opacity: 0.8;
+:root[data-theme="dark"] .divider {
+    background: rgba(255, 255, 255, 0.15);
 }
 </style>
