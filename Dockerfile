@@ -10,6 +10,9 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
+# 配置国内镜像源（提高下载速度和成功率）
+RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+
 # Install runtime dependencies including gosu for PUID/PGID
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
