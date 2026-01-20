@@ -72,7 +72,8 @@ def migrate_and_save_config():
                 'cache_dir': '/audio_cache' if CONFIG_FILE_PATH.startswith("/config") else 'audio_cache',
                 'favorites_dir': '/favorites' if CONFIG_FILE_PATH.startswith("/config") else 'favorites',
                 'library_path': '',
-                'retention_days': 180
+                'retention_days': 180,
+                'auto_cache_enabled': True
             }
             changed = True
             

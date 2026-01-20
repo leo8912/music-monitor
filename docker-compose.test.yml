@@ -4,9 +4,9 @@ services:
     container_name: music-monitor-test
     restart: unless-stopped
     volumes:
-      - ./config:/config # 使用当前项目的 config 目录
-      - ./cache:/audio_cache # 缓存目录
-      - ./favorites:/favorites # 收藏目录
+      - ./config:/config # 配置目录
+      - ./cache:/audio_cache # 缓存目录（可自由修改宿主机路径）
+      - ./favorites:/favorites # 收藏目录（可自由修改宿主机路径）
     environment:
       - DATABASE_URL=sqlite:////config/music_monitor.db
       - TZ=Asia/Shanghai

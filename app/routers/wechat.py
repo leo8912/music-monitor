@@ -21,6 +21,8 @@ from qqmusic_api.search import SearchType
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+from core.wechat import FixedWeChatCrypto
+
 def get_crypto():
     wecom_cfg = config.get('notify', {}).get('wecom', {})
     token = wecom_cfg.get('token')
@@ -29,7 +31,7 @@ def get_crypto():
     
     if not token or not encoding_aes_key or not corpid:
         return None
-    return WeChatCrypto(token, encoding_aes_key, corpid)
+    return FixedWeChatCrypto(token, encoding_aes_key, corpid)
 
 @router.get("/api/wecom/callback")
 async def wechat_verify(msg_signature: str, timestamp: str, nonce: str, echostr: str):
@@ -53,90 +55,99 @@ async def wechat_verify(msg_signature: str, timestamp: str, nonce: str, echostr:
 
 @router.post("/api/wecom/callback")
 async def wechat_callback(request: Request, msg_signature: str, timestamp: str, nonce: str):
-    crypto = get_crypto()
-    if not crypto:
-        return Response("Config missing", status_code=500)
-        
-    body = await request.body()
+    logger.info(f"收到微信回调: signature={msg_signature}, timestamp={timestamp}, nonce={nonce}")
     try:
-        decrypted_xml = crypto.decrypt_message(
-            body,
-            msg_signature,
-            timestamp,
-            nonce
-        )
-    except InvalidSignatureException:
-        raise HTTPException(status_code=403, detail="Invalid signature")
+        crypto = get_crypto()
+        if not crypto:
+            logger.error("get_crypto() 返回 None，检查 notify.wecom 配置")
+            return Response("Config missing", status_code=500)
+            
+        body = await request.body()
+        try:
+            decrypted_xml = crypto.decrypt_message(
+                body,
+                msg_signature,
+                timestamp,
+                nonce
+            )
+        except InvalidSignatureException:
+            logger.warning("签名验证失败")
+            raise HTTPException(status_code=403, detail="Invalid signature")
+        except Exception as e:
+            logger.error(f"解密失败: {str(e)}", exc_info=True)
+            return Response("Decryption failed", status_code=500)
+            
+        msg = parse_message(decrypted_xml)
+        if msg.type != 'text':
+            return Response("success")
+            
+        content = msg.content.strip()
+        user_id = msg.source 
+        logger.info(f"处理用户消息: {user_id} -> {content}")
         
-    # Parse message
-    msg = parse_message(decrypted_xml)
-    if msg.type != 'text':
-        return Response("success")
-        
-    content = msg.content.strip()
-    user_id = msg.source # WeCom UserID
-    
-    reply_content = ""
-    
-    # Session Cache (Global)
-    # Global Session
-    global search_session
-    if 'search_session' not in globals():
-        search_session = {}
-        
-    # 1. Handle Selection (Number)
-    if content.isdigit():
-        idx = int(content) - 1
-        if user_id in search_session:
-            session = search_session[user_id]
-            # Check expiry (5 mins)
-            if (datetime.now() - session['time']).total_seconds() > 300:
-                reply_content = "⚠️ 搜索结果已过期，请重新搜索。"
-                del search_session[user_id]
-            elif 0 <= idx < len(session['results']):
-                # Dispatch based on type
-                stype = session.get('type', 'song')
-                target = session['results'][idx]
-                
-                import asyncio
-                if stype == 'song':
-                    asyncio.create_task(background_download_and_fav(target, user_id))
-                    reply_content = f"🚀 已收到，开始下载并收藏第 {idx+1} 首：\n{target['title']} - {format_artist(target['artist'])}"
-                elif stype == 'artist':
-                    asyncio.create_task(background_add_artist(target, user_id))
-                    reply_content = f"🚀 已收到，正在添加歌手监控：\n{target['name']} ({target['source']})"
-                
-                del search_session[user_id]
+        reply_content = ""
+        global search_session
+        if 'search_session' not in globals():
+            search_session = {}
+            
+        if content.isdigit():
+            idx = int(content) - 1
+            if user_id in search_session:
+                session = search_session[user_id]
+                if (datetime.now() - session['time']).total_seconds() > 300:
+                    reply_content = "⚠️ 搜索结果已过期，请重新搜索。"
+                    del search_session[user_id]
+                elif 0 <= idx < len(session['results']):
+                    stype = session.get('type', 'song')
+                    target = session['results'][idx]
+                    
+                    import asyncio
+                    if stype == 'song':
+                        asyncio.create_task(background_download_and_fav(target, user_id))
+                        reply_content = f"🚀 已收到，开始下载并收藏第 {idx+1} 首：\n{target['title']} - {format_artist(target['artist'])}"
+                    elif stype == 'artist':
+                        logger.info(f"正在后台添加歌手: {target['name']}")
+                        asyncio.create_task(background_add_artist(target, user_id))
+                        reply_content = f"🚀 已收到，正在添加歌手监控：\n{target['name']}"
+                    
+                    del search_session[user_id]
+                else:
+                    reply_content = f"⚠️ 请输入有效的序号 (1-{len(session['results'])})"
             else:
-                reply_content = f"⚠️ 请输入有效的序号 (1-{len(session['results'])})"
+                reply_content = "⚠️ 无待选列表，请先搜索。"
         else:
-            # Treat number as query if no session? Or tell user no session?
-            # Let's verify if it might be a song name (some songs have number names).
-            # But usually it's selection.
-            reply_content = "⚠️ 无待选列表，请先发送歌名或歌手名搜索。"
+            intent = "artist"
+            keyword = content
+            for prefix in ["下载", "喜欢", "收藏", "搜歌", "歌曲"]:
+                if content.startswith(prefix):
+                    intent = "song"
+                    keyword = content[len(prefix):].strip()
+                    break
+            
+            if not keyword:
+                reply_content = "请提供关键词"
+            else:
+                if intent == "song":
+                    reply_content = await handle_song_search(keyword, user_id)
+                else:
+                    articles = await handle_artist_search(keyword, user_id)
+                    if isinstance(articles, str):
+                        reply_content = articles
+                    else:
+                        reply = create_reply(articles, msg)
+                        xml = crypto.encrypt_message(reply.render(), nonce, timestamp)
+                        return Response(content=xml, media_type="application/xml")
 
-    # 2. Handle Commands
-    else:
-        # Determine intent
-        # Default -> Artist Search
-        # Explicit "下载/喜欢/收藏" -> Song Search
+        if not reply_content:
+            return Response("success")
+            
+        reply = create_reply(reply_content, msg)
+        xml = crypto.encrypt_message(reply.render(), nonce, timestamp)
+        return Response(content=xml, media_type="application/xml")
         
-        intent = "artist"
-        keyword = content
-        
-        for prefix in ["下载", "喜欢", "收藏", "搜歌", "歌曲"]:
-            if content.startswith(prefix):
-                intent = "song"
-                keyword = content[len(prefix):].strip()
-                break
-        
-        if not keyword:
-            reply_content = "请提供关键词"
-        else:
-            if intent == "song":
-                reply_content = await handle_song_search(keyword, user_id)
-            else:
-                reply_content = await handle_artist_search(keyword, user_id)
+    except Exception as e:
+        logger.error(f"全局回调异常: {str(e)}", exc_info=True)
+        return Response("Error", status_code=500)
 
     reply = None
     if isinstance(reply_content, list):
@@ -165,15 +176,27 @@ async def handle_song_search(keyword: str, user_id: str) -> str:
     
     # Netease
     try:
+        logger.info(f"正在从网易云搜索歌曲: {keyword}")
         res_ne = await dl.search_songs(keyword, "", source="netease", count=5)
-        if res_ne: search_results.extend(res_ne)
-    except: pass
+        if res_ne: 
+            logger.info(f"网易云搜索到 {len(res_ne)} 首歌曲")
+            search_results.extend(res_ne)
+        else:
+            logger.info("网易云未搜索到结果")
+    except Exception as e:
+        logger.error(f"网易云搜索异常: {str(e)}", exc_info=True)
     
     # QQ
     try:
+        logger.info(f"正在从 QQ 音乐搜索歌曲: {keyword}")
         res_qq = await dl.search_songs(keyword, "", source="qqmusic", count=5)
-        if res_qq: search_results.extend(res_qq)
-    except: pass
+        if res_qq: 
+            logger.info(f"QQ 音乐搜索到 {len(res_qq)} 首歌曲")
+            search_results.extend(res_qq)
+        else:
+            logger.info("QQ 音乐未搜索到结果")
+    except Exception as e:
+        logger.error(f"QQ 音乐搜索异常: {str(e)}", exc_info=True)
     
     if not search_results:
         return f"😔 未找到关于 '{keyword}' 的歌曲"
@@ -215,21 +238,32 @@ async def handle_artist_search(keyword: str, user_id: str):
 
     # QQ
     try:
-        qq_res = await search.search_by_type(keyword=keyword, search_type=SearchType.SINGER, num=5)
-        logger.info(f"QQ Search Result: {len(qq_res) if qq_res else 0} artists found")
-        if qq_res and isinstance(qq_res, list):
-            for ar in qq_res:
-                mid = ar.get('singerMID') or ar.get('mid')
-                name = ar.get('singerName') or ar.get('name')
-                avatar = f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
-                
-                if mid and name:
-                     if name not in merged_results:
-                        merged_results[name] = {"name": name, "avatar": avatar}
-                     merged_results[name]['qq_id'] = mid
-                     if not merged_results[name]['avatar']: merged_results[name]['avatar'] = avatar
+        # 尝试通过搜索接口获取。部分歌手可能是通过 mid 关联
+        qq_res = await search.search_by_type(keyword=keyword, search_type=SearchType.SINGER, num=10)
+        logger.info(f"QQ Search Result for '{keyword}': {qq_res}") # 打印原始响应
+        if qq_res:
+             # 如果返回的是字典（包含 list 键）
+            if isinstance(qq_res, dict) and 'list' in qq_res:
+                qq_res = qq_res['list']
+            
+            if isinstance(qq_res, list):
+                for ar in qq_res:
+                    mid = ar.get('mid') or ar.get('singerMID') or ar.get('singer_mid')
+                    name = ar.get('name') or ar.get('singerName') or ar.get('singer_name')
+                    if mid and name:
+                        # Update merged_results with QQ info
+                        if name not in merged_results:
+                            merged_results[name] = {"name": name}
+                        merged_results[name]['qq_id'] = mid
+                        # Prioritize existing avatar if available, otherwise use QQ's
+                        if not merged_results[name].get('avatar'):
+                            merged_results[name]['avatar'] = ar.get('pic') or ar.get('singer_pic') or f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
+            else:
+                logger.warning(f"QQ Search result for '{keyword}' is not a list after initial parsing: {type(qq_res)}")
+        else:
+            logger.info("QQ Search returned empty/None")
     except Exception as e:
-        logger.error(f"Artist search error (QQ): {e}")
+        logger.error(f"Artist search error (QQ): {str(e)}", exc_info=True)
         
     if not merged_results:
         return f"😔 未找到歌手 '{keyword}'"
@@ -312,7 +346,8 @@ async def background_add_artist(target, user_id):
             await notifier.send_text(msg, [user_id])
             
             from app.services.media_service import run_check
-            await run_check()
+            await run_check('netease')
+            await run_check('qqmusic')
         else:
              await notifier.send_text(f"⚠️ 未能添加 '{name}' (可能已存在或未找到)", [user_id])
              

@@ -166,10 +166,11 @@ class AudioDownloader:
     
     async def search_songs(self, title: str, artist: str, source: str = "netease", count: int = 5) -> List[Dict]:
         """搜索歌曲"""
-        if not title or not artist:
+        if not title and not artist:
             return []
             
         if not await self.rate_limiter.acquire(wait=True):
+            logger.warning(f"Rate limited during search for: {title} {artist}")
             return []
             
         api_source = self.SOURCE_MAP.get(source, source)
@@ -177,13 +178,23 @@ class AudioDownloader:
         clean_artist = re.sub(r'[<>:"/\\|?*]', ' ', artist).strip()
         keyword = f"{clean_title} {clean_artist}"
         
-        url = f"{self.API_BASE}?types=search&count={count}&source={api_source}&pages=1&name={keyword}"
+        params = {
+            "types": "search",
+            "count": count,
+            "source": api_source,
+            "pages": 1,
+            "name": keyword
+        }
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
         logger.info(f"Search Songs [{source}]: {keyword}")
         
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=15) as resp:
+                async with session.get(self.API_BASE, params=params, headers=headers, timeout=15) as resp:
                     if resp.status != 200:
+                        logger.warning(f"搜索请求失败 [{source}], 状态码: {resp.status}")
                         return []
                     data = await resp.json()
                     if not data:
@@ -253,16 +264,23 @@ class AudioDownloader:
         3. 降级尝试原始 ID (128k)
         4. 降级尝试新 ID (128k)
         """
-        
         api_source = self.SOURCE_MAP.get(source, source)
         
         async def try_get(sid, br):
+            params = {
+                "types": "url",
+                "source": api_source,
+                "id": sid,
+                "br": br
+            }
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
             for attempt in range(3):
                 if not await self.rate_limiter.acquire(wait=True): return None
-                u = f"{self.API_BASE}?types=url&source={api_source}&id={sid}&br={br}"
                 try:
                     async with aiohttp.ClientSession() as session:
-                        async with session.get(u, timeout=30) as resp:
+                        async with session.get(self.API_BASE, params=params, headers=headers, timeout=30) as resp:
                             if resp.status == 200:
                                 data = await resp.json()
                                 if data.get("url"):
@@ -273,8 +291,8 @@ class AudioDownloader:
                                         format=data.get("url", "").split(".")[-1].split("?")[0] or "mp3"
                                     )
                             elif resp.status == 503:
-                                logger.warning(f"API 503 错误，重试中... ({attempt+1}/3)")
-                                await asyncio.sleep(1 * (attempt + 1))
+                                logger.warning(f"API 503 错误, 重试中... ({attempt+1}/3)")
+                                await asyncio.sleep(1 * (attempt+1))
                                 continue
                             return None
                 except Exception as e:
@@ -314,10 +332,11 @@ class AudioDownloader:
                     # 定义内部获取函数用于跨源
                     async def fetch_cross(s, sid, q):
                         if not await self.rate_limiter.acquire(wait=True): return None
-                        u = f"{self.API_BASE}?types=url&source={s}&id={sid}&br={q}"
+                        p = {"types": "url", "source": s, "id": sid, "br": q}
+                        h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
                         try:
                             async with aiohttp.ClientSession() as session:
-                                async with session.get(u, timeout=30) as resp:
+                                async with session.get(self.API_BASE, params=p, headers=h, timeout=30) as resp:
                                     if resp.status != 200: return None
                                     d = await resp.json()
                                     au = d.get("url")

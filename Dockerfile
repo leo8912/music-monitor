@@ -1,6 +1,10 @@
 # Stage 1: Build Frontend
 FROM node:22-alpine AS frontend
 WORKDIR /app/web
+
+# 配置 npm 使用国内镜像（可选，加速构建）
+RUN npm config set registry https://registry.npmmirror.com
+
 COPY web/package*.json ./
 RUN npm install
 COPY web/ .
@@ -17,22 +21,34 @@ RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debi
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     gosu \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Install Python dependencies
+# Install Python dependencies (使用 pip cache 优化，但最后清理)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && find /usr/local/lib/python3.11 -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true \
+    && find /usr/local/lib/python3.11 -type d -name 'tests' -exec rm -rf {} + 2>/dev/null || true \
+    && find /usr/local/lib/python3.11 -type d -name '*.dist-info' -exec rm -rf {}/RECORD {} + 2>/dev/null || true
 
-# Copy backend
-COPY . /app
+# Fix qqmusic_api cache permission (it tries to write to its own package dir)
+RUN mkdir -p /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache && \
+    chmod -R 777 /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache
 
-# Copy entrypoint
+# Copy only necessary backend files (order matters for cache)
 COPY scripts/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-# Ensure config.yaml exists (use example if not provided in build context)
-# Since we .dockerignore config.yaml, this essentially always copies example to config.yaml
-# But user is expected to mount their own config.yaml at runtime overlaying this.
+COPY config.example.yaml /app/config.example.yaml
+COPY main.py /app/
+COPY version.py /app/
+COPY app/ /app/app/
+COPY core/ /app/core/
+COPY domain/ /app/domain/
+COPY notifiers/ /app/notifiers/
+COPY plugins/ /app/plugins/
+
+# Create default config
 RUN cp config.example.yaml config.yaml
 
 # Copy Built Frontend from Stage 1

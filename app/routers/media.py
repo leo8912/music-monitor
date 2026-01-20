@@ -360,8 +360,9 @@ async def get_artists():
     mon_cfg = config.get('monitor', {})
     
     # Netease
-    if mon_cfg.get('netease', {}).get('enabled'):
-        for u in mon_cfg['netease'].get('users', []):
+    netease_cfg = mon_cfg.get('netease') or {}
+    if netease_cfg.get('enabled'):
+        for u in netease_cfg.get('users', []) or []:
             artists.append({
                 "name": u.get('name', u['id']), 
                 "id": str(u['id']), 
@@ -370,8 +371,9 @@ async def get_artists():
             })
             
     # QQMusic
-    if mon_cfg.get('qqmusic', {}).get('enabled'):
-        for u in mon_cfg['qqmusic'].get('users', []):
+    qqmusic_cfg = mon_cfg.get('qqmusic') or {}
+    if qqmusic_cfg.get('enabled'):
+        for u in qqmusic_cfg.get('users', []) or []:
             # Auto-construct QQ avatar if missing
             avatar = u.get('avatar', '')
             if not avatar and u['id']:
