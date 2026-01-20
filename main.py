@@ -41,20 +41,29 @@ LOG_FILE = os.path.join(LOG_DIR, "application.log")
 from logging.handlers import TimedRotatingFileHandler
 
 # Basic Config (Console)
+# Create handler explicitly to attach to uvicorn
+file_handler = TimedRotatingFileHandler(
+    LOG_FILE, 
+    when='midnight', 
+    interval=1, 
+    backupCount=10, 
+    encoding='utf-8'
+)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
 logging.basicConfig(
     level=logging.INFO, 
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        TimedRotatingFileHandler(
-            LOG_FILE, 
-            when='midnight', 
-            interval=1, 
-            backupCount=10, 
-            encoding='utf-8'
-        )
+        file_handler
     ]
 )
+
+# Attach file handler to Uvicorn loggers to capture startup/errors in file
+for logger_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
+    logging.getLogger(logger_name).addHandler(file_handler)
 
 # Suppress noisy logs from third-party libraries
 logging.getLogger("apscheduler").setLevel(logging.WARNING)

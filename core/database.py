@@ -45,6 +45,19 @@ class MediaRecord(Base):
         return f"<MediaRecord(key={self.unique_key}, title={self.title})>"
 
 # Database initialization
+if DATABASE_URL.startswith("sqlite:///"):
+    # Extract path
+    # sqlite:///foo.db -> foo.db
+    # sqlite:////abs/foo.db -> /abs/foo.db
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    db_dir = os.path.dirname(db_path)
+    if db_dir and not os.path.exists(db_dir):
+        try:
+            os.makedirs(db_dir, exist_ok=True)
+            print(f"Created database directory: {db_dir}")
+        except OSError as e:
+            print(f"Failed to create database directory {db_dir}: {e}")
+
 engine = create_engine(DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
