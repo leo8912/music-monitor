@@ -129,7 +129,7 @@ def ensure_security_config():
         # Return random temp secret
         return secrets.token_urlsafe(32), False
 
-def add_monitored_user(source: str, user_id: str, name: str) -> bool:
+def add_monitored_user(source: str, user_id: str, name: str, avatar: str = None) -> bool:
     """Add a new user to monitor config and save."""
     try:
         # 1. Update In-Memory Config
@@ -142,7 +142,10 @@ def add_monitored_user(source: str, user_id: str, name: str) -> bool:
             if str(u.get('id')) == str(user_id):
                 return False # Already exists
         
-        users.append({'id': str(user_id), 'name': name})
+        new_entry = {'id': str(user_id), 'name': name}
+        if avatar: new_entry['avatar'] = avatar
+            
+        users.append(new_entry)
         config['monitor'][source]['users'] = users
         
         # 2. Save to File
@@ -161,7 +164,9 @@ def add_monitored_user(source: str, user_id: str, name: str) -> bool:
                 break
         
         if not exists:
-            file_users.append({'id': str(user_id), 'name': name})
+            file_entry = {'id': str(user_id), 'name': name}
+            if avatar: file_entry['avatar'] = avatar
+            file_users.append(file_entry)
             data['monitor'][source]['users'] = file_users
             
             with open(CONFIG_FILE_PATH, "w", encoding='utf-8') as f:

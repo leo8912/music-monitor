@@ -10,17 +10,22 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install system dependencies (if any needed for numpy/cryptography)
+# Install runtime dependencies including gosu for PUID/PGID
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
+    ffmpeg \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Backend Code
-COPY . .
+# Copy backend
+COPY . /app
+
+# Copy entrypoint
+COPY scripts/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Ensure config.yaml exists (use example if not provided in build context)
 # Since we .dockerignore config.yaml, this essentially always copies example to config.yaml
@@ -38,4 +43,5 @@ VOLUME /config
 
 EXPOSE 8000
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["python", "main.py"]

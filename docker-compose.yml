@@ -10,6 +10,8 @@ services:
     environment:
       - DATABASE_URL=sqlite:////config/music_monitor.db
       - TZ=Asia/Shanghai
+      - PUID=1000 # 您的 NAS 用户 ID (ssh输入 id 查询)
+      - PGID=1000 # 您的 NAS 用户组 ID
     network_mode: bridge
     ports:
       - "18000:8000" # 端口映射

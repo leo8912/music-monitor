@@ -7,12 +7,47 @@ from notifiers.base import BaseNotifier
 logger = logging.getLogger(__name__)
 
 class WeComNotifier(BaseNotifier):
-    def __init__(self, corp_id: str, secret: str, agent_id: str):
+    def __init__(self, corp_id: str = None, secret: str = None, agent_id: str = None):
+        if not corp_id or not secret or not agent_id:
+            from core.config import config
+            wc = config.get('notify', {}).get('wecom', {})
+            corp_id = corp_id or wc.get('corpid')
+            secret = secret or wc.get('corpsecret')
+            agent_id = agent_id or wc.get('agentid')
+            
         self.corp_id = corp_id
         self.secret = secret
         self.agent_id = agent_id
         self._token: Optional[str] = None
         self._token_expires_at = 0
+
+    async def send_text(self, content: str, user_ids: list[str] = None):
+        """Send a simple text message."""
+        if not self.corp_id or not self.secret:
+             return
+
+        token = await self._get_token()
+        if not token:
+             return
+
+        url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
+        
+        touser = "|".join(user_ids) if user_ids else "@all"
+        
+        payload = {
+            "touser": touser,
+            "msgtype": "text",
+            "agentid": self.agent_id,
+            "text": {
+                "content": content
+            }
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload) as resp:
+                res = await resp.json()
+                if res.get('errcode') != 0:
+                    logger.error(f"WeCom text error: {res}")
 
     async def _get_token(self):
         # TODO: Implement token caching logic

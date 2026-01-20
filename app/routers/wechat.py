@@ -8,10 +8,15 @@ from wechatpy import parse_message, create_reply
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from core.config import config
+from core.config import config, add_monitored_user
 from core.database import SessionLocal, MediaRecord
 from core.audio_downloader import AudioDownloader, AudioInfo
 from app.services.favorites_service import FavoritesService
+from notifiers.wecom import WeComNotifier
+from starlette.concurrency import run_in_threadpool
+import pyncm.apis as apis
+from qqmusic_api import search
+from qqmusic_api.search import SearchType
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -133,7 +138,16 @@ async def wechat_callback(request: Request, msg_signature: str, timestamp: str, 
             else:
                 reply_content = await handle_artist_search(keyword, user_id)
 
-    reply = create_reply(reply_content, msg)
+    reply = None
+    if isinstance(reply_content, list):
+         # It's articles
+         from wechatpy.replies import ArticlesReply
+         reply = ArticlesReply(message=msg)
+         for art in reply_content:
+             reply.add_article(art)
+    else:
+         reply = create_reply(reply_content, msg)
+         
     encrypted_xml = crypto.encrypt_message(reply.render(), nonce, timestamp)
     return Response(content=encrypted_xml, media_type="application/xml")
 
@@ -143,6 +157,9 @@ def format_artist(artist_field):
     return str(artist_field)
 
 async def handle_song_search(keyword: str, user_id: str) -> str:
+    # ... (Keep existing simple text for songs for now unless user wants cards too, but user specific "Artist")
+    # Actually, let's keep songs as text list to avoid modifying everything roughly.
+    # Re-implement song search briefly to match context.
     dl = AudioDownloader()
     search_results = []
     
@@ -161,70 +178,64 @@ async def handle_song_search(keyword: str, user_id: str) -> str:
     if not search_results:
         return f"😔 未找到关于 '{keyword}' 的歌曲"
         
-    # Cache Session
     global search_session
     if 'search_session' not in globals(): search_session = {}
     
     search_session[user_id] = {
         "type": "song",
         "keyword": keyword,
-        "results": search_results[:5], # Limit total choice to 5? User said default 5.
-                                       # Wait, if we fetch 5 from each, we have 10.
-                                       # Let's show top 5-8 mixed.
+        "results": search_results[:8], 
         "time": datetime.now()
     }
     
-    if len(search_results) > 8:
-        search_results = search_results[:8]
-    
-    # Build text
     reply = f"🔎 找到以下歌曲（回复序号下载）：\n"
-    for i, song in enumerate(search_session[user_id]['results']): # Use stored results
-        if i >= 8: break
+    for i, song in enumerate(search_session[user_id]['results']):
         src_icon = "🎵" if song['source'] == 'netease' else "🐧"
         artist = format_artist(song['artist'])
         reply += f"{i+1}. {src_icon} {song['title']} - {artist}\n"
         
     return reply
 
-async def handle_artist_search(keyword: str, user_id: str) -> str:
-    
-    results = []
+async def handle_artist_search(keyword: str, user_id: str):
+    # Search both
+    merged_results = {} # Name -> {name, avatar, netease_id, qq_id, netease_avatar, qq_avatar}
     
     # Netease
     try:
-        ne_res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, keyword, stype=100, limit=3)
+        ne_res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, keyword, stype=100, limit=5)
         if ne_res.get('code') == 200 and ne_res.get('result', {}).get('artists'):
             for ar in ne_res['result']['artists']:
-                results.append({
-                    "source": "netease",
-                    "id": str(ar['id']),
-                    "name": ar['name'],
-                    "avatar": ar.get('picUrl')
-                })
+                name = ar['name']
+                if name not in merged_results:
+                    merged_results[name] = {"name": name, "avatar": ar.get('picUrl')}
+                merged_results[name]['netease_id'] = str(ar['id'])
+                if not merged_results[name]['avatar']: merged_results[name]['avatar'] = ar.get('picUrl')
     except Exception as e:
         logger.warning(f"Artist search error (NE): {e}")
 
     # QQ
     try:
-        qq_res = await search.search_by_type(keyword=keyword, search_type=SearchType.SINGER, num=3)
+        qq_res = await search.search_by_type(keyword=keyword, search_type=SearchType.SINGER, num=5)
         if qq_res and isinstance(qq_res, list):
             for ar in qq_res:
                 mid = ar.get('singerMID') or ar.get('mid')
                 name = ar.get('singerName') or ar.get('name')
+                avatar = f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
+                
                 if mid and name:
-                     results.append({
-                        "source": "qqmusic",
-                        "id": mid,
-                        "name": name,
-                        "avatar": f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
-                    })
+                     if name not in merged_results:
+                        merged_results[name] = {"name": name, "avatar": avatar}
+                     merged_results[name]['qq_id'] = mid
+                     if not merged_results[name]['avatar']: merged_results[name]['avatar'] = avatar
     except Exception as e:
         logger.warning(f"Artist search error (QQ): {e}")
         
-    if not results:
+    if not merged_results:
         return f"😔 未找到歌手 '{keyword}'"
-        
+
+    # Convert to list and limit
+    final_list = list(merged_results.values())[:8] # Max 8 for News
+    
     # Cache Session
     global search_session
     if 'search_session' not in globals(): search_session = {}
@@ -232,38 +243,83 @@ async def handle_artist_search(keyword: str, user_id: str) -> str:
     search_session[user_id] = {
         "type": "artist",
         "keyword": keyword,
-        "results": results[:5],
+        "results": final_list,
         "time": datetime.now()
     }
     
-    # Build text
-    reply = f"🎤 找到以下歌手（回复序号添加监控）：\n"
-    for i, ar in enumerate(search_session[user_id]['results']):
-        src_icon = "🎵" if ar['source'] == 'netease' else "🐧"
-        reply += f"{i+1}. {src_icon} {ar['name']} (ID: {ar['id']})\n"
+    # Build Articles
+    articles = []
+    # Header article (maybe just first artist? Or a summary?)
+    # WeChat News: First item is big picture.
+    # Let's just list authors.
+    
+    for i, ar in enumerate(final_list):
+        sources = []
+        if 'netease_id' in ar: sources.append("网易")
+        if 'qq_id' in ar: sources.append("QQ")
+        desc = f"来源: {' / '.join(sources)}"
         
-    return reply
+        articles.append({
+            "title": f"{i+1}. {ar['name']}",
+            "description": desc,
+            "image": ar['avatar'] or "",
+            "url": "https://music.163.com" # Dummy URL required?
+        })
+        
+    return articles
 
 
 async def background_add_artist(target, user_id):
     try:
         name = target['name']
-        source = target['source']
-        uid = target['id']
+        avatar = target.get('avatar')
+        added_sources = []
         
-        # Add to Config
-        success = add_monitored_user(source, uid, name)
+        notifier = WeComNotifier()
+        await notifier.send_text(f"⏳ 正在处理 '{name}' 的全平台监控添加...", [user_id])
+
+        # 1. Handle Netease
+        ne_id = target.get('netease_id')
+        if not ne_id:
+            # Try search
+            try:
+                res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, name, stype=100, limit=1)
+                if res.get('result', {}).get('artists'):
+                     ne_id = str(res['result']['artists'][0]['id'])
+            except: pass
         
-        if success:
-            await WeComNotifier().send_text(f"✅ 已添加 {name} 到 {source} 监控列表！\n正在尝试同步新歌...", [user_id])
-            # Trigger Sync
-            await sync_artist_immediate(name, source, target.get('avatar'), notify=True)
+        if ne_id:
+            if add_monitored_user('netease', ne_id, name, avatar=avatar):
+                added_sources.append("网易云")
+
+        # 2. Handle QQ
+        qq_id = target.get('qq_id')
+        if not qq_id:
+             try:
+                res = await search.search_by_type(keyword=name, search_type=SearchType.SINGER, num=1)
+                if res and len(res) > 0:
+                    qq_id = res[0].get('singerMID')
+             except: pass
+             
+        if qq_id:
+            if add_monitored_user('qqmusic', qq_id, name, avatar=avatar):
+                added_sources.append("QQ音乐")
+        
+        if added_sources:
+            msg = f"✅ 已添加 '{name}' 到监控：\n" + " / ".join(added_sources)
+            msg += "\n🚀 正在触发全网同步..."
+            await notifier.send_text(msg, [user_id])
+            
+            from app.services.media_service import run_check
+            await run_check()
         else:
-             await WeComNotifier().send_text(f"⚠️ 添加失败：{name} 可能已存在", [user_id])
+             await notifier.send_text(f"⚠️ 未能添加 '{name}' (可能已存在或未找到)", [user_id])
              
     except Exception as e:
         logger.error(f"Bg add artist error: {e}")
-        await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
+        try:
+            await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
+        except: pass
 
 async def background_download_and_fav(song, user_id):
     title = song['title']
