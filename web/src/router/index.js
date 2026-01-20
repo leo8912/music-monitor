@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainContent from '../MainContent.vue'
 import Login from '../Login.vue'
+import MobilePlayer from '../views/MobilePlayer.vue'
 import axios from 'axios'
 
 const routes = [
@@ -13,6 +14,11 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: Login
+    },
+    {
+        path: '/mobile/play',
+        name: 'MobilePlayer',
+        component: MobilePlayer
     }
 ]
 
@@ -22,6 +28,12 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
+    // Mobile Player uses signature auth, bypass session check
+    if (to.name === 'MobilePlayer') {
+        next()
+        return
+    }
+
     if (to.name === 'Login') {
         // If going to login, check if already auth (optional UX polish)
         try {

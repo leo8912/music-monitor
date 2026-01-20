@@ -291,7 +291,9 @@ async def auth_middleware(request: Request, call_next):
     # White list
     # /api/login, /api/check_auth, /assets (static), / (spa index)
     if path.startswith("/api/"):
-        if path in ["/api/login", "/api/logout", "/api/check_auth", "/api/wecom/callback"] or path.startswith("/api/test_notify_card"):
+        if path in ["/api/login", "/api/logout", "/api/check_auth", "/api/wecom/callback", "/api/mobile/metadata"] \
+           or path.startswith("/api/test_notify_card") \
+           or path.startswith("/api/audio/"):
             pass # Allowed
         else:
              try:

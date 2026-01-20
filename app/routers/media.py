@@ -574,9 +574,9 @@ def get_history(limit: int = 100, author: Optional[str] = None):
         # But we still generally only show monitored artists.
         # Let's load config to be safe/consistent.
         for source in ['netease', 'qqmusic']:
-             cfg = config.get('monitor', {}).get(source, {})
+             cfg = config.get('monitor', {}).get(source) or {}
              if cfg.get('enabled'):
-                 for u in cfg.get('users', []):
+                 for u in cfg.get('users', []) or []:
                      active_names.add(u.get('name', ''))
         
         # Build Query
@@ -628,3 +628,61 @@ def get_history(limit: int = 100, author: Optional[str] = None):
         return filtered
     finally:
         db.close()
+
+@router.get("/api/mobile/metadata")
+async def get_mobile_metadata(id: str, sign: str, expires: str):
+    """
+    Secured endpoint to get metadata and audio link for mobile player.
+    Requires valid signature.
+    """
+    from core.security import verify_signature
+    
+    if not verify_signature(id, sign, expires):
+        raise HTTPException(status_code=403, detail="Invalid or expired link")
+    
+    db = SessionLocal()
+    try:
+        # We search by specific key format or just ID?
+        # The ID passed here is what we used in generate_signed_url_params
+        # Usually we used `source_id` as key? Or just raw id?
+        # In `background_download_and_fav` we have `song['id']` and `song['source']`.
+        # Ideally we should pass unique_key, or pass both source and id.
+        # But to keep URL short, maybe just ID if unique? ID is NOT unique across platforms.
+        # However, `background_download_and_fav` logic deals with ONE song.
+        # Let's assume the ID passed is the `unique_key` (source_id) OR we accept source param too.
+        # Let's require `source` param but don't require it to be signed? 
+        # No, better sign EVERYTHING: "source|id|expires".
+        # But to simplify my `core/security.py` I only used `song_id`.
+        # Let's define `song_id` in security context as the `unique_key` (e.g. "netease_12345").
+        # Frontend must pass `id` param as this unique key.
+        
+        unique_key = id
+        record = db.query(MediaRecord).filter_by(unique_key=unique_key).first()
+        
+        if not record:
+             raise HTTPException(status_code=404, detail="Song not found")
+             
+        # Construct Audio URL (use filename logic)
+        # We need filename. If local path exists, get filename.
+        audio_url = ""
+        if record.local_audio_path:
+            filename = os.path.basename(record.local_audio_path)
+            audio_url = f"/api/audio/{filename}"
+        else:
+            # Maybe fallback to official? Or return empty to signal "Processing"?
+            # If Mobile Player is opened immediately after download trigger, it might be downloading.
+            pass
+            
+        return {
+            "title": record.title,
+            "artist": record.author,
+            "album": record.album,
+            "cover": record.cover,
+            "lyrics": record.lyrics,
+            "audio_url": audio_url,
+            "source": record.source
+        }
+        
+    finally:
+        db.close()
+

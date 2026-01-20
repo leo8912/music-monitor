@@ -133,10 +133,14 @@ def add_monitored_user(source: str, user_id: str, name: str, avatar: str = None)
     """Add a new user to monitor config and save."""
     try:
         # 1. Update In-Memory Config
-        if 'monitor' not in config: config['monitor'] = {}
-        if source not in config['monitor']: config['monitor'][source] = {'enabled': True, 'users': []}
+        if not config.get('monitor'): config['monitor'] = {}
+        if not config['monitor'].get(source): config['monitor'][source] = {'enabled': True, 'users': []}
         
-        users = config['monitor'][source].get('users', [])
+        users = config['monitor'][source].get('users')
+        if users is None: 
+            users = []
+            config['monitor'][source]['users'] = users
+            
         # Check duplicate
         for u in users:
             if str(u.get('id')) == str(user_id):
@@ -152,11 +156,15 @@ def add_monitored_user(source: str, user_id: str, name: str, avatar: str = None)
         with open(CONFIG_FILE_PATH, "r", encoding='utf-8') as f:
             data = yaml.safe_load(f) or {}
             
-        if 'monitor' not in data: data['monitor'] = {}
-        if source not in data['monitor']: data['monitor'][source] = {'enabled': True, 'users': []}
+        if not data.get('monitor'): data['monitor'] = {}
+        if not data['monitor'].get(source): data['monitor'][source] = {'enabled': True, 'users': []}
         
         # Ensure we don't duplicate in file if it desynced
-        file_users = data['monitor'][source].get('users', [])
+        file_users = data['monitor'][source].get('users')
+        if file_users is None:
+             file_users = []
+             data['monitor'][source]['users'] = file_users
+             
         exists = False
         for u in file_users:
             if str(u.get('id')) == str(user_id):

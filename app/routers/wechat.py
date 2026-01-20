@@ -216,6 +216,7 @@ async def handle_artist_search(keyword: str, user_id: str):
     # QQ
     try:
         qq_res = await search.search_by_type(keyword=keyword, search_type=SearchType.SINGER, num=5)
+        logger.info(f"QQ Search Result: {len(qq_res) if qq_res else 0} artists found")
         if qq_res and isinstance(qq_res, list):
             for ar in qq_res:
                 mid = ar.get('singerMID') or ar.get('mid')
@@ -228,7 +229,7 @@ async def handle_artist_search(keyword: str, user_id: str):
                      merged_results[name]['qq_id'] = mid
                      if not merged_results[name]['avatar']: merged_results[name]['avatar'] = avatar
     except Exception as e:
-        logger.warning(f"Artist search error (QQ): {e}")
+        logger.error(f"Artist search error (QQ): {e}")
         
     if not merged_results:
         return f"😔 未找到歌手 '{keyword}'"
@@ -371,13 +372,43 @@ async def background_download_and_fav(song, user_id):
             record.audio_quality = res['quality']
             
             # Move to favorites (Add to favorite list)
-            # This triggers file copy inside FavoritesService
             fav_res = await FavoritesService.toggle_favorite(db, unique_key, force_state=True)
             
             db.commit()
             
-            final_msg = f"✅ 下载并收藏成功！\n🎵 {title} - {artist}\n📁 已存入精选集"
-            await WeComNotifier().send_text(final_msg, [user_id])
+            # Generate Magic Link
+            from core.security import generate_signed_url_params
+            
+            # Use unique_key as ID for signature
+            sign_params = generate_signed_url_params(unique_key)
+            
+            base_url = config.get('global', {}).get('external_url', 'http://localhost:8000')
+            # Handle trailing slash
+            if base_url.endswith('/'): base_url = base_url[:-1]
+            
+            magic_url = f"{base_url}/#/mobile/play?id={sign_params['id']}&sign={sign_params['sign']}&expires={sign_params['expires']}"
+            
+            # Use News Message for nice card
+            # Or Text Card? TextCard href is easier.
+            # But News is nicer with Image.
+            # Let's use News (Articles) with cover image.
+            
+            cover_url = song.get('cover') or "https://via.placeholder.com/300x300?text=Music"
+            
+            article = {
+                "title": f"下载完成: {title}",
+                "description": f"歌手: {artist}\n点击立即播放 (72小时有效)",
+                "image": cover_url,
+                "url": magic_url # Magic Link
+            }
+            
+            from wechatpy.replies import ArticlesReply
+            # We don't have 'msg' here to reply directly. We use Notifier.
+            # Notifier needs support for News. 
+            # My WeComNotifier has send_news_message?
+            # Let's check WeComNotifier.
+            
+            await WeComNotifier().send_news_message([article], [user_id])
             
         except Exception as e:
             logger.error(f"DB/Fav Error: {e}")
@@ -387,4 +418,6 @@ async def background_download_and_fav(song, user_id):
             
     except Exception as e:
         logger.error(f"Bg task error: {e}")
-        await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
+        try:
+            await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
+        except: pass
