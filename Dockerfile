@@ -25,10 +25,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean
 
 # Install Python dependencies (使用 pip cache 优化，但最后清理)
+ARG CACHE_BUST=1
 COPY requirements.txt .
 RUN cat requirements.txt && \
     pip install --no-cache-dir -r requirements.txt && \
     pip list && \
+    python -c "import yaml; import aiosqlite; print('✅ Dependencies Build-Time Verification Passed!')" && \
+    chmod -R a+rX /usr/local/lib/python3.11/site-packages && \
     find /usr/local/lib/python3.11 -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true \
     && find /usr/local/lib/python3.11 -type d -name 'tests' -exec rm -rf {} + 2>/dev/null || true \
     && find /usr/local/lib/python3.11 -type d -name '*.dist-info' -exec rm -rf {}/RECORD {} + 2>/dev/null || true
