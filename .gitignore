@@ -38,3 +38,4 @@ web/dist/
 .DS_Store
 Thumbs.db
 verify_login.py
+config(3).yaml

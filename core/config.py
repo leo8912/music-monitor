@@ -14,6 +14,7 @@ import secrets
 import re
 import logging
 import os
+from core.config_migration import ConfigMigration
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,26 @@ else:
     # Fallback or create new
     CONFIG_FILE_PATH = "/config/config.yaml" if os.path.isdir("/config") else "config.yaml"
 
+# Example Config Path Detection
+if os.path.exists("config.example.yaml"):
+    EXAMPLE_CONFIG_PATH = "config.example.yaml"
+elif os.path.exists("/app/config.example.yaml"):
+    EXAMPLE_CONFIG_PATH = "/app/config.example.yaml"
+else:
+    # Fallback lookup (e.g. relative to this file)
+    _rel_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config.example.yaml")
+    # core/config.py -> core -> app? -> root? 
+    # __file__ = d:/code/music-monitor/core/config.py
+    # dirname = core
+    # dirname = music-monitor
+    # join config.example.yaml
+    # Actually locally usage:
+    _local_root = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.example.yaml")
+    if os.path.exists(_local_root):
+        EXAMPLE_CONFIG_PATH = _local_root
+    else:
+        EXAMPLE_CONFIG_PATH = "config.example.yaml" 
+
 def load_config():
     if not os.path.exists(CONFIG_FILE_PATH):
         # Return default or empty if not found (or copy example in main)
@@ -38,108 +59,37 @@ def load_config():
         return yaml.safe_load(f)
 
 def migrate_and_save_config():
-    """Check for legacy config keys and migrate them to new format."""
+    """Run auto-migration using ConfigMigration service."""
     try:
-        if not os.path.exists(CONFIG_FILE_PATH):
-            return False, "Config not found"
+        # 1. Load Example Template
+        template_dict = {}
+        if os.path.exists(EXAMPLE_CONFIG_PATH):
+             try:
+                with open(EXAMPLE_CONFIG_PATH, "r", encoding='utf-8') as f:
+                    template_dict = yaml.safe_load(f) or {}
+             except Exception as e:
+                 logger.error(f"Failed to load config template: {e}")
+        else:
+             logger.warning(f"Template config not found at {EXAMPLE_CONFIG_PATH}, skipping structural migration.")
 
-        with open(CONFIG_FILE_PATH, "r", encoding='utf-8') as f:
-            data = yaml.safe_load(f) or {}
+        # 2. Apply Environment-Specific Defaults (Overrides)
+        # Only if 'storage' is in template, we might want to ensure acceptable defaults for this env
+        if 'storage' in template_dict:
+             # If NOT inside /config (container), use relative paths for safer dev defaults
+             if not CONFIG_FILE_PATH.startswith("/config"):
+                 if template_dict['storage'].get('cache_dir') == '/audio_cache':
+                     template_dict['storage']['cache_dir'] = 'audio_cache'
+                 if template_dict['storage'].get('favorites_dir') == '/favorites':
+                     template_dict['storage']['favorites_dir'] = 'favorites'
 
-        changed = False
-
-        # 0. Migrate 'notifications' to 'notify' structure
-        if 'notifications' in data and data['notifications'].get('providers'):
-            providers = data['notifications']['providers']
-            if 'notify' not in data:
-                data['notify'] = {}
-            
-            # Migrate WeCom
-            if 'wecom' in providers and providers['wecom'].get('enabled'):
-                legacy_wecom = providers['wecom']
-                if 'wecom' not in data['notify']:
-                    data['notify']['wecom'] = {}
-                
-                # Copy values
-                target = data['notify']['wecom']
-                target['enabled'] = legacy_wecom.get('enabled', False)
-                if legacy_wecom.get('corp_id'): target['corpid'] = legacy_wecom.get('corp_id')
-                if legacy_wecom.get('agent_id'): target['agentid'] = legacy_wecom.get('agent_id')
-                if legacy_wecom.get('agent_secret'): target['corpsecret'] = legacy_wecom.get('agent_secret')
-                
-                changed = True
-
-            # Migrate Telegram
-            if 'telegram' in providers and providers['telegram'].get('enabled'):
-                legacy_tg = providers['telegram']
-                if 'telegram' not in data['notify']:
-                    data['notify']['telegram'] = {}
-                
-                target = data['notify']['telegram']
-                target['enabled'] = legacy_tg.get('enabled', False)
-                if legacy_tg.get('bot_token'): target['bot_token'] = legacy_tg.get('bot_token')
-                if legacy_tg.get('chat_id'): target['chat_id'] = legacy_tg.get('chat_id')
-                
-                changed = True
-            
-            # Optional: Remove old section if migrated? 
-            # users might want to keep it for safety, but let's leave it for now.
-
-        # 1. WeCom Legacy Keys (within notify.wecom)
-        if 'notify' in data and 'wecom' in data['notify']:
-            wecom = data['notify']['wecom']
-            legacy_map = {
-                'corp_id': 'corpid',
-                'agent_id': 'agentid',
-                'secret': 'corpsecret',
-                'aes_key': 'encoding_aes_key'
-            }
-            
-            keys_to_remove = []
-            for old_k, new_k in legacy_map.items():
-                if old_k in wecom:
-                    # If new key missing, migrate value
-                    if not wecom.get(new_k):
-                        wecom[new_k] = wecom[old_k]
-                        changed = True
-                    # If both exist, we can safely remove old one to clean up
-                    # But maybe user wants to keep it?
-                    # Let's clean it up to enforce new standard.
-                    keys_to_remove.append(old_k)
-            
-            for k in keys_to_remove:
-                wecom.pop(k, None)
-                changed = True
-                
-            # Ensure token exists if we have aes_key
-            if 'token' not in wecom:
-                 wecom['token'] = '' # Placeholder
-                 changed = True
-
-        # 2. Storage Defaults
-        if 'storage' not in data:
-            data['storage'] = {
-                'cache_dir': '/audio_cache' if CONFIG_FILE_PATH.startswith("/config") else 'audio_cache',
-                'favorites_dir': '/favorites' if CONFIG_FILE_PATH.startswith("/config") else 'favorites',
-                'library_path': '',
-                'retention_days': 180,
-                'auto_cache_enabled': True
-            }
-            changed = True
-            
-        # 3. Global Defaults
-        if 'global' in data:
-            if 'external_url' not in data['global']:
-                data['global']['external_url'] = ''
-                changed = True
-
+        # 3. Run Migration
+        migration = ConfigMigration(CONFIG_FILE_PATH, EXAMPLE_CONFIG_PATH, template_dict=template_dict)
+        changed, msg = migration.run()
+        
         if changed:
-            with open(CONFIG_FILE_PATH, "w", encoding='utf-8') as f:
-                yaml.safe_dump(data, f, allow_unicode=True, default_flow_style=False)
-            logger.info("Configuration automatically migrated to new format.")
-            return True, "Migrated"
-            
-        return False, "No changes"
+            logger.info(f"Config migration: {msg}")
+            return True, msg
+        return False, msg
 
     except Exception as e:
         logger.error(f"Config migration failed: {e}")
@@ -159,7 +109,7 @@ def ensure_security_config():
         if match:
             current_secret = match.group(1).strip()
             # If default or weak
-            if current_secret in ["secret_key_for_session_encryption", "default_secret_key", "CHANGE_THIS_TO_RANDOM_SECRET"]:
+            if current_secret in ["secret_key_for_session_encryption", "default_secret_key", "CHANGE_THIS_TO_RANDOM_SECRET", "CHANGE_THIS_SECRET_KEY"]:
                 new_secret = secrets.token_urlsafe(32)
                 logger.warning(f"Detected weak secret_key. Rotated to new random key.")
                 

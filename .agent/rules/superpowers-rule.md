@@ -9,6 +9,7 @@ trigger: always_on
 - **强制 TDD**：所有功能开发必须遵循 `.agent/skills/test-driven-development/SKILL.md` 的红-绿-重构循环。
 - **结构化设计**：在编写代码前，必须通过 `/brainstorm` 明确设计规范。
 - **小步快跑**：所有实施计划必须通过 `/write-plan` 拆分为极小的原子任务。
+- **配置一致性**：每次修改配置项必须同步更新 `config.example.yaml`。
 
 ## 常用命令 (Workflows)
 - `/brainstorm`: 启动需求头脑风暴。
