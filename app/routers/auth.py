@@ -42,7 +42,7 @@ def update_profile(req: UpdateProfileRequest, request: Request):
     
     # Update config file
     try:
-        with open("config.yaml", "r", encoding='utf-8') as f:
+        with open(CONFIG_FILE_PATH, "r", encoding='utf-8') as f:
             content = f.read()
             
         # Update Username
@@ -139,7 +139,7 @@ def change_password(req: ChangePasswordRequest, request: Request):
     
     # 2. Update config file
     try:
-        with open("config.yaml", "r", encoding='utf-8') as f:
+        with open(CONFIG_FILE_PATH, "r", encoding='utf-8') as f:
             content = f.read()
             
         # Check if password matches old password to be safe

@@ -1,8 +1,15 @@
 from core.database import SessionLocal, MediaRecord
 import yaml
+import sys
+import os
+
+# Create relative path core import capability if running from scripts dir
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from core.config import CONFIG_FILE_PATH
 
 # 读取配置
-with open('config.yaml', 'r', encoding='utf-8') as f:
+print(f"Reading config from: {CONFIG_FILE_PATH}")
+with open(CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
     config = yaml.safe_load(f)
 
 print("当前QQ音乐配置:")

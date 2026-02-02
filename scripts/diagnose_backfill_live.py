@@ -15,8 +15,10 @@ from datetime import datetime, timedelta
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("diagnose_backfill")
 
+from core.config import CONFIG_FILE_PATH
+
 def load_config():
-    with open("config.yaml", "r", encoding="utf-8") as f:
+    with open(CONFIG_FILE_PATH, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 async def diagnose():

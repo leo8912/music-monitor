@@ -214,11 +214,13 @@ class ConfigManager:
 _config_manager: Optional[ConfigManager] = None
 
 
+from core.config import CONFIG_FILE_PATH
+
 def get_config_manager() -> ConfigManager:
     """获取全局配置管理器实例"""
     global _config_manager
     if _config_manager is None:
-        _config_manager = ConfigManager()
+        _config_manager = ConfigManager(config_file=CONFIG_FILE_PATH)
     return _config_manager
 
 
