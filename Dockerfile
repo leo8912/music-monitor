@@ -31,10 +31,7 @@ RUN cat requirements.txt && \
     pip install --no-cache-dir -r requirements.txt && \
     pip list && \
     python -c "import yaml; import aiosqlite; print('✅ Dependencies Build-Time Verification Passed!')" && \
-    chmod -R a+rX /usr/local/lib/python3.11/site-packages && \
-    find /usr/local/lib/python3.11 -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true \
-    && find /usr/local/lib/python3.11 -type d -name 'tests' -exec rm -rf {} + 2>/dev/null || true \
-    && find /usr/local/lib/python3.11 -type d -name '*.dist-info' -exec rm -rf {}/RECORD {} + 2>/dev/null || true
+    chmod -R a+rX /usr/local/lib/python3.11/site-packages
 
 # Fix qqmusic_api cache permission (it tries to write to its own package dir)
 RUN mkdir -p /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache && \
