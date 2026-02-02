@@ -8,7 +8,7 @@ services:
       - ./cache:/audio_cache # 缓存目录
       - ./favorites:/favorites # 收藏目录
     environment:
-      - DATABASE_URL=sqlite:////config/music_monitor.db
+      - DATABASE_URL=sqlite+aiosqlite:////config/music_monitor.db
       - TZ=Asia/Shanghai
       - PUID=1000 # 您的 NAS 用户 ID (ssh输入 id 查询)
       - PGID=1000 # 您的 NAS 用户组 ID

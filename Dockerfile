@@ -46,6 +46,8 @@ COPY app/ /app/app/
 COPY core/ /app/core/
 COPY domain/ /app/domain/
 COPY notifiers/ /app/notifiers/
+COPY utils/ /app/utils/
+
 
 # Create default config
 RUN cp config.example.yaml config.yaml
