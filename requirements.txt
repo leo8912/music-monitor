@@ -32,3 +32,4 @@ watchfiles>=0.22.0
 wechatpy>=1.8.18
 xmltodict>=0.13.0
 opencc-python-reimplemented>=0.1.7
+itsdangerous>=2.0.0
