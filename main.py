@@ -1,5 +1,15 @@
 """
 主应用入口文件 - FastAPI应用启动和配置
+
+此文件负责：
+- 初始化FastAPI应用
+- 配置日志记录
+- 设置应用生命周期管理
+- 注册路由和中间件
+- 启动定时任务调度器
+- 配置静态文件服务
+
+Author: music-monitor development team
 """
 import sys
 import os
@@ -38,26 +48,11 @@ except Exception as e:
     print(f"⚠️ Debug crash: {e}")
 # -----------------------------
 
-此文件负责：
-- 初始化FastAPI应用
-- 配置日志记录
-- 设置应用生命周期管理
-- 注册路由和中间件
-- 启动定时任务调度器
-- 配置静态文件服务
-
-Author: music-monitor development team
-"""
 from core.config import config as global_config, load_config
 global_config.update(load_config())
 import logging
 import yaml
-import os
-import sys
-import os
 
-# --- CRITICAL BOOT DEBUGGING ---
-print(f"🐍 Python Executable: {sys.executable}")
 print(f"🐍 Python Version: {sys.version}")
 print(f"🐍 User ID: {os.getuid()} Group ID: {os.getgid()}")
 print(f"🐍 sys.path: {sys.path}")
