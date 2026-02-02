@@ -14,17 +14,17 @@ monitor:
   netease:
     enabled: true
     interval: 60
-    users:
-    - id: '6452'
-      name: 周杰伦
-      avatar: ''
+    users: []
+      # - id: '6452'
+      #   name: 周杰伦
+      #   avatar: ''
   qqmusic:
     enabled: true
     interval: 60
-    users:
-    - id: '0025NhlN2yWrP4'
-      name: 周杰伦
-      avatar: ''
+    users: []
+      # - id: '0025NhlN2yWrP4'
+      #   name: 周杰伦
+      #   avatar: ''
 notify:
   telegram:
     bot_token: ''

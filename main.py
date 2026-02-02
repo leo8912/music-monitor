@@ -88,6 +88,13 @@ logging.getLogger("watchfiles").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
+from core.config import CONFIG_FILE_PATH
+logger.info(f"--------------------------------------------------")
+logger.info(f"System Starting...")
+logger.info(f"Using Configuration File: {CONFIG_FILE_PATH}")
+logger.info(f"--------------------------------------------------")
+
+
 from core.config_manager import get_config_manager, reload_config
 from core.config import load_config, ensure_security_config, migrate_and_save_config, CONFIG_FILE_PATH
 from core.logger import api_log_handler

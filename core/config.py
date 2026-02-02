@@ -31,6 +31,9 @@ else:
     # Fallback or create new
     CONFIG_FILE_PATH = "/config/config.yaml" if os.path.isdir("/config") else "config.yaml"
 
+logger.info(f"Using Configuration File: {CONFIG_FILE_PATH}")
+
+
 # Example Config Path Detection
 if os.path.exists("config.example.yaml"):
     EXAMPLE_CONFIG_PATH = "config.example.yaml"

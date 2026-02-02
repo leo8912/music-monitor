@@ -1,0 +1,109 @@
+api:
+  rate_limit:
+    burst_size: 10
+    requests_per_minute: 60
+  timeout: 30
+auth:
+  access_token_expire_minutes: 30
+  algorithm: HS256
+  avatar: /uploads/avatars/35fdc915b375421cbb1250f90a7b692c.jpg
+  enabled: true
+  password: password
+  refresh_token_expire_days: 7
+  secret_key: HV1i1DPxwNyWn10XD0lkbHiqa7fsIo6cnW3lrIEF5JM
+  username: music
+database:
+  echo: false
+  max_overflow: 10
+  pool_size: 5
+  url: sqlite+aiosqlite:///./music_monitor.db
+download:
+  max_concurrent_downloads: 3
+  quality_preference: 999
+  retry_attempts: 3
+  sources:
+  - netease
+  - qqmusic
+  - kugou
+  - kuwo
+  timeout: 30
+global:
+  check_interval_minutes: 60
+  external_url: http://localhost:5173/
+  log_level: INFO
+  show_log_panel: true
+  theme: light
+logging:
+  backup_count: 5
+  file: logs/application.log
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  level: INFO
+  max_bytes: 10485760
+metadata:
+  album_priority:
+  - plugin
+  cover_priority:
+  - plugin
+  enable_album: true
+  enable_cover: true
+  enable_lyrics: true
+  lyrics_priority:
+  - plugin
+  - kugou
+  - qqmusic
+monitor:
+  netease:
+    enabled: true
+    interval: 60
+    users:
+    - avatar: https://y.gtimg.cn/music/photo_new/T001R300x300M000000GBnpV1IcEfl.jpg
+      id: '12459252'
+      name: 宿羽阳
+  qqmusic:
+    enabled: true
+    interval: 60
+    users:
+    - avatar: https://y.gtimg.cn/music/photo_new/T001R300x300M000000GBnpV1IcEfl.jpg
+      id: 000GBnpV1IcEfl
+      name: 宿羽阳
+    - avatar: https://y.gtimg.cn/music/photo_new/T001R300x300M000001GAeOa0SeDvI.jpg
+      id: 001GAeOa0SeDvI
+      name: 任素汐
+notifications:
+  enabled: false
+  providers:
+    telegram:
+      bot_token: ''
+      chat_id: ''
+      enabled: false
+    wecom:
+      agent_id: ''
+      agent_secret: ''
+      corp_id: ''
+      enabled: false
+notify:
+  telegram:
+    bot_token: ''
+    chat_id: ''
+    enabled: false
+  wecom:
+    agentid: '1000003'
+    corpid: ww6582ddf3c02fd7fc
+    corpsecret: ydDzU7MFP5DajogWWeokkGPk-CCBgAAUHQzAOENhlgU
+    enabled: true
+    encoding_aes_key: 5DPQJNC16VWPO8ds7U69rE2E9CA9sdgu7uO4LDpWSC3
+    token: adOEH9t8JERvROoCbx2PH
+scheduler:
+  check_interval_minutes: 60
+  cleanup_interval_hours: 24
+  sync_interval_hours: 24
+storage:
+  auto_cache_enabled: true
+  cache_dir: /audio_cache
+  cleanup_threshold: 0.8
+  favorite_dir: favorites
+  favorites_dir: /favorites
+  library_path: ''
+  max_cache_size: 10737418240
+  media_dir: media
+  retention_days: 180
