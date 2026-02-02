@@ -7,10 +7,7 @@ PGID=${PGID:-0}
 
 echo "Starting with PUID=${PUID} PGID=${PGID}"
 
-echo "🔍 ROOT DEBUG: Listing site-packages:"
-ls -la /usr/local/lib/python3.11/site-packages | head -n 20
-python -c "import site; print(site.getsitepackages())"
-python -c "import yaml; print('✅ Root can import yaml')" || echo "❌ Root CANNOT import yaml"
+
 
 # 如果 PUID 不是 0 (root)，则创建用户并切换
 if [ "$PUID" != "0" ]; then

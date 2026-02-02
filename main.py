@@ -11,78 +11,15 @@
 
 Author: music-monitor development team
 """
-import sys
-import os
 
-# --- CRITICAL BOOT DEBUGGING (V2) ---
-try:
-    print(f"🐍 BOOT DEBUG START | User: {os.getuid()} | Python: {sys.executable}")
-    import site
-    packages = site.getsitepackages()
-    print(f"🐍 site-packages: {packages}")
-    
-    found = False
-    for p in packages:
-        if os.path.exists(p):
-            try:
-                files = os.listdir(p)
-                if 'yaml' in files or 'PyYAML' in files:
-                    print(f"✅ FOUND 'yaml' in {p}")
-                    found = True
-                    # Check permissions
-                    yp = os.path.join(p, 'yaml')
-                    if os.path.exists(yp):
-                        st = os.stat(yp)
-                        print(f"   Permissions: {oct(st.st_mode)} UID:{st.st_uid}")
-                else:
-                    print(f"❌ 'yaml' missing in {p}")
-            except Exception as e:
-                print(f"⚠️ Error reading {p}: {e}")
-    
-    if not found:
-        print("🚨 CRITICAL: PyYAML not found in any site-packages!")
-        print("Build verification passed but runtime failed. Checking sys.path...")
-        print(sys.path)
-
-except Exception as e:
-    print(f"⚠️ Debug crash: {e}")
-# -----------------------------
 
 from core.config import config as global_config, load_config
 global_config.update(load_config())
 import logging
 import yaml
+import os
+import sys
 
-print(f"🐍 Python Version: {sys.version}")
-print(f"🐍 User ID: {os.getuid()} Group ID: {os.getgid()}")
-print(f"🐍 sys.path: {sys.path}")
-
-try:
-    import site
-    packages = site.getsitepackages()
-    print(f"🐍 Site Packages: {packages}")
-    for p in packages:
-        if os.path.exists(p):
-            print(f"   📂 Listing {p}:")
-            try:
-                # 只列出前20个，避免刷屏
-                print(f"      {os.listdir(p)[:20]}...")
-                # 检查 yaml 是否在里面
-                if 'yaml' in os.listdir(p) or 'PyYAML' in os.listdir(p):
-                    print(f"      ✅ FOUND 'yaml' or 'PyYAML' in {p}")
-                    
-                    # 检查权限
-                    yaml_path = os.path.join(p, 'yaml')
-                    if os.path.exists(yaml_path):
-                        stat = os.stat(yaml_path)
-                        print(f"      🔐 Permissions for {yaml_path}: mode={oct(stat.st_mode)}, uid={stat.st_uid}, gid={stat.st_gid}")
-                else:
-                    print(f"      ❌ 'yaml' NOT found in {p}")
-            except Exception as e:
-                print(f"      ⚠️ Error reading {p}: {e}")
-except Exception as e:
-    print(f"⚠️ Debugging error: {e}")
-# -----------------------------
 
 from contextlib import asynccontextmanager
 
