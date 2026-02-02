@@ -16,7 +16,44 @@ global_config.update(load_config())
 import logging
 import yaml
 import os
+import sys
+import os
+
+# --- CRITICAL BOOT DEBUGGING ---
+print(f"🐍 Python Executable: {sys.executable}")
+print(f"🐍 Python Version: {sys.version}")
+print(f"🐍 User ID: {os.getuid()} Group ID: {os.getgid()}")
+print(f"🐍 sys.path: {sys.path}")
+
+try:
+    import site
+    packages = site.getsitepackages()
+    print(f"🐍 Site Packages: {packages}")
+    for p in packages:
+        if os.path.exists(p):
+            print(f"   📂 Listing {p}:")
+            try:
+                # 只列出前20个，避免刷屏
+                print(f"      {os.listdir(p)[:20]}...")
+                # 检查 yaml 是否在里面
+                if 'yaml' in os.listdir(p) or 'PyYAML' in os.listdir(p):
+                    print(f"      ✅ FOUND 'yaml' or 'PyYAML' in {p}")
+                    
+                    # 检查权限
+                    yaml_path = os.path.join(p, 'yaml')
+                    if os.path.exists(yaml_path):
+                        stat = os.stat(yaml_path)
+                        print(f"      🔐 Permissions for {yaml_path}: mode={oct(stat.st_mode)}, uid={stat.st_uid}, gid={stat.st_gid}")
+                else:
+                    print(f"      ❌ 'yaml' NOT found in {p}")
+            except Exception as e:
+                print(f"      ⚠️ Error reading {p}: {e}")
+except Exception as e:
+    print(f"⚠️ Debugging error: {e}")
+# -----------------------------
+
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
