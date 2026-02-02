@@ -41,24 +41,25 @@ class ScanService:
         # Collect all configured paths
         paths = set()
         
-        # 1. Cache Dir
-        paths.add(storage_cfg.get("cache_dir", "audio_cache"))
+        # 1. Cache Dir (临时/推送)
+        cache_dir = storage_cfg.get("cache_dir", "audio_cache")
+        if cache_dir:
+            paths.add(cache_dir)
         
-        # 2. Favorites Dir
-        paths.add(storage_cfg.get("favorites_dir", "favorites"))
+        # 2. Favorites Dir (收藏)
+        favorites_dir = storage_cfg.get("favorites_dir", "favorites")
+        if favorites_dir:
+            paths.add(favorites_dir)
+            
+        # 3. Library Dir (静态资料库)
+        # 注意: 即使 config 没配，也不要随意 fallback 到 "media"，除非明确指定
+        library_dir = storage_cfg.get("library_dir")
+        if library_dir:
+             paths.add(library_dir)
         
-        # 3. Media Dir (Generic Library)
-        if "media_dir" in storage_cfg and storage_cfg["media_dir"]:
-             paths.add(storage_cfg["media_dir"])
-        elif "media" not in paths: # Default fallback if not configured
-             paths.add("media")
-             
-        # 4. Library Path (Legacy/Alias)
-        if "library_path" in storage_cfg and storage_cfg["library_path"]:
-             paths.add(storage_cfg["library_path"])
-             
         # Filter out empty strings and normalize
         self.scan_directories = [p for p in paths if p and isinstance(p, str)]
+        logger.info(f"🔧 ScanService initialized with allowed paths: {self.scan_directories}")
         
         self.supported_extensions = ('.mp3', '.flac', '.m4a', '.wav')
     

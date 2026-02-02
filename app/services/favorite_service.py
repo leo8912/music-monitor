@@ -72,33 +72,69 @@ class FavoriteService:
             }
         
         try:
-            old_path = Path(song.local_path)
+            old_path = Path(song.local_path).resolve()
+            
+            # Load config directories
+            from core.config_manager import get_config_manager
+            storage_cfg = get_config_manager().get("storage", {})
+            favorites_dir = Path(storage_cfg.get("favorites_dir", "favorites")).resolve()
+            cache_dir = Path(storage_cfg.get("cache_dir", "audio_cache")).resolve()
+            library_dir = Path(storage_cfg.get("library_dir", "library")).resolve()
+            
+            logger.debug(f"Path Check: Old={old_path}, Cache={cache_dir}, Fav={favorites_dir}, Lib={library_dir}")
             
             # 只有当文件存在时才尝试移动
             if await anyio.to_thread.run_sync(old_path.exists):
+                
+                # Logic: Only move if it is in Cache or Favorites. 
+                # Do NOT move if it is in Library.
+                
+                # Check if file is in library (Static)
+                is_in_library = str(old_path).startswith(str(library_dir))
+                
+                if is_in_library:
+                    logger.info(f"Song is in static library ({library_dir}), skipping move.")
+                    # Do not move, just return success
+                    return {
+                        "song_id": song.id,
+                        "is_favorite": song.is_favorite,
+                        "new_path": song.local_path
+                    }
+
+                new_dir = None
+                
                 if song.is_favorite:
-                    # 收藏 -> 移动到 favorites
-                    new_dir = Path("favorites")
+                    # 收藏操作:
+                    # 仅当文件在 Cache 目录时，移动到 Favorites
+                    if str(old_path).startswith(str(cache_dir)):
+                        new_dir = favorites_dir
+                    else:
+                        logger.info(f"Song not in cache dir ({cache_dir}), skipping move to favorites.")
                 else:
-                    # 取消收藏 -> 移动回 audio_cache
-                    new_dir = Path("audio_cache")
-                
-                new_dir.mkdir(exist_ok=True)
-                new_path = new_dir / old_path.name
-                
-                # 移动文件
-                if new_path != old_path:
-                    logger.info(f"Moving file: {old_path} -> {new_path}")
-                    await anyio.to_thread.run_sync(
-                        shutil.move, 
-                        str(old_path), 
-                        str(new_path)
-                    )
+                    # 取消收藏操作:
+                    # 仅当文件在 Favorites 目录时，移回 Cache
+                    if str(old_path).startswith(str(favorites_dir)):
+                        new_dir = cache_dir
+                    else:
+                        logger.info(f"Song not in favorites dir ({favorites_dir}), skipping move back to cache.")
+
+                if new_dir:
+                    new_dir.mkdir(parents=True, exist_ok=True)
+                    new_path = new_dir / old_path.name
                     
-                    # 更新数据库路径
-                    song.local_path = str(new_path)
-                    await db.commit()
-                    await db.refresh(song)
+                    # 移动文件
+                    if new_path != old_path:
+                        logger.info(f"Moving file: {old_path} -> {new_path}")
+                        await anyio.to_thread.run_sync(
+                            shutil.move, 
+                            str(old_path), 
+                            str(new_path)
+                        )
+                        
+                        # 更新数据库路径
+                        song.local_path = str(new_path)
+                        await db.commit()
+                        await db.refresh(song)
             else:
                 logger.warning(f"File not found: {old_path}")
         
