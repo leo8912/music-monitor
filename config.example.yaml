@@ -1,20 +1,61 @@
+api:
+  rate_limit:
+    burst_size: 10
+    requests_per_minute: 60
+  timeout: 30
 auth:
-  avatar: ''
+  access_token_expire_minutes: 30
+  algorithm: HS256
+  avatar: '' 
   enabled: true
   password: "password"
+  refresh_token_expire_days: 7
   secret_key: "CHANGE_THIS_SECRET_KEY" # 务必修改此密钥
   username: "admin"
+database:
+  echo: false
+  max_overflow: 10
+  pool_size: 5
+  url: "sqlite+aiosqlite:////config/music_monitor.db" # Docker默认路径
+download:
+  max_concurrent_downloads: 3
+  quality_preference: 999 # FLAC
+  retry_attempts: 3
+  sources:
+  - netease
+  - qqmusic
+  - kugou
+  - kuwo
+  timeout: 30
 global:
   check_interval_minutes: 60
   external_url: "http://localhost:8000"
   log_level: INFO
   show_log_panel: true
   theme: light
+logging:
+  backup_count: 5
+  file: logs/application.log
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  level: INFO
+  max_bytes: 10485760
+metadata:
+  album_priority:
+  - plugin
+  cover_priority:
+  - plugin
+  enable_album: true
+  enable_cover: true
+  enable_lyrics: true
+  lyrics_priority:
+  - plugin
+  - kugou
+  - qqmusic
 monitor:
   netease:
     enabled: true
     interval: 60
-    users: []
+    users: [] 
       # - id: '6452'
       #   name: 周杰伦
       #   avatar: ''
@@ -25,7 +66,7 @@ monitor:
       # - id: '0025NhlN2yWrP4'
       #   name: 周杰伦
       #   avatar: ''
-notify:
+notify: # 新版结构 (替代 notifications)
   telegram:
     bot_token: ''
     chat_id: ''
@@ -37,9 +78,16 @@ notify:
     enabled: false
     encoding_aes_key: ''
     token: ''
+scheduler:
+  check_interval_minutes: 60
+  cleanup_interval_hours: 24
+  sync_interval_hours: 24
 storage:
   auto_cache_enabled: true
   cache_dir: /audio_cache
+  cleanup_threshold: 0.8
   favorites_dir: /favorites
   library_path: ''
+  max_cache_size: 10737418240
+  media_dir: media
   retention_days: 180
