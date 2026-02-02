@@ -9,6 +9,13 @@ echo "Starting with PUID=${PUID} PGID=${PGID}"
 
 
 
+# 初始化配置文件 (如果不存在)
+# 无论是否为 root 用户，都需要确保 /config/config.yaml 存在
+if [ ! -f /config/config.yaml ] && [ -f /app/config.example.yaml ]; then
+    echo "Initializing config file..."
+    cp /app/config.example.yaml /config/config.yaml
+fi
+
 # 如果 PUID 不是 0 (root)，则创建用户并切换
 if [ "$PUID" != "0" ]; then
     # 创建组（如果不存在）
@@ -19,12 +26,6 @@ if [ "$PUID" != "0" ]; then
     # 创建用户（如果不存在）
     if ! getent passwd abc >/dev/null; then
         useradd -u "$PUID" -g "$PGID" -m -s /bin/bash abc
-    fi
-
-    # 初始化配置文件 (如果不存在)
-    if [ ! -f /config/config.yaml ] && [ -f /app/config.example.yaml ]; then
-        echo "Initializing config file..."
-        cp /app/config.example.yaml /config/config.yaml
     fi
 
     # 更改目录权限
