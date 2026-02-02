@@ -31,7 +31,7 @@ class ConfigManager:
             "storage": {
                 "cache_dir": "audio_cache",
                 "favorite_dir": "favorites",
-                "media_dir": "media",
+                # "media_dir": "media",  # Deprecated/Removed to simplify
                 "max_cache_size": 10 * 1024 * 1024 * 1024,  # 10GB
                 "cleanup_threshold": 0.8  # 达到80%时清理
             },

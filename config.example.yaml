@@ -89,5 +89,4 @@ storage:
   favorites_dir: /favorites
   library_path: ''
   max_cache_size: 10737418240
-  media_dir: media
   retention_days: 180

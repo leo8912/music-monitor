@@ -34,8 +34,33 @@ class ScanService:
     """本地媒体库文件扫描服务"""
     
     def __init__(self):
+        from core.config_manager import get_config_manager
+        
+        storage_cfg = get_config_manager().get("storage", {})
+        
+        # Collect all configured paths
+        paths = set()
+        
+        # 1. Cache Dir
+        paths.add(storage_cfg.get("cache_dir", "audio_cache"))
+        
+        # 2. Favorites Dir
+        paths.add(storage_cfg.get("favorites_dir", "favorites"))
+        
+        # 3. Media Dir (Generic Library)
+        if "media_dir" in storage_cfg and storage_cfg["media_dir"]:
+             paths.add(storage_cfg["media_dir"])
+        elif "media" not in paths: # Default fallback if not configured
+             paths.add("media")
+             
+        # 4. Library Path (Legacy/Alias)
+        if "library_path" in storage_cfg and storage_cfg["library_path"]:
+             paths.add(storage_cfg["library_path"])
+             
+        # Filter out empty strings and normalize
+        self.scan_directories = [p for p in paths if p and isinstance(p, str)]
+        
         self.supported_extensions = ('.mp3', '.flac', '.m4a', '.wav')
-        self.scan_directories = ["audio_cache", "favorites"]
     
     @staticmethod
     def _normalize_cn_brackets(text: str) -> str:
