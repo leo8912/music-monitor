@@ -1,3 +1,14 @@
+"""
+调试脚本 - 用于测试不同音乐源的可用性
+
+此脚本用于测试不同音乐源（netease、tencent、kugou、kuwo等）的搜索和下载链接获取功能，
+帮助识别哪些源可以获取到特定歌曲的音频文件。
+
+Author: music-monitor development team
+
+更新日志:
+2026-01-23 - 创建脚本用于测试多源音频可用性 - ali
+"""
 
 import asyncio
 import aiohttp

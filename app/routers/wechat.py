@@ -1,452 +1,400 @@
+# -*- coding: utf-8 -*-
+"""
+微信企业号路由 - 处理微信回调
+
+此模块处理企业微信的消息回调：
+- 验证签名
+- 解密消息
+- 歌曲/歌手搜索
+- 后台下载收藏
+
+Author: google
+Updated: 2026-01-26
+"""
 import logging
-import time
-import xml.etree.cElementTree as ET
-from fastapi import APIRouter, Request, Response, HTTPException, Depends
-from wechatpy.exceptions import InvalidSignatureException
-from wechatpy.crypto import WeChatCrypto
-from wechatpy import parse_message, create_reply
-from sqlalchemy.orm import Session
+import asyncio
+from typing import Optional
 from datetime import datetime
+from fastapi import APIRouter, Request, Response, HTTPException
+
+try:
+    from wechatpy.exceptions import InvalidSignatureException
+    from wechatpy.crypto import WeChatCrypto
+    from wechatpy import parse_message, create_reply
+    HAS_WECHATPY = True
+except ImportError:
+    HAS_WECHATPY = False
 
 from core.config import config, add_monitored_user
-from core.database import SessionLocal, MediaRecord
-from core.audio_downloader import AudioDownloader, AudioInfo
-from app.services.favorites_service import FavoritesService
+from core.database import AsyncSessionLocal
+from app.services.wechat_download_service import WeChatDownloadService
+from app.services.download_service import DownloadService
+from app.services.music_providers import MusicAggregator
 from notifiers.wecom import WeComNotifier
-from starlette.concurrency import run_in_threadpool
-import pyncm.apis as apis
-from qqmusic_api import search
-from qqmusic_api.search import SearchType
+
+from app.models.wechat_session import WeChatSession
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-from urllib.parse import quote
-from core.wechat import FixedWeChatCrypto
+async def get_db_session(user_id: str) -> Optional[dict]:
+    """从数据库获取搜索会话"""
+    async with AsyncSessionLocal() as db:
+        from sqlalchemy import select
+        stmt = select(WeChatSession).where(WeChatSession.user_id == user_id)
+        result = await db.execute(stmt)
+        session = result.scalar_one_or_none()
+        
+        if session and session.expires_at > datetime.now():
+            return session.session_data
+        
+        if session:
+            await db.delete(session)
+            await db.commit()
+    return None
+
+async def set_db_session(user_id: str, data: dict, expire_seconds: int = 300):
+    """保存搜索会话到数据库"""
+    async with AsyncSessionLocal() as db:
+        from sqlalchemy import select
+        stmt = select(WeChatSession).where(WeChatSession.user_id == user_id)
+        result = await db.execute(stmt)
+        session = result.scalar_one_or_none()
+        
+        expires_at = datetime.now() + timedelta(seconds=expire_seconds)
+        
+        if session:
+            session.session_data = data
+            session.expires_at = expires_at
+        else:
+            session = WeChatSession(
+                user_id=user_id,
+                session_data=data,
+                expires_at=expires_at
+            )
+            db.add(session)
+        await db.commit()
+
+async def clear_db_session(user_id: str):
+    """清除搜索会话"""
+    async with AsyncSessionLocal() as db:
+        from sqlalchemy import delete
+        stmt = delete(WeChatSession).where(WeChatSession.user_id == user_id)
+        await db.execute(stmt)
+        await db.commit()
+
 
 def get_crypto():
+    """获取微信加密器"""
+    if not HAS_WECHATPY:
+        return None
+    
+    # 获取配置，支持两种可能的路径
     wecom_cfg = config.get('notify', {}).get('wecom', {})
+    if not wecom_cfg:
+        wecom_cfg = config.get('notifications', {}).get('providers', {}).get('wecom', {})
+        
+    if not wecom_cfg:
+        return None
+
+    # 映射可能的字段名
     token = wecom_cfg.get('token')
-    encoding_aes_key = wecom_cfg.get('encoding_aes_key')
-    corpid = wecom_cfg.get('corpid')
+    encoding_aes_key = wecom_cfg.get('encoding_aes_key') or wecom_cfg.get('aes_key')
+    corpid = wecom_cfg.get('corpid') or wecom_cfg.get('corp_id')
     
     if not token or not encoding_aes_key or not corpid:
+        logger.warning(f"WeCom回调配置不完整: token={bool(token)}, aes_key={bool(encoding_aes_key)}, corpid={bool(corpid)}")
         return None
-    return FixedWeChatCrypto(token, encoding_aes_key, corpid)
+    
+    try:
+        from core.wechat import FixedWeChatCrypto
+        return FixedWeChatCrypto(token, encoding_aes_key, corpid)
+    except Exception as e:
+        logger.error(f"初始化 FixedWeChatCrypto 失败: {e}")
+        return WeChatCrypto(token, encoding_aes_key, corpid)
+
 
 @router.get("/api/wecom/callback")
 async def wechat_verify(msg_signature: str, timestamp: str, nonce: str, echostr: str):
+    """微信验证接口"""
     crypto = get_crypto()
     if not crypto:
         return Response("WeCom config missing", status_code=500)
     
     try:
         decrypted_echostr = crypto.check_signature(
-            msg_signature,
-            timestamp,
-            nonce,
-            echostr
+            msg_signature, timestamp, nonce, echostr
         )
         return Response(content=decrypted_echostr)
     except InvalidSignatureException:
         raise HTTPException(status_code=403, detail="Invalid signature")
     except Exception as e:
-        logger.error(f"Verify error: {e}")
+        logger.error(f"验证错误: {e}")
         raise HTTPException(status_code=500, detail="Verify failed")
+
 
 @router.post("/api/wecom/callback")
 async def wechat_callback(request: Request, msg_signature: str, timestamp: str, nonce: str):
-    logger.info(f"收到微信回调: signature={msg_signature}, timestamp={timestamp}, nonce={nonce}")
+    """微信消息回调"""
+    if not HAS_WECHATPY:
+        return Response("wechatpy not installed", status_code=500)
+    
+    logger.info(f"收到微信回调")
+    
     try:
         crypto = get_crypto()
         if not crypto:
-            logger.error("get_crypto() 返回 None，检查 notify.wecom 配置")
             return Response("Config missing", status_code=500)
-            
+        
         body = await request.body()
+        
         try:
             decrypted_xml = crypto.decrypt_message(
-                body,
-                msg_signature,
-                timestamp,
-                nonce
+                body, msg_signature, timestamp, nonce
             )
         except InvalidSignatureException:
-            logger.warning("签名验证失败")
             raise HTTPException(status_code=403, detail="Invalid signature")
         except Exception as e:
-            logger.error(f"解密失败: {str(e)}", exc_info=True)
+            logger.error(f"解密失败: {e}")
             return Response("Decryption failed", status_code=500)
-            
+        
         msg = parse_message(decrypted_xml)
+        
         if msg.type != 'text':
             return Response("success")
-            
+        
         content = msg.content.strip()
-        user_id = msg.source 
+        user_id = msg.source
         logger.info(f"处理用户消息: {user_id} -> {content}")
         
-        reply_content = ""
-        global search_session
-        if 'search_session' not in globals():
-            search_session = {}
-            
-        if content.isdigit():
-            idx = int(content) - 1
-            if user_id in search_session:
-                session = search_session[user_id]
-                if (datetime.now() - session['time']).total_seconds() > 300:
-                    reply_content = "⚠️ 搜索结果已过期，请重新搜索。"
-                    del search_session[user_id]
-                elif 0 <= idx < len(session['results']):
-                    stype = session.get('type', 'song')
-                    target = session['results'][idx]
-                    
-                    import asyncio
-                    if stype == 'song':
-                        asyncio.create_task(background_download_and_fav(target, user_id))
-                        reply_content = f"🚀 已收到，开始下载并收藏第 {idx+1} 首：\n{target['title']} - {format_artist(target['artist'])}"
-                    elif stype == 'artist':
-                        logger.info(f"正在后台添加歌手: {target['name']}")
-                        asyncio.create_task(background_add_artist(target, user_id))
-                        reply_content = f"🚀 已收到，正在添加歌手监控：\n{target['name']}"
-                    
-                    del search_session[user_id]
+        async def process_message(content: str, user_id: str) -> Optional[str]:
+            # 1. 处理数字选择（确认下载或确认添加歌手）
+            if content.isdigit():
+                idx = int(content) - 1
+                session = await get_db_session(user_id)
+                
+                if session:
+                    results = session.get('results', [])
+                    if 0 <= idx < len(results):
+                        target = results[idx]
+                        stype = session.get('type', 'song')
+                        
+                        if stype == 'song':
+                            asyncio.create_task(background_download(target, user_id))
+                            artist = format_artist(target.get('artist', ''))
+                            return f"🚀 开始下载：\n{target.get('title', '未知')} - {artist}\n下载完成后将通过推送告知。"
+                        elif stype == 'artist':
+                            asyncio.create_task(background_add_artist(target, user_id))
+                            return f"🚀 正在添加歌手监控：\n{target.get('name', '未知')}\n添加完成后将同步最新作品。"
+                        
+                        await clear_db_session(user_id)
+                    else:
+                        return f"⚠️ 请输入有效的序号 (1-{len(results)})"
                 else:
-                    reply_content = f"⚠️ 请输入有效的序号 (1-{len(session['results'])})"
-            else:
-                reply_content = "⚠️ 无待选列表，请先搜索。"
-        else:
-            intent = "artist"
+                    return "⚠️ 会话已过期或不存在，请重新搜索。"
+            
+            # 2. 处理意图识别
             keyword = content
-            for prefix in ["下载", "喜欢", "收藏", "搜歌", "歌曲"]:
-                if content.startswith(prefix):
+            intent = "artist"  # 默认搜索歌手
+            
+            # 定义前缀对应的搜索意图
+            song_prefixes = ["下载", "喜欢", "收藏", "搜歌", "歌曲", "/song"]
+            artist_prefixes = ["监控", "歌手", "添加", "/artist"]
+            
+            for prefix in song_prefixes:
+                if content.lower().startswith(prefix):
                     intent = "song"
                     keyword = content[len(prefix):].strip()
                     break
             
+            for prefix in artist_prefixes:
+                if content.lower().startswith(prefix):
+                    intent = "artist"
+                    keyword = content[len(prefix):].strip()
+                    break
+            
             if not keyword:
-                reply_content = "请提供关键词"
+                return "👋 你好！发送“歌曲 关键词”搜索音乐，发送“歌手 关键词”添加监控。"
+            
+            # 3. 执行搜索
+            if intent == "song":
+                return await handle_song_search(keyword, user_id)
             else:
-                if intent == "song":
-                    reply_content = await handle_song_search(keyword, user_id)
-                else:
-                    articles = await handle_artist_search(keyword, user_id)
-                    if isinstance(articles, str):
-                        reply_content = articles
-                    else:
-                        reply = create_reply(articles, msg)
-                        xml = crypto.encrypt_message(reply.render(), nonce, timestamp)
-                        return Response(content=xml, media_type="application/xml")
+                return await handle_artist_search(keyword, user_id)
 
+        reply_content = await process_message(content, user_id)
+        
         if not reply_content:
             return Response("success")
-            
+        
         reply = create_reply(reply_content, msg)
         xml = crypto.encrypt_message(reply.render(), nonce, timestamp)
         return Response(content=xml, media_type="application/xml")
         
     except Exception as e:
-        logger.error(f"全局回调异常: {str(e)}", exc_info=True)
+        logger.error(f"回调异常: {e}", exc_info=True)
         return Response("Error", status_code=500)
 
-    reply = None
-    if isinstance(reply_content, list):
-         # It's articles
-         from wechatpy.replies import ArticlesReply
-         reply = ArticlesReply(message=msg)
-         for art in reply_content:
-             reply.add_article(art)
-    else:
-         reply = create_reply(reply_content, msg)
-         
-    encrypted_xml = crypto.encrypt_message(reply.render(), nonce, timestamp)
-    return Response(content=encrypted_xml, media_type="application/xml")
 
-def format_artist(artist_field):
+def format_artist(artist_field) -> str:
+    """格式化歌手字段"""
     if isinstance(artist_field, list):
-        return "/".join(artist_field)
-    return str(artist_field)
+        return "/".join(str(a) for a in artist_field)
+    return str(artist_field) if artist_field else ""
+
 
 async def handle_song_search(keyword: str, user_id: str) -> str:
-    # ... (Keep existing simple text for songs for now unless user wants cards too, but user specific "Artist")
-    # Actually, let's keep songs as text list to avoid modifying everything roughly.
-    # Re-implement song search briefly to match context.
-    dl = AudioDownloader()
-    search_results = []
-    
-    # Netease
-    try:
-        logger.info(f"正在从网易云搜索歌曲: {keyword}")
-        res_ne = await dl.search_songs(keyword, "", source="netease", count=5)
-        if res_ne: 
-            logger.info(f"网易云搜索到 {len(res_ne)} 首歌曲")
-            search_results.extend(res_ne)
-        else:
-            logger.info("网易云未搜索到结果")
-    except Exception as e:
-        logger.error(f"网易云搜索异常: {str(e)}", exc_info=True)
-    
-    # QQ
-    try:
-        logger.info(f"正在从 QQ 音乐搜索歌曲: {keyword}")
-        res_qq = await dl.search_songs(keyword, "", source="qqmusic", count=5)
-        if res_qq: 
-            logger.info(f"QQ 音乐搜索到 {len(res_qq)} 首歌曲")
-            search_results.extend(res_qq)
-        else:
-            logger.info("QQ 音乐未搜索到结果")
-    except Exception as e:
-        logger.error(f"QQ 音乐搜索异常: {str(e)}", exc_info=True)
-    
-    if not search_results:
-        return f"😔 未找到关于 '{keyword}' 的歌曲"
-        
+    """搜索歌曲"""
     global search_session
-    if 'search_session' not in globals(): search_session = {}
     
-    search_session[user_id] = {
-        "type": "song",
-        "keyword": keyword,
-        "results": search_results[:8], 
-        "time": datetime.now()
-    }
-    
-    reply = f"🔎 找到以下歌曲（回复序号下载）：\n"
-    for i, song in enumerate(search_session[user_id]['results']):
-        src_icon = "🎵" if song['source'] == 'netease' else "🐧"
-        artist = format_artist(song['artist'])
-        reply += f"{i+1}. {src_icon} {song['title']} - {artist}\n"
-        
-    return reply
-
-async def handle_artist_search(keyword: str, user_id: str):
-    # Search both
-    merged_results = {} # Name -> {name, avatar, netease_id, qq_id, netease_avatar, qq_avatar}
-    
-    # Netease
     try:
-        ne_res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, keyword, stype=100, limit=5)
-        if ne_res.get('code') == 200 and ne_res.get('result', {}).get('artists'):
-            for ar in ne_res['result']['artists']:
-                name = ar['name']
-                if name not in merged_results:
-                    merged_results[name] = {"name": name, "avatar": ar.get('picUrl')}
-                merged_results[name]['netease_id'] = str(ar['id'])
-                if not merged_results[name]['avatar']: merged_results[name]['avatar'] = ar.get('picUrl')
-    except Exception as e:
-        logger.warning(f"Artist search error (NE): {e}")
-
-    # QQ
-    try:
-        # 尝试通过搜索接口获取。部分歌手可能是通过 mid 关联
-        qq_res = await search.search_by_type(keyword=keyword, search_type=SearchType.SINGER, num=10)
-        logger.info(f"QQ Search Result for '{keyword}': {qq_res}") # 打印原始响应
-        if qq_res:
-             # 如果返回的是字典（包含 list 键）
-            if isinstance(qq_res, dict) and 'list' in qq_res:
-                qq_res = qq_res['list']
-            
-            if isinstance(qq_res, list):
-                for ar in qq_res:
-                    mid = ar.get('mid') or ar.get('singerMID') or ar.get('singer_mid')
-                    name = ar.get('name') or ar.get('singerName') or ar.get('singer_name')
-                    if mid and name:
-                        # Update merged_results with QQ info
-                        if name not in merged_results:
-                            merged_results[name] = {"name": name}
-                        merged_results[name]['qq_id'] = mid
-                        # Prioritize existing avatar if available, otherwise use QQ's
-                        if not merged_results[name].get('avatar'):
-                            merged_results[name]['avatar'] = ar.get('pic') or ar.get('singer_pic') or f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
-            else:
-                logger.warning(f"QQ Search result for '{keyword}' is not a list after initial parsing: {type(qq_res)}")
-        else:
-            logger.info("QQ Search returned empty/None")
-    except Exception as e:
-        logger.error(f"Artist search error (QQ): {str(e)}", exc_info=True)
+        aggregator = MusicAggregator()
+        results = await asyncio.wait_for(
+            aggregator.search_song(keyword, limit=8),
+            timeout=5.0
+        )
         
-    if not merged_results:
-        return f"😔 未找到歌手 '{keyword}'"
-
-    # Convert to list and limit
-    final_list = list(merged_results.values())[:8] # Max 8 for News
-    
-    # Cache Session
-    global search_session
-    if 'search_session' not in globals(): search_session = {}
-    
-    search_session[user_id] = {
-        "type": "artist",
-        "keyword": keyword,
-        "results": final_list,
-        "time": datetime.now()
-    }
-    
-    # Build Articles
-    articles = []
-    # Header article (maybe just first artist? Or a summary?)
-    # WeChat News: First item is big picture.
-    # Let's just list authors.
-    
-    for i, ar in enumerate(final_list):
-        sources = []
-        if 'netease_id' in ar: sources.append("网易")
-        if 'qq_id' in ar: sources.append("QQ")
-        desc = f"来源: {' / '.join(sources)}"
+        if not results:
+            return f"😔 未找到：'{keyword}'"
         
-        articles.append({
-            "title": f"{i+1}. {ar['name']}",
-            "description": desc,
-            "image": ar['avatar'] or "",
-            "url": "https://music.163.com" # Dummy URL required?
+        # 缓存搜索结果
+        await set_db_session(user_id, {
+            "type": "song",
+            "keyword": keyword,
+            "results": [r.to_dict() for r in results]
         })
         
-    return articles
+        # 构建回复
+        lines = [f"🔍 找到 {len(results)} 首歌曲：\n"]
+        for i, song in enumerate(results):
+            artist = format_artist(song.artist)
+            lines.append(f"{i+1}. {song.title} - {artist}")
+        lines.append("\n回复数字下载")
+        
+        return "\n".join(lines)
+        
+    except asyncio.TimeoutError:
+        return "⚠️ 搜索超时，请稍后重试"
+    except Exception as e:
+        logger.error(f"搜索异常: {e}")
+        return "⚠️ 搜索服务暂时不可用"
 
 
-async def background_add_artist(target, user_id):
+async def handle_artist_search(keyword: str, user_id: str) -> str:
+    """搜索歌手"""
+    global search_session
+    
     try:
-        name = target['name']
-        avatar = target.get('avatar')
+        aggregator = MusicAggregator()
+        results = await asyncio.wait_for(
+            aggregator.search_artist(keyword, limit=5),
+            timeout=5.0
+        )
+        
+        if not results:
+            return f"😔 未找到歌手：'{keyword}'"
+        
+        # 缓存结果
+        await set_db_session(user_id, {
+            "type": "artist",
+            "keyword": keyword,
+            "results": [r.to_dict() for r in results]
+        })
+        
+        # 构建回复
+        lines = [f"🎤 找到 {len(results)} 位歌手：\n"]
+        for i, artist in enumerate(results):
+            lines.append(f"{i+1}. {artist.name} [{artist.source}]")
+        lines.append("\n回复数字添加监控")
+        
+        return "\n".join(lines)
+        
+    except asyncio.TimeoutError:
+        return "⚠️ 搜索超时"
+    except Exception as e:
+        logger.error(f"歌手搜索异常: {e}")
+        return "⚠️ 搜索服务不可用"
+
+
+async def background_download(song: dict, user_id: str):
+    """后台下载歌曲"""
+    title = song.get('title', '')
+    artist = format_artist(song.get('artist', ''))
+    
+    try:
+        notifier = WeComNotifier()
+        
+        # 使用 DownloadService 下载
+        download_service = DownloadService()
+        result = await download_service.download_audio(
+            title=title,
+            artist=artist,
+            album=song.get('album', '')
+        )
+        
+        if not result:
+            await notifier.send_text(f"❌ 下载失败：{title}", [user_id])
+            return
+        
+        # 使用 WeChatDownloadService 保存记录
+        async with AsyncSessionLocal() as db:
+            record_result = await WeChatDownloadService.create_or_update_record(
+                db=db,
+                song=song,
+                download_result=result,
+                cover_url=song.get('cover', '')
+            )
+        
+        if record_result:
+            await notifier.send_news_message(
+                title=f"✅ 下载完成: {title}",
+                description=f"🎙️ {artist}\n💾 已加入收藏",
+                url=record_result.get('magic_url', ''),
+                pic_url=record_result.get('cover_url', ''),
+                user_ids=[user_id]
+            )
+        else:
+            await notifier.send_text(f"⚠️ 下载成功但保存失败", [user_id])
+            
+    except Exception as e:
+        logger.error(f"后台下载错误: {e}")
+        try:
+            await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
+        except:
+            pass
+
+
+async def background_add_artist(target: dict, user_id: str):
+    """后台添加歌手监控"""
+    name = target.get('name', '')
+    
+    try:
+        notifier = WeComNotifier()
+        await notifier.send_text(f"⏳ 正在添加 '{name}'...", [user_id])
+        
+        # 添加到监控
         added_sources = []
         
-        notifier = WeComNotifier()
-        await notifier.send_text(f"⏳ 正在处理 '{name}' 的全平台监控添加...", [user_id])
-
-        # 1. Handle Netease
-        ne_id = target.get('netease_id')
-        if not ne_id:
-            # Try search
-            try:
-                res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, name, stype=100, limit=1)
-                if res.get('result', {}).get('artists'):
-                     ne_id = str(res['result']['artists'][0]['id'])
-            except: pass
-        
-        if ne_id:
-            if add_monitored_user('netease', ne_id, name, avatar=avatar):
+        if target.get('netease_id') or target.get('source') == 'netease':
+            source_id = target.get('netease_id') or target.get('id', '')
+            if add_monitored_user('netease', str(source_id), name, avatar=target.get('avatar')):
                 added_sources.append("网易云")
-
-        # 2. Handle QQ
-        qq_id = target.get('qq_id')
-        if not qq_id:
-             try:
-                res = await search.search_by_type(keyword=name, search_type=SearchType.SINGER, num=1)
-                if res and len(res) > 0:
-                    qq_id = res[0].get('singerMID')
-             except: pass
-             
-        if qq_id:
-            if add_monitored_user('qqmusic', qq_id, name, avatar=avatar):
+        
+        if target.get('qqmusic_id') or target.get('source') == 'qqmusic':
+            source_id = target.get('qqmusic_id') or target.get('id', '')
+            if add_monitored_user('qqmusic', str(source_id), name, avatar=target.get('avatar')):
                 added_sources.append("QQ音乐")
         
         if added_sources:
             msg = f"✅ 已添加 '{name}' 到监控：\n" + " / ".join(added_sources)
-            msg += "\n🚀 正在触发全网同步..."
             await notifier.send_text(msg, [user_id])
-            
-            from app.services.media_service import run_check
-            await run_check('netease')
-            await run_check('qqmusic')
         else:
-             await notifier.send_text(f"⚠️ 未能添加 '{name}' (可能已存在或未找到)", [user_id])
-             
-    except Exception as e:
-        logger.error(f"Bg add artist error: {e}")
-        try:
-            await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
-        except: pass
-
-async def background_download_and_fav(song, user_id):
-    title = song['title']
-    artist = format_artist(song['artist'])
-    
-    try:
-        dl = AudioDownloader()
-        
-        # Download
-        # This might take time
-        # TODO: Add progress notify if really needed? 
-        # But this is "Background", users expect it to just popup when done.
-        
-        res = await dl.download(
-            source=song['source'],
-            song_id=song['id'],
-            title=title,
-            artist=artist,
-            album=song.get('album', ''),
-            quality=999
-        )
-        
-        if not res:
-            await WeComNotifier().send_text(f"❌ 下载失败：{title}\n原因：未找到有效资源", [user_id])
-            return
-
-        # Update DB & Favorite
-        db = SessionLocal()
-        try:
-            unique_key = f"{song['source']}_{song['id']}"
-            record = db.query(MediaRecord).filter_by(unique_key=unique_key).first()
-            if not record:
-                record = MediaRecord(
-                    unique_key=unique_key,
-                    source=song['source'],
-                    media_type="audio",
-                    media_id=song['id'],
-                    title=title,
-                    author=artist,
-                    album=song.get('album'),
-                    publish_time=datetime.now()
-                )
-                db.add(record)
-                db.commit()
-                db.refresh(record)
-            
-            # Update path and metadata
-            record.local_audio_path = res['local_path']
-            record.audio_quality = res['quality']
-            
-            # 更新封面（优先使用下载结果中的封面，其次使用 song 对象中的）
-            cover_url = res.get('cover') or song.get('cover') or record.cover or "https://p2.music.126.net/tGHU62DTszbTsM7vzNgHjw==/109951165631226326.jpg"
-            if not record.cover:
-                record.cover = cover_url
-            
-            # Move to favorites (Add to favorite list)
-            fav_res = await FavoritesService.toggle_favorite(db, unique_key, force_state=True)
-            
-            db.commit()
-            
-            # Generate Magic Link
-            from core.security import generate_signed_url_params
-            
-            # Use unique_key as ID for signature
-            sign_params = generate_signed_url_params(unique_key)
-            
-            base_url = config.get('global', {}).get('external_url', 'http://localhost:8000')
-            # Handle trailing slash
-            if base_url.endswith('/'): base_url = base_url[:-1]
-            
-            magic_url = f"{base_url}/#/mobile/play?id={quote(sign_params['id'])}&sign={sign_params['sign']}&expires={sign_params['expires']}"
-            
-            # 发送图文消息通知
-            await WeComNotifier().send_news_message(
-                title=f"✅ 下载完成: {title}",
-                description=f"🎙️ 歌手: {artist}\n💾 已加入收藏\n\n点击立即播放（72小时有效）",
-                url=magic_url,
-                pic_url=cover_url,
-                user_ids=[user_id]
-            )
-
-            
-        except Exception as e:
-            logger.error(f"DB/Fav Error: {e}")
-            await WeComNotifier().send_text(f"⚠️ 下载成功但收藏失败：{e}", [user_id])
-        finally:
-            db.close()
+            await notifier.send_text(f"⚠️ 未能添加 '{name}'", [user_id])
             
     except Exception as e:
-        logger.error(f"Bg task error: {e}")
+        logger.error(f"添加歌手错误: {e}")
         try:
             await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
-        except: pass
+        except:
+            pass

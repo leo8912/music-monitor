@@ -46,7 +46,6 @@ COPY app/ /app/app/
 COPY core/ /app/core/
 COPY domain/ /app/domain/
 COPY notifiers/ /app/notifiers/
-COPY plugins/ /app/plugins/
 
 # Create default config
 RUN cp config.example.yaml config.yaml
@@ -55,7 +54,7 @@ RUN cp config.example.yaml config.yaml
 COPY --from=frontend /app/web/dist /app/web/dist
 
 # Environment defaults
-ENV DATABASE_URL=sqlite:////config/music_monitor.db
+ENV DATABASE_URL=sqlite+aiosqlite:////config/music_monitor.db
 ENV TZ=Asia/Shanghai
 
 VOLUME /config

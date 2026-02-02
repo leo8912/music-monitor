@@ -1,0 +1,793 @@
+2026-01-29 09:37:38,527 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 09:37:38,528 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 09:37:49,673 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:40:44,616 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:40:44,751 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:44:16,881 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:44:17,022 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:55:15,561 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:55:23,548 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 09:55:23,548 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 09:55:26,287 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:55:26,372 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:55:26,537 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:55:28,854 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:55:28,971 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:55:35,924 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:55:36,038 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:55:38,575 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:55:38,654 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:57:28,037 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:57:30,756 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 09:57:30,756 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 09:57:31,280 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:57:33,905 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:57:34,043 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:57:35,827 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:57:35,938 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:57:52,333 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:57:52,446 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 09:57:57,396 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 09:57:57,472 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:00:49,256 - app.routers.media - INFO - 收到下载请求: 爱人呢 - 宿羽阳
+2026-01-29 10:00:49,268 - app.services.download_service - INFO - 搜索 [kuwo]: 爱人呢 宿羽阳
+2026-01-29 10:00:51,044 - app.services.download_service - INFO - 找到匹配: [kuwo] 爱人呢 - score=2000
+2026-01-29 10:00:51,895 - app.routers.media - ERROR - 下载错误: 500: 下载失败
+2026-01-29 10:01:00,237 - app.routers.media - INFO - 收到下载请求: 爱人呢 - 宿羽阳
+2026-01-29 10:01:00,246 - app.services.download_service - INFO - 搜索 [kuwo]: 爱人呢 宿羽阳
+2026-01-29 10:01:01,093 - app.services.download_service - INFO - 找到匹配: [kuwo] 爱人呢 - score=2000
+2026-01-29 10:01:01,911 - app.routers.media - ERROR - 下载错误: 500: 下载失败
+2026-01-29 10:03:33,509 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:03:45,644 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:03:45,644 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:04:29,287 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:04:37,440 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:04:37,509 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:05:44,218 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:05:44,360 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:05:58,654 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:05:58,730 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:13:01,896 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:18:44,555 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:18:44,556 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:18:47,264 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:19:40,732 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:19:40,920 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:19:42,786 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:19:42,948 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:19:52,746 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:19:52,860 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:20:16,659 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:20:16,824 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:20:26,076 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:20:26,197 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:22:05,768 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:22:08,502 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:22:08,502 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:22:09,284 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:22:10,477 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:22:13,700 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:22:14,177 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:22:14,177 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:23:50,177 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:23:53,404 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:23:53,404 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:23:56,283 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:23:57,753 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:24:00,971 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:24:01,470 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:24:01,470 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:27:10,325 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:27:26,996 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:27:26,996 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:27:29,248 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香 周杰伦
+2026-01-29 10:27:32,548 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香 周杰伦'
+2026-01-29 10:27:32,550 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:27:33,039 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香 周杰伦'
+2026-01-29 10:27:33,039 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香 周杰伦'
+2026-01-29 10:28:52,237 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:30:41,909 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:30:41,910 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:30:45,060 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香 周杰伦
+2026-01-29 10:30:48,265 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香 周杰伦'
+2026-01-29 10:30:48,462 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香 周杰伦'
+2026-01-29 10:30:48,463 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 10 首歌曲: '稻香 周杰伦'
+2026-01-29 10:31:06,726 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:31:09,817 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:31:10,272 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:31:10,272 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:44:08,491 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:44:08,491 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:44:09,568 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:44:17,635 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香 周杰伦
+2026-01-29 10:44:20,885 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香 周杰伦'
+2026-01-29 10:44:21,093 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香 周杰伦'
+2026-01-29 10:44:21,094 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 10 首歌曲: '稻香 周杰伦'
+2026-01-29 10:44:39,732 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:44:43,121 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:44:43,647 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:44:43,647 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:44:53,829 - app.services.library - INFO - Manual Match: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 10:48:09,423 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:48:12,584 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:48:12,585 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:48:13,272 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:48:16,066 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:48:16,222 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:48:21,551 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:48:24,935 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:48:25,151 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 10:48:25,151 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 10 首歌曲: '稻香'
+2026-01-29 10:48:34,350 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:48:37,553 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:48:38,008 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:48:38,009 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:48:43,882 - app.services.library - INFO - Manual Match: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 10:51:47,588 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:51:55,497 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:51:55,497 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:51:58,287 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:51:58,629 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:52:01,964 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:52:02,480 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:52:02,481 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:52:07,263 - app.services.library - INFO - Manual Match: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 10:53:59,530 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:54:02,298 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:54:02,298 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:54:02,757 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:54:03,778 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:54:06,910 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:54:07,389 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:54:07,390 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:54:10,002 - app.services.library - INFO - Manual Match: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 10:54:13,364 - app.services.library - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: dict_keys(['title', 'album'])
+2026-01-29 10:54:13,364 - app.services.library - ERROR - Apply Match Failed: 'MetadataService' object has no attribute 'param_write_to_file'
+Traceback (most recent call last):
+  File "D:\code\music-monitor\app\services\library.py", line 1550, in apply_metadata_match
+    await metadata_service.param_write_to_file(song.local_path, tags_to_update)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataService' object has no attribute 'param_write_to_file'
+2026-01-29 10:54:16,765 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:54:16,908 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:57:18,031 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:57:37,402 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 10:57:37,402 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 10:57:37,914 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:57:38,877 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:57:38,992 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 10:57:46,254 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 10:57:49,462 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:57:50,440 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 10:57:50,440 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 10:57:57,186 - app.services.library - INFO - Manual Match: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 10:58:00,527 - app.services.library - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'album']
+2026-01-29 10:58:00,539 - app.services.library - INFO -   📝 内嵌歌词到文件: audio_cache/周杰伦 - 稻香.flac
+2026-01-29 10:58:00,543 - app.services.library - INFO -   ✅ FLAC歌词内嵌成功
+2026-01-29 10:58:17,063 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 10:58:17,182 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:00:33,566 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:00:33,720 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:00:35,870 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:00:38,767 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:00:38,767 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:00:38,880 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:00:45,803 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:00:49,719 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:00:50,181 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:00:50,182 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:00:51,404 - app.services.library - INFO - Manual Match: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:00:55,397 - app.services.library - INFO - Metadata incomplete, trying backfill via search: 稻香
+2026-01-29 11:00:55,495 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:00:55,495 - app.services.library - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'album']
+2026-01-29 11:00:55,507 - app.services.library - INFO -   📝 内嵌歌词到文件: audio_cache/周杰伦 - 稻香.flac
+2026-01-29 11:00:55,510 - app.services.library - INFO -   ✅ FLAC歌词内嵌成功
+2026-01-29 11:01:15,514 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:01:15,634 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:03:31,912 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:03:35,740 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:03:35,741 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:03:37,941 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:03:42,309 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:03:45,952 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:03:46,151 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:03:46,151 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 10 首歌曲: '稻香'
+2026-01-29 11:04:03,368 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:04:07,130 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:04:07,593 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:04:07,594 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:04:18,265 - app.services.library - INFO - Manual Match: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:04:22,548 - app.services.library - INFO - Metadata incomplete, trying backfill via search: 稻香
+2026-01-29 11:04:22,644 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:04:22,645 - app.services.library - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'album']
+2026-01-29 11:04:22,658 - app.services.library - INFO -   📝 内嵌歌词到文件: audio_cache/周杰伦 - 稻香.flac
+2026-01-29 11:04:22,662 - app.services.library - INFO -   ✅ FLAC歌词内嵌成功
+2026-01-29 11:12:27,609 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:12:30,437 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:12:30,438 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:12:31,274 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:12:36,312 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:12:39,703 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:12:40,168 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:12:40,168 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:12:46,656 - app.services.scraper - ERROR - Scrape failed: 'MusicAggregator' object has no attribute 'get_provider'
+2026-01-29 11:12:46,657 - app.services.library - ERROR - Scraper failed for song 2
+2026-01-29 11:14:21,128 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:16:54,974 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:16:54,974 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:16:59,475 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:17:03,241 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:17:03,728 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:17:03,729 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:17:08,720 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:17:12,467 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香
+2026-01-29 11:17:12,813 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 5 条结果 - '稻香'
+2026-01-29 11:17:12,880 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'album', 'date', 'cover']
+2026-01-29 11:17:12,896 - app.services.scraper - ERROR - Scrape failed: (builtins.TypeError) SQLite DateTime type only accepts Python datetime and date objects as input.
+[SQL: UPDATE songs SET album=?, publish_time=? WHERE songs.id = ?]
+[parameters: [{'album': '魔杰座', 'publish_time': '2008-10-15', 'songs_id': 2}]]
+2026-01-29 11:17:12,896 - app.services.library - ERROR - Scraper failed for song 2
+2026-01-29 11:18:57,930 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:18:57,930 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:19:01,185 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:19:05,707 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:19:06,196 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:19:06,196 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:19:08,818 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:19:15,639 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香
+2026-01-29 11:19:15,744 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:19:15,745 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title']
+2026-01-29 11:19:15,769 - app.services.library - INFO - Manual match applied successfully for song 2
+2026-01-29 11:19:24,212 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:23:09,674 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:23:09,813 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:23:19,377 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:23:19,504 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:29:43,616 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:29:47,207 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:29:47,208 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:29:47,277 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:29:50,739 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:29:54,253 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:29:54,460 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:29:54,460 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 10 首歌曲: '稻香'
+2026-01-29 11:30:02,345 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:30:06,080 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:30:06,622 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:30:06,622 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:30:18,383 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:30:22,173 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香
+2026-01-29 11:30:22,266 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:30:22,266 - app.services.scraper - WARNING - Backfill search returned 0 results, retrying (1/3)...
+2026-01-29 11:30:23,851 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:30:23,851 - app.services.scraper - WARNING - Backfill search returned 0 results, retrying (2/3)...
+2026-01-29 11:30:25,452 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:30:25,452 - app.services.scraper - WARNING - Backfill search returned 0 results, retrying (3/3)...
+2026-01-29 11:30:26,959 - app.services.scraper - WARNING - Backfill search gave up after 3 attempts with no results.
+2026-01-29 11:30:26,960 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title']
+2026-01-29 11:30:26,971 - app.services.library - INFO - Manual match applied successfully for song 2
+2026-01-29 11:30:44,754 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:30:44,921 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:33:00,665 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:33:04,032 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:33:04,033 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:33:04,272 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:33:09,974 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:33:13,928 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:33:14,394 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:33:14,394 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:33:15,704 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:33:19,476 - app.services.scraper - ERROR - Scrape failed: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place? (Background on this error at: https://sqlalche.me/e/20/xd2s)
+2026-01-29 11:33:19,476 - app.services.library - ERROR - Scraper failed for song 2
+2026-01-29 11:34:47,521 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:34:50,268 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:34:50,269 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:34:50,528 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:34:54,796 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:34:58,360 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:34:58,826 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:34:58,826 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:35:02,629 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:35:06,205 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香 <Artist(name=周杰伦)>
+2026-01-29 11:35:06,704 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 5 条结果 - '稻香 <Artist(name=周杰伦)>'
+2026-01-29 11:35:06,788 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'artist', 'album', 'date', 'cover']
+2026-01-29 11:35:06,797 - app.services.scraper - ERROR - Tag write error: <Artist(name=周杰伦)> needs to be str for key 'artist'
+2026-01-29 11:35:06,808 - app.services.library - INFO - Manual match applied successfully for song 2
+2026-01-29 11:35:17,733 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:35:17,856 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:37:50,171 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:37:50,283 - apscheduler.executors.default - ERROR - Job "lifespan.<locals>.run_library_scan_task (trigger: interval[0:01:00], next run at: 2026-01-29 11:38:50 CST)" raised an exception
+Traceback (most recent call last):
+  File "D:\code\music-monitor\main.py", line 134, in run_library_scan_task
+    new_files = await service.scan_local_files(db)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\code\music-monitor\app\services\library.py", line 130, in scan_local_files
+    exists = await anyio.to_thread.run_sync(os.path.exists, dir_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2464, in run_sync_in_worker_thread
+    async with limiter or cls.current_default_thread_limiter():
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 1962, in __aenter__
+    await self.acquire()
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2022, in acquire
+    return await self.acquire_on_behalf_of(current_task())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2043, in acquire_on_behalf_of
+    await AsyncIOBackend.cancel_shielded_checkpoint()
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2382, in cancel_shielded_checkpoint
+    await sleep(0)
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\asyncio\tasks.py", line 706, in sleep
+    await __sleep0()
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\asyncio\tasks.py", line 700, in __sleep0
+    yield
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\apscheduler\executors\base.py", line 181, in run_coroutine_job
+    retval = await job.func(*job.args, **job.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\code\music-monitor\main.py", line 130, in run_library_scan_task
+    async with AsyncSessionLocal() as db:
+               ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\leo89\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 1071, in __aexit__
+    await asyncio.shield(task)
+asyncio.exceptions.CancelledError
+2026-01-29 11:37:53,161 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:37:53,161 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:37:53,178 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:37:56,962 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:38:00,398 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:38:00,891 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:38:00,892 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:38:07,192 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:38:10,835 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香 周杰伦
+2026-01-29 11:38:11,191 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 5 条结果 - '稻香 周杰伦'
+2026-01-29 11:38:11,261 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'artist', 'album', 'date', 'cover']
+2026-01-29 11:38:11,270 - app.services.scraper - ERROR - Scrape failed: 'str' object has no attribute '_sa_instance_state'
+2026-01-29 11:38:11,270 - app.services.library - ERROR - Scraper failed for song 2
+2026-01-29 11:39:24,660 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:39:27,476 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:39:27,476 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:39:27,673 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:39:30,871 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:39:34,486 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:39:34,958 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:39:34,958 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:39:38,868 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:39:42,567 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香 周杰伦
+2026-01-29 11:39:42,944 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 5 条结果 - '稻香 周杰伦'
+2026-01-29 11:39:42,998 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'artist', 'album', 'date', 'cover']
+2026-01-29 11:39:43,010 - app.services.library - INFO - Manual match applied successfully for song 2
+2026-01-29 11:40:00,201 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:40:00,329 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:40:51,322 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:40:51,464 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:41:01,779 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:41:01,908 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:41:06,500 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:41:06,651 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:42:27,916 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:42:29,622 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:42:29,623 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:42:33,213 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 11:42:33,214 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 11:42:35,273 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:42:36,987 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:42:37,137 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:42:41,280 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:42:44,672 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:42:44,884 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:42:44,884 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 10 首歌曲: '稻香'
+2026-01-29 11:42:52,159 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:42:55,591 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:42:55,801 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 0 条结果 - '稻香'
+2026-01-29 11:42:55,801 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 10 首歌曲: '稻香'
+2026-01-29 11:42:57,929 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:43:01,223 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:43:01,708 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:43:01,709 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:43:02,947 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:43:06,944 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香 周杰伦
+2026-01-29 11:43:07,289 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 5 条结果 - '稻香 周杰伦'
+2026-01-29 11:43:07,377 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'artist', 'album', 'date', 'cover']
+2026-01-29 11:43:07,401 - app.services.library - INFO - Manual match applied successfully for song 2
+2026-01-29 11:44:09,567 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:44:13,498 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:44:14,002 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:44:14,006 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:48:24,384 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 11:48:24,520 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 11:48:33,634 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:48:36,879 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:48:37,344 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:48:37,344 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 11:49:14,617 - app.services.scraper - INFO - Scraper: Fetching metadata from qqmusic (003aAYrm3GE0Ac) for song 2
+2026-01-29 11:49:18,152 - app.services.scraper - INFO - Scraper: Trying backfill via search: 稻香 周杰伦
+2026-01-29 11:49:18,548 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 5 条结果 - '稻香 周杰伦'
+2026-01-29 11:49:18,640 - app.services.scraper - INFO - Writing tags to audio_cache/周杰伦 - 稻香.flac: ['title', 'artist', 'album', 'date', 'cover']
+2026-01-29 11:49:18,642 - app.services.library - INFO - Manual match applied successfully for song 2
+2026-01-29 11:52:08,776 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 11:52:12,023 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:52:12,492 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 11:52:12,492 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 12:12:33,227 - app.services.media_service - INFO - 开始自动缓存...
+2026-01-29 12:12:33,231 - app.services.media_service - INFO - 自动缓存完成，共 25 首歌曲
+2026-01-29 12:22:35,760 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 12:22:38,834 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 12:22:38,834 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 12:22:39,279 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 12:22:47,348 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 12:22:50,743 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 12:22:51,252 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 12:22:51,253 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 12:23:36,787 - app.services.library - INFO - Redownload requested for song 2 from qqmusic:003aAYrm3GE0Ac
+2026-01-29 12:23:37,855 - app.services.library - ERROR - Failed to get audio url for qqmusic:003aAYrm3GE0Ac
+2026-01-29 12:23:45,545 - app.services.music_providers.aggregator - INFO - 🔍 全网搜索歌曲: 稻香
+2026-01-29 12:23:48,721 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 12:23:49,174 - app.services.music_providers.qqmusic_provider - INFO - 🐧 QQMusic 搜索歌曲: 找到 10 条结果 - '稻香'
+2026-01-29 12:23:49,174 - app.services.music_providers.aggregator - INFO - ✅ 全网聚合搜索找到 20 首歌曲: '稻香'
+2026-01-29 12:24:33,414 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 12:28:17,943 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 12:28:17,944 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 12:28:23,260 - app.services.download_service - INFO - 搜索 [kuwo]: 稻香 
+2026-01-29 12:28:23,260 - app.services.download_service - INFO - 搜索 [netease]: 稻香 
+2026-01-29 12:28:23,262 - app.services.download_service - INFO - 搜索 [kugou]: 稻香 
+2026-01-29 12:28:23,262 - app.services.download_service - INFO - 搜索 [tencent]: 稻香 
+2026-01-29 12:28:23,986 - app.services.download_service - WARNING - 搜索失败 [kugou], 状态码: 400
+2026-01-29 12:28:23,990 - app.services.download_service - WARNING - 搜索失败 [tencent], 状态码: 400
+2026-01-29 12:28:41,521 - app.services.library - INFO - Redownload requested for song 2 from kuwo:440613
+2026-01-29 12:28:42,398 - app.services.library - ERROR - Failed to get audio url for kuwo:440613
+2026-01-29 12:29:14,402 - app.services.download_service - INFO - 搜索 [kuwo]: 稻香 
+2026-01-29 12:29:14,403 - app.services.download_service - INFO - 搜索 [netease]: 稻香 
+2026-01-29 12:29:14,403 - app.services.download_service - INFO - 搜索 [kugou]: 稻香 
+2026-01-29 12:29:14,403 - app.services.download_service - INFO - 搜索 [tencent]: 稻香 
+2026-01-29 12:29:15,122 - app.services.download_service - WARNING - 搜索失败 [tencent], 状态码: 400
+2026-01-29 12:29:15,124 - app.services.download_service - WARNING - 搜索失败 [kugou], 状态码: 400
+2026-01-29 12:29:25,569 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 12:30:44,511 - app.services.download_service - INFO - 搜索 [kuwo]: 稻香 
+2026-01-29 12:30:44,511 - app.services.download_service - INFO - 搜索 [netease]: 稻香 
+2026-01-29 12:30:44,511 - app.services.download_service - INFO - 搜索 [kugou]: 稻香 
+2026-01-29 12:30:44,512 - app.services.download_service - INFO - 搜索 [tencent]: 稻香 
+2026-01-29 12:30:45,241 - app.services.download_service - WARNING - 搜索失败 [tencent], 状态码: 400
+2026-01-29 12:30:45,249 - app.services.download_service - WARNING - 搜索失败 [kugou], 状态码: 400
+2026-01-29 12:32:57,077 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 12:33:00,158 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 12:33:00,158 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 12:33:00,275 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 12:33:03,040 - app.services.download_service - INFO - 搜索 [kuwo]: 稻香 
+2026-01-29 12:33:03,041 - app.services.download_service - INFO - 搜索 [netease]: 稻香 
+2026-01-29 12:33:03,042 - app.services.download_service - INFO - 搜索 [kugou]: 稻香 
+2026-01-29 12:33:03,042 - app.services.download_service - INFO - 搜索 [tencent]: 稻香 
+2026-01-29 12:33:03,750 - app.services.download_service - WARNING - 搜索失败 [kugou], 状态码: 400
+2026-01-29 12:33:04,306 - app.services.download_service - WARNING - 搜索失败 [tencent], 状态码: 400
+2026-01-29 12:33:26,203 - app.services.library - INFO - Redownload requested for song 2 from kuwo:440613
+2026-01-29 12:33:26,216 - app.services.download_service - INFO - 正在尝试获取音质 0 [kuwo:440613]
+2026-01-29 12:33:28,293 - app.services.download_service - INFO - 音质 0 不可用，尝试更低音质...
+2026-01-29 12:33:28,294 - app.services.download_service - INFO - 正在尝试获取音质 999 [kuwo:440613]
+2026-01-29 12:33:29,153 - app.services.download_service - INFO - 音质 999 不可用，尝试更低音质...
+2026-01-29 12:33:29,153 - app.services.download_service - INFO - 正在尝试获取音质 320 [kuwo:440613]
+2026-01-29 12:33:30,204 - app.services.download_service - INFO - 音质 320 不可用，尝试更低音质...
+2026-01-29 12:33:30,205 - app.services.download_service - INFO - 正在尝试获取音质 192 [kuwo:440613]
+2026-01-29 12:33:31,040 - app.services.download_service - INFO - 音质 192 不可用，尝试更低音质...
+2026-01-29 12:33:31,040 - app.services.download_service - INFO - 正在尝试获取音质 128 [kuwo:440613]
+2026-01-29 12:33:31,847 - app.services.download_service - INFO - 音质 128 不可用，尝试更低音质...
+2026-01-29 12:33:31,848 - app.services.library - ERROR - Failed to get audio url for kuwo:440613
+2026-01-29 12:33:47,741 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 12:33:47,899 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 12:55:54,875 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 12:55:54,875 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 12:55:58,230 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 12:56:12,864 - app.services.download_service - INFO - 搜索 [kuwo]: 稻香 
+2026-01-29 12:56:12,865 - app.services.download_service - INFO - 搜索 [netease]: 稻香 
+2026-01-29 12:56:12,866 - app.services.download_service - INFO - 搜索 [migu]: 稻香 
+2026-01-29 12:56:12,867 - app.services.download_service - INFO - 搜索 [joox]: 稻香 
+2026-01-29 12:56:13,646 - app.services.download_service - WARNING - 搜索失败 [migu], 状态码: 400
+2026-01-29 12:56:38,401 - app.services.library - INFO - Redownload requested for song 2 from kuwo:440613
+2026-01-29 12:56:38,404 - app.services.download_service - INFO - 正在尝试获取音质 999 [kuwo:440613]
+2026-01-29 12:56:39,231 - app.services.download_service - INFO - 音质 999 不可用，尝试更低音质...
+2026-01-29 12:56:39,231 - app.services.download_service - INFO - 正在尝试获取音质 320 [kuwo:440613]
+2026-01-29 12:56:40,049 - app.services.download_service - INFO - 音质 320 不可用，尝试更低音质...
+2026-01-29 12:56:40,050 - app.services.download_service - INFO - 正在尝试获取音质 192 [kuwo:440613]
+2026-01-29 12:56:40,909 - app.services.download_service - INFO - 音质 192 不可用，尝试更低音质...
+2026-01-29 12:56:40,910 - app.services.download_service - INFO - 正在尝试获取音质 128 [kuwo:440613]
+2026-01-29 12:56:41,747 - app.services.download_service - INFO - 音质 128 不可用，尝试更低音质...
+2026-01-29 12:56:41,748 - app.services.library - ERROR - Failed to get audio url for kuwo:440613
+2026-01-29 13:06:54,892 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:06:54,918 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:06:54,928 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:07:54,884 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:07:54,887 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:07:54,899 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:08:54,890 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:08:54,895 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:08:54,907 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:09:54,883 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:09:54,886 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:09:54,895 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:10:54,884 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:10:54,887 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:10:54,899 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:11:54,886 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:11:54,889 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:11:54,903 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:12:54,885 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:12:54,888 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:12:54,900 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:13:54,882 - app.services.library - INFO - 📂 发现新本地文件: audio_cache/任素汐 - 困.mp3
+2026-01-29 13:13:54,885 - app.services.library - INFO -   📝 已添加: 困 (本地源)
+2026-01-29 13:13:54,893 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-29 13:19:44,329 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:19:58,672 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 13:19:58,672 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 13:20:00,280 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:20:06,899 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:20:07,059 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:20:13,381 - app.services.download_service - INFO - 搜索 [kuwo]: 困 
+2026-01-29 13:20:13,382 - app.services.download_service - INFO - 搜索 [netease]: 困 
+2026-01-29 13:20:13,383 - app.services.download_service - INFO - 搜索 [migu]: 困 
+2026-01-29 13:20:13,383 - app.services.download_service - INFO - 搜索 [joox]: 困 
+2026-01-29 13:20:14,099 - app.services.download_service - WARNING - 搜索失败 [migu], 状态码: 400
+2026-01-29 13:28:03,198 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 13:28:03,199 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 13:28:05,287 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:29:57,511 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:30:11,412 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 13:30:11,412 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 13:30:12,388 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:30:48,742 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:30:48,909 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:31:04,634 - app.services.download_service - INFO - 搜索 [kuwo]: 困 
+2026-01-29 13:31:04,634 - app.services.download_service - INFO - 搜索 [netease]: 困 
+2026-01-29 13:31:04,636 - app.services.download_service - INFO - 搜索 [migu]: 困 
+2026-01-29 13:31:04,636 - app.services.download_service - INFO - 搜索 [joox]: 困 
+2026-01-29 13:31:05,563 - app.services.download_service - WARNING - 搜索失败 [migu], 状态码: 400
+2026-01-29 13:31:25,055 - app.services.library - INFO - Redownload requested for song 1 from netease:3322756981
+2026-01-29 13:31:25,058 - app.services.download_service - INFO - 正在尝试获取音质 999 [netease:3322756981]
+2026-01-29 13:31:26,418 - app.services.download_service - INFO - 下载完成: audio_cache\任素汐 - 困.flac
+2026-01-29 13:31:26,419 - app.services.library - INFO - Download successful: audio_cache\任素汐 - 困.flac
+2026-01-29 13:31:26,428 - app.services.library - INFO - Deleted old file: audio_cache\周杰伦 - 稻香.flac
+2026-01-29 13:31:26,428 - app.services.scraper - INFO - Scraper: Fetching metadata from netease (3322756981) for song 1
+2026-01-29 13:31:27,121 - app.services.music_providers.netease_provider - INFO - ☁️ 网易云详情获取成功: 3322756981
+2026-01-29 13:31:27,174 - app.services.scraper - INFO - Writing tags to audio_cache\任素汐 - 困.flac: ['title', 'artist', 'album', 'date', 'cover']
+2026-01-29 13:31:27,189 - app.services.scraper - WARNING - Date parse failed for 1764432000000: time data '1764432000' does not match format '%Y-%m-%d'
+2026-01-29 13:31:27,199 - app.services.library - INFO - Metadata scraped and applied to new file.
+2026-01-29 13:31:46,987 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:31:47,115 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:37:59,820 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:37:59,988 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:38:03,365 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:38:06,475 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 13:38:06,475 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 13:38:07,276 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:38:08,178 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:38:08,310 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:59:19,796 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:59:22,720 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 13:59:22,720 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 13:59:23,287 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 13:59:25,183 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 13:59:25,358 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 14:00:22,748 - scheduler - ERROR - Error in library scan task (monitor): '>' not supported between instances of 'dict' and 'int'
+Traceback (most recent call last):
+  File "D:\code\music-monitor\main.py", line 135, in run_library_scan_task
+    if new_files > 0:
+       ^^^^^^^^^^^^^
+TypeError: '>' not supported between instances of 'dict' and 'int'
+2026-01-29 14:01:22,747 - scheduler - ERROR - Error in library scan task (monitor): '>' not supported between instances of 'dict' and 'int'
+Traceback (most recent call last):
+  File "D:\code\music-monitor\main.py", line 135, in run_library_scan_task
+    if new_files > 0:
+       ^^^^^^^^^^^^^
+TypeError: '>' not supported between instances of 'dict' and 'int'
+2026-01-29 14:02:22,741 - scheduler - ERROR - Error in library scan task (monitor): '>' not supported between instances of 'dict' and 'int'
+Traceback (most recent call last):
+  File "D:\code\music-monitor\main.py", line 135, in run_library_scan_task
+    if new_files > 0:
+       ^^^^^^^^^^^^^
+TypeError: '>' not supported between instances of 'dict' and 'int'
+2026-01-29 14:03:22,749 - scheduler - ERROR - Error in library scan task (monitor): '>' not supported between instances of 'dict' and 'int'
+Traceback (most recent call last):
+  File "D:\code\music-monitor\main.py", line 135, in run_library_scan_task
+    new_count = results.get("new_files_found", 0)
+       ^^^^^^^^^^^^^
+TypeError: '>' not supported between instances of 'dict' and 'int'
+2026-01-29 14:03:49,130 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 14:07:23,772 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 14:07:23,772 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 14:07:30,001 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 14:37:23,787 - app.services.media_service - INFO - 开始自动缓存...
+2026-01-29 14:37:23,790 - app.services.media_service - INFO - 自动缓存完成，共 24 首歌曲
+2026-01-29 14:43:12,365 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 14:43:15,457 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 14:43:15,457 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 14:43:16,274 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 14:43:20,191 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 14:43:20,342 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 14:43:22,416 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 14:43:22,539 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 14:44:08,608 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 14:44:08,730 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 14:54:56,808 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 14:54:57,000 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 14:56:28,310 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 14:56:52,636 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:12:55,137 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:14:23,091 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:14:23,092 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:16:02,921 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:16:02,922 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:16:08,138 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:19:08,896 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:19:12,592 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:19:12,593 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:19:15,286 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:19:15,501 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:19:15,651 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:20:02,283 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:20:02,428 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:23:17,795 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:23:26,230 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:23:26,231 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:23:27,936 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:26:13,713 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:26:16,802 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:26:16,803 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:26:18,930 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:26:51,580 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:26:51,785 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:31:36,997 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:31:40,222 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:31:40,222 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:31:40,279 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:31:41,999 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:31:42,136 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:33:21,122 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:33:23,945 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:33:23,946 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:33:24,279 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:33:24,962 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:33:25,115 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:37:43,488 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:37:43,644 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:37:59,261 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:38:07,695 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:38:07,891 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:38:07,975 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:38:22,379 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:38:31,760 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:38:32,868 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:38:33,111 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:38:33,634 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:38:33,719 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:39:05,284 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:39:05,518 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:39:16,753 - core.websocket - INFO - WS Connected. Total: 2
+2026-01-29 15:39:25,119 - core.websocket - INFO - WS Disconnected. Total: 1
+2026-01-29 15:42:19,185 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:42:22,657 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:42:22,658 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:42:25,220 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:42:27,831 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:42:28,212 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:44:54,226 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:45:03,125 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:45:49,956 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:45:50,149 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:47:58,962 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:47:59,190 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:49:13,375 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:49:13,645 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:50:38,248 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:50:47,146 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:55:07,898 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:55:10,975 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:55:10,976 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:55:11,285 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:55:15,174 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:55:15,385 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:55:50,449 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:55:50,722 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:59:47,809 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:59:51,849 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 15:59:51,850 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 15:59:55,237 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 15:59:56,517 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 15:59:57,165 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:00:25,699 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:00:25,885 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:01:12,610 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:01:12,819 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:06:27,034 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:06:30,020 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 16:06:30,021 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 16:06:30,277 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:06:33,950 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:06:34,240 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:06:46,569 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:06:58,253 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:10:44,757 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:10:47,317 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 16:10:47,318 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 16:10:48,285 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:10:52,853 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:10:53,047 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:11:40,732 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:11:40,929 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:14:06,824 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:14:07,022 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:16:19,941 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:17:10,775 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 16:17:10,775 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 16:17:21,815 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:18:13,368 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:18:13,575 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:19:52,884 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:19:53,064 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:22:51,797 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:22:56,352 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:23:01,813 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:23:02,332 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:23:05,140 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:23:05,539 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:23:23,288 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:23:32,055 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:23:42,157 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:23:42,404 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:24:01,452 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:24:08,003 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:24:20,409 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:24:20,596 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:26:05,326 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:26:05,635 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:26:15,671 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:26:15,847 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:29:11,110 - core.websocket - INFO - WS Connected. Total: 2
+2026-01-29 16:29:37,356 - core.websocket - INFO - WS Disconnected. Total: 1
+2026-01-29 16:29:37,534 - core.websocket - INFO - WS Connected. Total: 2
+2026-01-29 16:30:24,825 - core.websocket - INFO - WS Disconnected. Total: 1
+2026-01-29 16:32:06,605 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:32:17,998 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 16:32:17,999 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 16:32:18,284 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:32:23,282 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:32:23,670 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:32:35,649 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:32:35,923 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:47:45,810 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:48:04,860 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:48:19,914 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:48:20,183 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:54:01,699 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:54:04,642 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 16:54:04,643 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 16:54:05,275 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:54:07,229 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:54:07,508 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 16:54:15,847 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 16:54:16,023 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 17:00:08,987 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 17:00:11,675 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 17:00:11,675 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 17:00:12,277 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 17:00:21,085 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 17:00:21,259 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 17:02:42,829 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 17:03:04,893 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-29 17:03:04,893 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-29 17:03:07,998 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 17:03:54,254 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 17:08:11,668 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 17:08:44,316 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 17:08:52,079 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 17:09:42,257 - core.websocket - INFO - WS Disconnected. Total: 0
+2026-01-29 17:13:40,788 - core.websocket - INFO - WS Connected. Total: 1
+2026-01-29 17:14:01,731 - core.websocket - INFO - WS Disconnected. Total: 0

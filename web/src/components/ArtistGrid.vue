@@ -1,222 +1,303 @@
-<script setup>
-import { computed } from 'vue'
-import { NIcon } from 'naive-ui'
+<template>
+    <div class="artist-grid">
+         <!-- Loading Skeletons -->
+         <template v-if="loading">
+             <div v-for="i in 6" :key="`skel-${i}`" class="artist-card skeleton-card">
+                 <div class="avatar-box skeleton-box">
+                    <Skeleton shape="circle" width="100%" height="100%" />
+                 </div>
+                 <div class="info">
+                    <Skeleton width="60%" height="16px" style="margin-bottom: 8px" />
+                    <Skeleton width="40%" height="12px" />
+                 </div>
+             </div>
+         </template>
+
+         <template v-else>
+            <!-- 歌手卡片 -->
+            <div v-for="artist in artists" :key="artist.name" 
+                class="artist-card clickable" 
+                :class="{ active: selectedArtistName === artist.name }"
+                @click="handleArtistClick(artist)">
+                
+                <div class="avatar-box" :class="{ 'updating': isUpdating(artist) }">
+                    <img :src="getArtistAvatar(artist.name)" class="avatar" loading="lazy" />
+                    
+                    <!-- 刷新状态覆盖层 (Minimalist) -->
+                    <div v-if="isUpdating(artist)" class="loading-overlay minimalist">
+                        <n-spin size="small" stroke="#1DB954" />
+                    </div>
+
+                    <!-- 悬浮操作 (非刷新时显示) -->
+                    <div v-else class="overlay">
+                        <div class="actions">
+                            <button class="action-btn" @click.stop="emit('update', artist)" title="刷新同步">
+                                <n-icon :component="RefreshOutline" />
+                            </button>
+                            <button class="action-btn delete" @click.stop="emit('delete', artist)" title="取消关注">
+                                <n-icon :component="TrashOutline" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info">
+                    <div class="name-row">
+                        <div class="name truncate">{{ artist.name }}</div>
+                        <!-- Platform Badges (Moved here for visibility) -->
+                        <div class="badges">
+                            <div v-if="artist.sources.includes('netease')" class="badge netease" title="网易云音乐"></div>
+                            <div v-if="artist.sources.includes('qqmusic')" class="badge qq" title="QQ音乐"></div>
+                        </div>
+                    </div>
+                    <div class="subtitle" :class="{ 'text-green': isUpdating(artist) }">
+                        <span v-if="isUpdating(artist)" class="status-text">
+                            {{ getStatusText(artist) }}
+                        </span>
+                        <span v-else>{{ artist.songCount || 0 }} 首歌曲</span>
+                    </div>
+                </div>
+            </div>
+         </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+/**
+ * 歌手网格组件 - Refined Spotify Style
+ */
+import { useRouter } from 'vue-router'
+import { NIcon, NSpin } from 'naive-ui'
 import { RefreshOutline, TrashOutline, AddOutline } from '@vicons/ionicons5'
+import Skeleton from '@/components/common/Skeleton.vue'
+import { useProgressStore } from '@/stores/progress'
+
+const router = useRouter()
+const progressStore = useProgressStore()
 
 const props = defineProps({
-  artists: { type: Array, default: () => [] },
-  selectedArtistName: { type: String, default: null }
+  artists: { type: Array as () => any[], default: () => [] },
+  selectedArtistName: { type: String, default: null },
+  loading: { type: Boolean, default: false },
+  refreshingArtistName: { type: String, default: null }
 })
 
 const emit = defineEmits(['select', 'add', 'update', 'delete'])
 
 const DEFAULT_AVATAR = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
-const getArtistAvatar = (artistName) => {
+const getArtistAvatar = (artistName: string) => {
     const found = props.artists.find(a => a.name === artistName)
     if (found && found.avatar) return found.avatar.replace('300x300', '800x800')
     return DEFAULT_AVATAR
 }
 
-const handleSelect = (artist) => {
-    emit('select', artist)
+const getProgress = (artist: any) => {
+    const id = artist.id || (artist.ids && artist.ids[0]?.id)
+    return progressStore.getProgress(id)
 }
 
-const handleUpdate = (artist) => {
-    emit('update', artist)
+const isUpdating = (artist: any) => {
+    return !!getProgress(artist) || props.refreshingArtistName === artist.name
 }
 
-const handleDelete = (artist) => {
-    emit('delete', artist)
+const getStatusText = (artist: any) => {
+    const p = getProgress(artist)
+    if (p) return p.message || "更新中..."
+    return "准备中..."
 }
 
-const handleAdd = () => {
-    emit('add')
+const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+const handleArtistClick = (artist: any) => {
+    const artistId = artist.id || (artist.ids && artist.ids[0]?.id)
+    if (!artistId) return
+    
+    if (isMobile()) {
+        router.push(`/mobile/artist/${artistId}`)
+    } else {
+        router.push(`/artist/${artistId}`)
+    }
 }
 </script>
 
-<template>
-    <div class="artist-grid-wrapper">
-         <div v-for="artist in artists" :key="artist.name" 
-              class="artist-item" 
-              :class="{ active: selectedArtistName === artist.name }"
-              @click="handleSelect(artist)">
-              
-              <div class="avatar-container">
-                  <img :src="getArtistAvatar(artist.name)" class="artist-avatar" loading="lazy" />
-                  
-                  <!-- Platform Badges (Tiny) -->
-                  <div class="platform-badges">
-                      <div v-if="artist.sources.includes('netease')" class="badge netease"></div>
-                      <div v-if="artist.sources.includes('qqmusic')" class="badge qq"></div>
-                  </div>
-                  
-                  <!-- Hover Overlay -->
-                  <div class="avatar-overlay">
-                      <div class="overlay-actions">
-                          <button class="mini-btn update" @click.stop="handleUpdate(artist)" title="更新">
-                              <n-icon><RefreshOutline /></n-icon>
-                          </button>
-                          <button class="mini-btn delete" @click.stop="handleDelete(artist)" title="删除">
-                              <n-icon><TrashOutline /></n-icon>
-                          </button>
-                      </div>
-                  </div>
-              </div>
-              
-              <div class="artist-name">{{ artist.name }}</div>
-         </div>
-         
-         <!-- Add Item (Quick Access) -->
-         <div class="artist-item add-item" @click="handleAdd">
-             <div class="avatar-container add-placeholder-img">
-                <img :src="DEFAULT_AVATAR" class="artist-avatar" />
-                <div class="add-icon-overlay">
-                     <n-icon size="32"><AddOutline /></n-icon>
-                </div>
-             </div>
-             <div class="artist-name">添加</div>
-         </div>
-    </div>
-</template>
-
 <style scoped>
-.artist-grid-wrapper {
+.artist-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 32px 36px;
-    margin-bottom: 60px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 24px 20px;
+    padding: 16px 0;
 }
-.artist-item {
+
+.artist-card {
+    padding: 16px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: background-color 0.3s ease;
     cursor: pointer;
-    transition: transform 0.2s ease;
 }
-.artist-item:hover {
-    transform: translateY(-4px);
+
+.artist-card:hover {
+    background-color: var(--sp-card-hover);
 }
-.avatar-container {
-    width: 120px;
-    height: 120px;
+
+.artist-card.active {
+    background-color: var(--sp-highlight);
+}
+
+/* Avatar Box */
+.avatar-box {
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
     position: relative;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Softer shadow */
-    background: #fff;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    background-color: var(--sp-card);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
-.artist-avatar {
+
+.avatar-box.updating {
+    box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.5);
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(29, 185, 84, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(29, 185, 84, 0); }
+}
+
+.artist-card:hover .avatar-box {
+    /* If updating, don't override with standard hover shadow? keep pulse? */
+    transform: translateY(-2px);
+}
+.artist-card:hover .avatar-box:not(.updating) {
+    box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+}
+
+.avatar {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
     object-fit: cover;
-    transition: filter 0.2s;
+    transition: opacity 0.3s;
 }
-.artist-item.active .artist-avatar {
-    box-shadow: 0 0 0 3px var(--accent-primary);
-}
-.platform-badges {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    display: flex;
-    gap: -4px;
-}
-.badge {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-}
-.badge.netease { background: var(--accent-netease); z-index: 2; }
-.badge.qq { background: var(--accent-qq); z-index: 1; margin-left: -4px; }
 
-/* Artist Hover Actions */
-.avatar-overlay {
+/* Loading Overlay */
+.loading-overlay {
     position: absolute;
-    top: 0; left: 0;right: 0; bottom: 0;
-    border-radius: 50%;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.loading-overlay.minimalist {
     background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(1px);
+}
+
+/* Info Section */
+.info {
+    width: 100%;
+    text-align: center;
+}
+
+.name-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    max-width: 120px;
+}
+
+.subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    min-height: 19px; /* Avoid jump */
+}
+
+.subtitle.text-green {
+    color: var(--sp-green);
+    font-weight: 500;
+    font-size: 12px;
+}
+.status-text {
+    animation: fade-in 0.3s ease;
+}
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Badges */
+.badges {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.badge {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.badge.netease { background-color: #ec4141; box-shadow: 0 0 4px #ec4141; }
+.badge.qq { background-color: #2daf71; box-shadow: 0 0 4px #2daf71; }
+
+/* Overlay Actions */
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s ease;
     backdrop-filter: blur(2px);
 }
-.artist-item:hover .avatar-overlay {
+
+.artist-card:hover .overlay {
     opacity: 1;
 }
-.overlay-actions {
-    display: flex;
-    gap: 8px;
-}
-.mini-btn {
-    border: none;
-    background: rgba(255,255,255,0.9);
-    width: 32px;
-    height: 32px;
+
+.actions { display: flex; gap: 16px; }
+
+.action-btn {
+    width: 40px; height: 40px;
     border-radius: 50%;
-    color: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    transition: transform 0.1s;
-}
-.mini-btn:hover { transform: scale(1.1); background: #fff; }
-.mini-btn.delete { color: var(--accent-primary); }
-
-.artist-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    text-align: center;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Add Item & Overlay Specifics */
-.add-placeholder-img {
-    position: relative;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.add-icon-overlay {
-    position: absolute;
-    top:0; left:0; right:0; bottom:0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.6);
     color: #fff;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.artist-item.add-item:hover .add-icon-overlay {
-    opacity: 1;
-}
-.artist-item.add-item:hover .avatar-container {
-    transform: scale(1.08); /* Pop a bit more */
-    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-/* 深色模式 */
-:root[data-theme="dark"] .avatar-container {
-    background: #2C2C2E;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+.action-btn:hover {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    transform: scale(1.1);
 }
-:root[data-theme="dark"] .badge {
-    border-color: #1C1C1E;
-}
-:root[data-theme="dark"] .mini-btn {
-    background: rgba(255,255,255,0.15);
-    color: #f5f5f7;
-}
-:root[data-theme="dark"] .mini-btn:hover {
-    background: rgba(255,255,255,0.25);
+
+.action-btn.delete:hover {
+    background: #ff3b30;
+    border-color: #ff3b30;
+    color: #fff;
 }
 </style>

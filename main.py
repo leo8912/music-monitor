@@ -1,4 +1,18 @@
-import asyncio
+"""
+主应用入口文件 - FastAPI应用启动和配置
+
+此文件负责：
+- 初始化FastAPI应用
+- 配置日志记录
+- 设置应用生命周期管理
+- 注册路由和中间件
+- 启动定时任务调度器
+- 配置静态文件服务
+
+Author: music-monitor development team
+"""
+from core.config import config as global_config, load_config
+global_config.update(load_config())
 import logging
 import yaml
 import os
@@ -11,16 +25,16 @@ import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.orm import Session
 from datetime import datetime
-from datetime import datetime
 import collections
 from urllib.parse import quote
 
-from core.database import init_db, SessionLocal, MediaRecord, get_db
-from core.plugins import PLUGINS
-from core.scheduler import scheduler
-from core.wechat import FixedWeChatCrypto
-from app.services.media_service import process_media_item, run_check, find_artist_ids
-from notifiers.wecom import WeComNotifier
+from core.database import init_db, SessionLocal, MediaRecord
+from app.services.notification import NotificationService
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+# 创建调度器实例
+scheduler = AsyncIOScheduler()
+
 from fastapi import Request, Response, Query
 from wechatpy.crypto import WeChatCrypto, PrpCrypto
 from wechatpy import parse_message, create_reply
@@ -30,9 +44,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 from pydantic import BaseModel
 
-
-
-
 # Configure logging
 LOG_DIR = "/config/logs" if os.path.exists("/config") else "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -41,7 +52,6 @@ LOG_FILE = os.path.join(LOG_DIR, "application.log")
 from logging.handlers import TimedRotatingFileHandler
 
 # Basic Config (Console)
-# Create handler explicitly to attach to uvicorn
 file_handler = TimedRotatingFileHandler(
     LOG_FILE, 
     when='midnight', 
@@ -61,156 +71,107 @@ logging.basicConfig(
     ]
 )
 
-# Attach file handler to Uvicorn loggers to capture startup/errors in file
 for logger_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
     logging.getLogger(logger_name).addHandler(file_handler)
 
-# Suppress noisy logs from third-party libraries
 logging.getLogger("apscheduler").setLevel(logging.WARNING)
 logging.getLogger("apscheduler.executors.default").setLevel(logging.ERROR)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("qqmusic_api").setLevel(logging.WARNING)
 logging.getLogger("watchfiles").setLevel(logging.WARNING)
 
-# Trigger Reload
 logger = logging.getLogger(__name__)
 
-# Plugin Registry
-
-
-from core.config import config, load_config, ensure_security_config, migrate_and_save_config, CONFIG_FILE_PATH
+from core.config_manager import get_config_manager, reload_config
+from core.config import load_config, ensure_security_config, migrate_and_save_config, CONFIG_FILE_PATH
 from core.logger import api_log_handler
 from app.schemas import LoginRequest, ChangePasswordRequest, UpdateProfileRequest, DownloadRequest, ArtistConfig
 
-
-
-
-
-
-
-
-from core.event_bus import event_bus
-from notifiers.wecom import WeComNotifier
-from notifiers.telegram import TelegramNotifier
+# 已移除: event_dispatcher, app_initializer, errors
 from starlette.concurrency import run_in_threadpool
-
-# Initialize Notifiers
-wecom_notifier = WeComNotifier("", "", "")
-telegram_notifier = TelegramNotifier("", "") 
-
-def update_notifier_config(cfg):
-    notify_cfg = cfg.get('notify', {})
-    
-    # WeCom
-    wecom_cfg = notify_cfg.get('wecom', {})
-    if wecom_cfg.get('enabled') and wecom_notifier:
-        wecom_notifier.corp_id = wecom_cfg.get('corpid')
-        wecom_notifier.secret = wecom_cfg.get('corpsecret')
-        wecom_notifier.agent_id = wecom_cfg.get('agentid')
-        
-    # Telegram
-    tg_cfg = notify_cfg.get('telegram', {})
-    if tg_cfg.get('enabled') and telegram_notifier:
-        telegram_notifier.token = tg_cfg.get('bot_token')
-        telegram_notifier.chat_id = tg_cfg.get('chat_id')
-
-async def handle_new_content(media):
-    message_text = (
-        f"🎵 新歌发布: {media.title}\n"
-        f"👤 歌手: {media.author}\n"
-        f"💿 专辑: {media.album or '单曲'}\n"
-        f"🔗 链接: {media.url}\n"
-        f"📅 时间: {media.publish_time}"
-    )
-    
-    # Use custom description if provided (for batch summaries)
-    if hasattr(media, 'custom_description') and media.custom_description:
-        message_text = media.custom_description
-    
-    # 1. WeCom
-    if config.get('notify', {}).get('wecom', {}).get('enabled'):
-        try:
-             target_url = media.url
-             # Use external_url if configured
-             ext_url = config.get('global', {}).get('external_url')
-             if ext_url and ext_url.startswith('http'):
-                 # Ensure no trailing slash
-                 ext_url = ext_url.rstrip('/')
-                 
-                 # Try to generate mobile player link
-                 try:
-                     from core.security import generate_signed_url_params
-                     # unique_key should be available on media object
-                     u_key = getattr(media, 'unique_key', f"{media.source}:{media.media_id}")
-                     sign_params = generate_signed_url_params(u_key)
-                     target_url = f"{ext_url}/#/mobile/play?id={quote(sign_params['id'])}&sign={sign_params['sign']}&expires={sign_params['expires']}"
-                 except Exception as ex:
-                     logger.warning(f"Failed to generate mobile link: {ex}")
-                     # Fallback to simple deep link
-                     target_url = f"{ext_url}?source={media.source}&songId={media.media_id}"
-
-             # Prepare description for News card (simpler is better for News card description as it's small text under title)
-             # But user wants a specific format?
-             # User image shows: "Start playing... User: ... IP: ... Time: ..."
-             # My current message_text is:
-             # 🎵 新歌发布: Title
-             # 👤 歌手: Artist
-             # 💿 专辑: Album
-             # 📅 时间: Time
-             # This is fine for description.
-             
-             await wecom_notifier.send_news_message(
-                 title=f"🎵 新歌发布: {media.title}",
-                 description=message_text,
-                 url=target_url,
-                 pic_url=getattr(media, 'cover', None) or getattr(media, 'cover_url', '') 
-             )
-        except Exception as e:
-            logger.error(f"WeCom notify failed: {e}")
-
-    # 2. Telegram
-    if config.get('notify', {}).get('telegram', {}).get('enabled'):
-         try:
-             await run_in_threadpool(
-                telegram_notifier.send_message,
-                message_text,
-                image_url=media.cover_url
-             )
-         except Exception as e:
-            logger.error(f"Telegram notify failed: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Migrate legacy config first
     migrate_and_save_config()
-    
-    # Load config
-    config.update(load_config())
-    
-    # Initialize DB
+    config_instance = get_config_manager()
+    config_instance.reload()
     init_db()
     
-    # Init plugins with config
-    mon_cfg = config.get('monitor', {})
-    
+    mon_cfg = config_instance.get('monitor', {})
     # Start Scheduler
     scheduler.start()
     
-    # Schedule jobs
-    for name, plugin_cls in PLUGINS.items():
-        if name in mon_cfg and mon_cfg[name].get('enabled'):
-            interval = mon_cfg[name].get('interval', 60)
-            scheduler.add_job(
-                run_check, 
-                'interval', 
-                minutes=interval, 
-                args=[name], # Remove config arg
-                id=f"job_{name}",
-                replace_existing=True
-            )
-            logger.info(f"已调度 {name} 任务，每 {interval} 分钟执行一次")
+    # Phase 9: Register Library Scan Jobs
+    from app.services.library import LibraryService
+    from core.database import AsyncSessionLocal
+    
+    async def run_library_scan_task(task_type: str = "monitor"):
+        """
+        Scheduled task for library scanning and enrichment.
+        task_type: 'monitor' (frequent, fast) or 'backup' (slow, full)
+        """
+        import logging
+        logger = logging.getLogger("scheduler")
+        
+        try:
+            # We need a synchronous session factory for async context if using run_in_executor
+            # But we are in async scheduler, so we can use AsyncSession if we had an async factory
+            # Or use sync SessionLocal and wrap it?
+            # Actually core/database.py shows SessionLocal is sync? Let's check.
+            # Wait, app uses AsyncSession (get_async_session). 
+            # I should verify if SessionLocal is async or sync.
+            # In media_service imports: from core.database import SessionLocal 
+            # and usages: db = SessionLocal(), db.close(). This looks sync.
+            # But services expect AsyncSession in some methods?
+            # LibraryService methods: async def scan_local_files(self, db: AsyncSession)
+            # So I MUST provide an AsyncSession.
             
-    # Schedule integrity check (daily)
+            from core.database import AsyncSessionLocal 
+            
+            async with AsyncSessionLocal() as db:
+                service = LibraryService()
+                
+                # Scan - 使用 ScanService
+                scan_res = await service.scan_service.scan_local_files(db)
+                
+                added = 0
+                removed = 0
+                
+                if isinstance(scan_res, dict):
+                    added = scan_res.get("new_files_found", 0)
+                    removed = scan_res.get("removed_files_count", 0)
+                elif isinstance(scan_res, int):
+                    added = scan_res
+                
+                if added > 0 or removed > 0:
+                    logger.info(f"[{task_type}] Scan: Found {added} new, removed {removed} records.")
+                
+                # Enrich - 使用 EnrichmentService (limit depends on type)
+                should_enrich = False
+                if isinstance(scan_res, dict) and scan_res.get("new_files_found", 0) > 0:
+                    should_enrich = True
+                elif isinstance(scan_res, int) and scan_res > 0:
+                    should_enrich = True
+                    
+                if should_enrich:
+                    logger.info("Triggering auto-enrichment for new files...")
+                    try:
+                        # 使用新的 auto_enrich_library 方法 (无需传 db, 内部管理)
+                        await service.enrichment_service.auto_enrich_library()
+                    except Exception as e:
+                        logger.error(f"Auto enrichment failed: {e}")
+                     
+        except Exception as e:
+            logger.error(f"Error in library scan task ({task_type}): {e}", exc_info=True)
+
+    # Job 1: Pseudo-Monitoring (Every 60s)
+    scheduler.add_job(run_library_scan_task, 'interval', seconds=60, args=['monitor'], id='job_library_monitor')
+    
+    # Job 2: Backup Scan (Every 30m)
+    scheduler.add_job(run_library_scan_task, 'interval', minutes=30, args=['backup'], id='job_library_backup')
+    
+    # 已移除: PLUGINS 监控任务 (使用 music_providers 替代)
+            
     from app.services.media_service import check_file_integrity
     scheduler.add_job(
         check_file_integrity,
@@ -221,18 +182,8 @@ async def lifespan(app: FastAPI):
     )
     logger.info("已调度文件完整性检查任务，每 24 小时执行一次")
 
-    # Schedule cache cleanup (daily)
-    from core.cleanup import cleanup_cache
-    scheduler.add_job(
-        cleanup_cache,
-        'interval',
-        hours=24,
-        id="job_cache_cleanup",
-        replace_existing=True
-    )
-    logger.info(f"已调度缓存清理任务，每 24 小时执行一次")
+    # 已移除: cleanup_cache 任务
     
-    # Schedule auto-cache (every 30 mins)
     from app.services.media_service import auto_cache_recent_songs
     scheduler.add_job(
         auto_cache_recent_songs,
@@ -241,125 +192,154 @@ async def lifespan(app: FastAPI):
         id="job_auto_cache",
         replace_existing=True
     )
-    # Trigger once on startup (optional, but good for immediate effect)
-    # We can use run_date=datetime.now() for one-off but we want interval.
-    # We can just add another job for 'date' trigger now() but scheduler start() is async.
-    # It will run in 30 mins. That's fine.
     logger.info(f"已调度自动缓存任务，每 30 分钟执行一次")
     
-    # Initial Notify Init
-    update_notifier_config(config)
-    
-    # Subscribe to events
-    event_bus.subscribe("new_content", handle_new_content)
+    NotificationService.initialize()
 
     yield
-    
-    scheduler.shutdown()
+    # 关闭所有WebSocket连接
+    from core.websocket import manager
+    await manager.disconnect_all()
+    scheduler.shutdown(wait=False)
 
 app = FastAPI(lifespan=lifespan)
+ 
+# 注册全局异常处理
+from app.exceptions import BaseError
+from fastapi import Request
 
-from app.routers import auth
-from app.routers import media
-from app.routers import system
-from app.routers import wechat
-from app.routers import version
+@app.exception_handler(BaseError)
+async def business_exception_handler(request: Request, exc: BaseError):
+    """
+    处理所有自定义业务异常
+    """
+    status_code = 400
+    from app.exceptions import (
+        NotFoundError, ValidationError, AuthenticationError, 
+        AuthorizationError, RateLimitError
+    )
+    
+    if isinstance(exc, NotFoundError):
+        status_code = 404
+    elif isinstance(exc, ValidationError):
+        status_code = 400
+    elif isinstance(exc, (AuthenticationError, AuthorizationError)):
+        status_code = 401
+    elif isinstance(exc, RateLimitError):
+        status_code = 429
+        
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "success": False,
+            "message": exc.message,
+            "details": exc.details
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """
+    处理所有其他未捕获的异常
+    """
+    # 记录错误堆栈
+    logger.error(f"Unprocessed error: {str(exc)}", exc_info=True)
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "message": "服务器内部错误，请查看日志",
+            "details": {"type": type(exc).__name__, "error": str(exc)}
+        }
+    )
+
+# 已移除: error_handlers 和 service_container
+
+# Restore Router Imports
+from app.routers import auth, media, system, wechat, version
+from app.routers.download_history import router as download_history_router
+from app.routers.download import router as download_router
+from app.routers.metadata import router as metadata_router
+
 app.include_router(auth.router)
-app.include_router(media.router)
+# app.include_router(media.router) # Deprecated fully? Wait, media.py still handles playback/download logic.
+# We agreed to clean up media.py but keep it for core media operations. 
+# Plan says "Clean up and streamline media.py".
+# Discovery & Library take over listing/searching.
+# Media takes over playback/download.
+app.include_router(media.router) 
 app.include_router(system.router)
 app.include_router(wechat.router)
 app.include_router(version.router)
+app.include_router(download_history_router)
+# app.include_router(download_router) # Redundant with media.py
+app.include_router(metadata_router)  # 歌词/封面等元数据 API
 
-# Mount uploads directory
-import os
-if CONFIG_FILE_PATH.startswith("/config"):
-    UPLOAD_DIR = "/config/uploads"
-else:
-    UPLOAD_DIR = "uploads"
-    
-os.makedirs(os.path.join(UPLOAD_DIR, "avatars"), exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+# New Routers
+from app.routers import discovery, library, subscription
+app.include_router(discovery.router)
+app.include_router(library.router)
+app.include_router(subscription.router)
 
+# --- Middleware & Static Files Setup ---
 
-
-# Add Middleware (Session)
-# Note: In production, secret_key should be robust.
-# We delay reading config until lifespan, but Middleware init happens at creation.
-# So we read config once here solely for secret_key, or use a default.
-# To keep it simple, we re-read config or just use a placeholder if not loaded yet.
-# Actually, loading it here is safer.
-# Custom Auth Middleware
+# 1. Custom Auth Middleware (Inner)
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
-    # Check if auth enabled
-    auth_cfg = config.get('auth', {})
+    auth_cfg = get_config_manager().get('auth', {})
     if not auth_cfg.get('enabled', False):
         return await call_next(request)
 
     path = request.url.path
-    
-    # White list
-    # /api/login, /api/check_auth, /assets (static), / (spa index)
     if path.startswith("/api/"):
-        if path in ["/api/login", "/api/logout", "/api/check_auth", "/api/wecom/callback", "/api/mobile/metadata"] \
-           or path.startswith("/api/test_notify_card") \
-           or path.startswith("/api/audio/"):
-            pass # Allowed
+        allowed_paths = [
+            "/api/login", "/api/logout", "/api/check_auth", 
+            "/api/wecom/callback", "/api/mobile/metadata",
+            "/api/test_ws", "/api/discovery/probe_qualities", "/api/discovery/cover"
+        ]
+        if path in allowed_paths or path.startswith("/api/test_notify_card") or path.startswith("/api/audio/"):
+            pass 
         else:
              try:
                  user = request.session.get("user")
                  if not user:
                      return JSONResponse({"detail": "未授权，请先登录"}, status_code=401)
              except AssertionError:
-                 # Session middleware issue fallback
-                 logger.error("Session Middleware not active")
-                 return JSONResponse({"detail": "鉴权服务异常"}, status_code=500)
+                 logger.error("Session Middleware not active in auth_middleware scope")
+                 return JSONResponse({"detail": "鉴权系统初始化异常"}, status_code=500)
     
-    response = await call_next(request)
-    return response
+    return await call_next(request)
 
-# Add Middleware (Session) - Must be added last to run first!
-
-# Security: Rotate secret if default
+# 2. SessionMiddleware (Outer - added last)
 _secret, _updated = ensure_security_config()
 if _updated:
-    # If updated, reload config object globally
     try:
-        config.update(load_config()) 
+        from core.config import load_config
+        get_config_manager().update(load_config())
     except: pass
 
-app.add_middleware(SessionMiddleware, secret_key=_secret, max_age=86400*30) # 30 days
+app.add_middleware(SessionMiddleware, secret_key=_secret, max_age=86400*30) 
 
-# Allow CORS for dev (optional, mostly relevant if running frontend separately)
+# 3. Static Files & Logging
+UPLOAD_DIR = "/config/uploads" if CONFIG_FILE_PATH.startswith("/config") else "uploads"
+os.makedirs(os.path.join(UPLOAD_DIR, "avatars"), exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 api_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger.addHandler(api_log_handler)
 logging.getLogger("uvicorn").addHandler(api_log_handler)
 
-
-
-    # API routes are handled above.
-    
-# Mount Uploads
-if not os.path.exists("uploads"):
-    os.makedirs("uploads")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# Mount Frontend (only if exists, for production)
-# In Docker, we copy to /app/web/dist
 if os.path.exists("web/dist"):
     app.mount("/assets", StaticFiles(directory="web/dist/assets"), name="assets")
     
-    # Catch-all for SPA
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        # API routes are handled above.
         file_path = f"web/dist/{full_path}"
         if os.path.isfile(file_path):
             return FileResponse(file_path)
-            
         return FileResponse("web/dist/index.html")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, timeout_keep_alive=1)

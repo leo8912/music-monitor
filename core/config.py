@@ -1,3 +1,14 @@
+"""
+Config配置管理 - 应用配置加载和管理
+
+此文件负责：
+- 应用配置的加载和保存
+- 配置文件迁移和版本升级
+- 安全密钥管理
+- 监控用户配置管理
+
+Author: music-monitor development team
+"""
 import yaml
 import secrets
 import re
@@ -37,7 +48,44 @@ def migrate_and_save_config():
 
         changed = False
 
-        # 1. WeCom Legacy Keys
+        # 0. Migrate 'notifications' to 'notify' structure
+        if 'notifications' in data and data['notifications'].get('providers'):
+            providers = data['notifications']['providers']
+            if 'notify' not in data:
+                data['notify'] = {}
+            
+            # Migrate WeCom
+            if 'wecom' in providers and providers['wecom'].get('enabled'):
+                legacy_wecom = providers['wecom']
+                if 'wecom' not in data['notify']:
+                    data['notify']['wecom'] = {}
+                
+                # Copy values
+                target = data['notify']['wecom']
+                target['enabled'] = legacy_wecom.get('enabled', False)
+                if legacy_wecom.get('corp_id'): target['corpid'] = legacy_wecom.get('corp_id')
+                if legacy_wecom.get('agent_id'): target['agentid'] = legacy_wecom.get('agent_id')
+                if legacy_wecom.get('agent_secret'): target['corpsecret'] = legacy_wecom.get('agent_secret')
+                
+                changed = True
+
+            # Migrate Telegram
+            if 'telegram' in providers and providers['telegram'].get('enabled'):
+                legacy_tg = providers['telegram']
+                if 'telegram' not in data['notify']:
+                    data['notify']['telegram'] = {}
+                
+                target = data['notify']['telegram']
+                target['enabled'] = legacy_tg.get('enabled', False)
+                if legacy_tg.get('bot_token'): target['bot_token'] = legacy_tg.get('bot_token')
+                if legacy_tg.get('chat_id'): target['chat_id'] = legacy_tg.get('chat_id')
+                
+                changed = True
+            
+            # Optional: Remove old section if migrated? 
+            # users might want to keep it for safety, but let's leave it for now.
+
+        # 1. WeCom Legacy Keys (within notify.wecom)
         if 'notify' in data and 'wecom' in data['notify']:
             wecom = data['notify']['wecom']
             legacy_map = {

@@ -1,0 +1,1749 @@
+2026-01-21 09:40:13,819 - __main__ - INFO - Testing repair for: 困 (manual:manual_任素汐_困)
+2026-01-21 09:40:13,826 - __main__ - ERROR - ❌ Repair failed: 422 - {"detail":[{"type":"string_type","loc":["body","album"],"msg":"Input should be a valid string","input":null}]}
+2026-01-21 09:40:38,027 - __main__ - INFO - Testing repair for: 困 (manual:manual_任素汐_困)
+2026-01-21 09:40:38,032 - app.routers.media - INFO - 收到修复/重新下载请求: 困 - 任素汐 (Source: manual, ID: manual_任素汐_困)
+2026-01-21 09:40:38,032 - core.audio_downloader - INFO - 开始处理: 任素汐 - 困
+2026-01-21 09:40:38,032 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\任素汐 - 困.flac
+2026-01-21 09:40:38,041 - app.routers.media - INFO - 修复完成，数据库已更新: 困
+2026-01-21 09:40:38,043 - __main__ - INFO - ✅ Repair success!
+2026-01-21 09:40:38,043 - __main__ - INFO - New local path: 任素汐 - 困.flac
+2026-01-21 09:47:50,660 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 09:47:50,661 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 09:47:50,661 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 09:47:50,661 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 09:47:50,661 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 09:49:12,959 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 09:49:14,775 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 09:49:15,389 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 09:49:16,191 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 09:49:16,813 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 09:50:54,548 - app.services.media_service - INFO - Smart Search Netease: Found 宿羽阳 (12459252)
+2026-01-21 09:50:57,779 - app.services.media_service - INFO - Smart Search QQMusic: Found 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 09:50:57,779 - app.services.media_service - INFO - 所有平台搜索成功，找到2个结果
+2026-01-21 09:50:57,781 - app.services.media_service - INFO - Executing immediate sync for new artist: 宿羽阳 (netease)
+2026-01-21 09:50:57,781 - app.services.media_service - INFO - Executing immediate sync for new artist: 宿羽阳 (qqmusic)
+2026-01-21 09:50:57,782 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 09:50:57,992 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 09:50:57,994 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 09:50:57,998 - app.services.media_service - INFO - 发现新内容: 我不要原谅你 (qqmusic:song:000ByIXJ44SsAE)
+2026-01-21 09:50:58,006 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 09:50:58,007 - app.services.media_service - INFO - 发现新内容: 我偏要吻你破碎 (qqmusic:song:002qqgZN2RmQBo)
+2026-01-21 09:50:58,014 - app.services.media_service - INFO - 发现新内容: 折桨 (qqmusic:song:002htG702BWVFV)
+2026-01-21 09:50:58,020 - app.services.media_service - INFO - 发现新内容: 剜心一刀 (qqmusic:song:003mXVqo4N0sB4)
+2026-01-21 09:50:58,026 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 09:50:58,027 - app.services.media_service - INFO - 发现新内容: 祝你好梦 (qqmusic:song:000pXv5v2zXqQn)
+2026-01-21 09:50:58,033 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (qqmusic:song:00320R4m06YaOw)
+2026-01-21 09:50:58,039 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (qqmusic:song:004WjARA3m4rl9)
+2026-01-21 09:50:58,045 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (qqmusic:song:000lo9ts3FLw3o)
+2026-01-21 09:50:58,052 - app.services.media_service - INFO - 发现新内容: 自己 (qqmusic:song:004NBo024DNJE7)
+2026-01-21 09:50:58,059 - app.services.media_service - INFO - 发现新内容: 无人知晓的海 (qqmusic:song:002z8d7M2IS9hB)
+2026-01-21 09:50:58,065 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 09:50:58,066 - app.services.media_service - INFO - 发现新内容: 爱人呢 (qqmusic:song:0004p18T37kstX)
+2026-01-21 09:50:58,072 - app.services.media_service - INFO - 发现新内容: 踏破风的少年 (qqmusic:song:003aq0sQ3d1Jo9)
+2026-01-21 09:50:58,077 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 踏破风的少年 (已存在于 qqmusic)
+2026-01-21 09:50:58,078 - app.services.media_service - INFO - 发现新内容: 美丽人生 (qqmusic:song:004PENZm0KEC7y)
+2026-01-21 09:50:58,083 - app.services.media_service - INFO - 发现新内容: 无用浪漫 (qqmusic:song:001DSv0p3UsGW1)
+2026-01-21 09:50:58,088 - app.services.media_service - INFO - 发现新内容: Purple Girl (qqmusic:song:003BTUrf24fqL3)
+2026-01-21 09:50:58,093 - app.services.media_service - INFO - 发现新内容: 别再为他掉眼泪 (qqmusic:song:00194mQO223K8E)
+2026-01-21 09:50:58,099 - app.services.media_service - INFO - 发现新内容: 夏天最后的夜晚 (qqmusic:song:001IILhS0dwGKy)
+2026-01-21 09:50:58,104 - app.services.media_service - INFO - 发现新内容: 无人岛屿 (qqmusic:song:0015EGvq135JCB)
+2026-01-21 09:50:58,109 - app.services.media_service - INFO - 发现新内容: 导航 (qqmusic:song:0014RiEI3YFxRm)
+2026-01-21 09:50:58,115 - app.services.media_service - INFO - 发现新内容: 心想事成歌舞厅 (qqmusic:song:004dhsYq4atFjf)
+2026-01-21 09:50:58,121 - app.services.media_service - INFO - 发现新内容: 她在遥远星 (qqmusic:song:001Y9DFy0aALcb)
+2026-01-21 09:50:58,126 - app.services.media_service - INFO - 发现新内容: 西西弗斯 (qqmusic:song:000m60h20kqaL1)
+2026-01-21 09:50:58,131 - app.services.media_service - INFO - 发现新内容: 愿她被世界温柔以待 (qqmusic:song:002nZtg84WcWuB)
+2026-01-21 09:50:58,136 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 09:50:58,137 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 09:50:58,137 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 09:50:58,138 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 09:50:58,139 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 09:50:58,139 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 09:50:58,140 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 09:50:58,141 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 09:50:58,141 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 09:50:58,142 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 09:50:58,142 - app.services.media_service - INFO - 发现新内容: 奔向浪漫 (qqmusic:song:003drRsT2ZH7tl)
+2026-01-21 09:50:58,147 - app.services.media_service - INFO - 发现新内容: 蒙马特遗书 (qqmusic:song:004UK2z8415G7X)
+2026-01-21 09:50:58,152 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 09:50:58,153 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季 (qqmusic:song:003iok8Q0h5tzf)
+2026-01-21 09:50:58,158 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 请允许我成为你的夏季 (已存在于 qqmusic)
+2026-01-21 09:50:58,158 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (qqmusic:song:0003PkqM3jyy4y)
+2026-01-21 09:50:58,163 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 潮汐锁定 (已存在于 qqmusic)
+2026-01-21 09:50:58,164 - app.services.media_service - INFO - 发现新内容: 暗恋是一个人的事 (qqmusic:song:002M1Gl80gUAzo)
+2026-01-21 09:50:58,169 - app.services.media_service - INFO - 发现新内容: 成人之美 (qqmusic:song:0003AEI426ucsX)
+2026-01-21 09:50:58,175 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 09:50:58,175 - app.services.media_service - INFO - 发现新内容: 如果你不开心就来碗螺蛳粉 (qqmusic:song:001asdLT0JVtgw)
+2026-01-21 09:50:58,180 - app.services.media_service - INFO - 发现新内容: 我爱你，这就是我的秘密 (qqmusic:song:0029vVRD1yU1lM)
+2026-01-21 09:50:58,186 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 09:50:58,186 - app.services.media_service - INFO - Immediate sync finished for 宿羽阳. Added 31 new songs.
+2026-01-21 09:50:58,187 - app.services.media_service - INFO - Auto-cache start: Found 4 recent songs missing local file.
+2026-01-21 09:50:58,187 - app.services.media_service - INFO - Auto-caching recent song: 我不要原谅你 (qqmusic)
+2026-01-21 09:50:58,187 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 09:50:58,187 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 09:50:58,193 - app.services.media_service - INFO - Auto-cache success: 我不要原谅你
+2026-01-21 09:50:58,194 - app.services.media_service - INFO - Auto-caching recent song: 我偏要吻你破碎 (qqmusic)
+2026-01-21 09:50:58,194 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我偏要吻你破碎
+2026-01-21 09:50:58,194 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我偏要吻你破碎.flac
+2026-01-21 09:50:58,199 - app.services.media_service - INFO - Auto-cache success: 我偏要吻你破碎
+2026-01-21 09:50:58,199 - app.services.media_service - INFO - Auto-caching recent song: 折桨 (qqmusic)
+2026-01-21 09:50:58,199 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 折桨
+2026-01-21 09:50:58,199 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 折桨.flac
+2026-01-21 09:50:58,205 - app.services.media_service - INFO - Auto-cache success: 折桨
+2026-01-21 09:50:58,205 - app.services.media_service - INFO - Auto-caching recent song: 剜心一刀 (qqmusic)
+2026-01-21 09:50:58,205 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 剜心一刀
+2026-01-21 09:50:58,206 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 剜心一刀.flac
+2026-01-21 09:50:58,210 - app.services.media_service - INFO - Auto-cache success: 剜心一刀
+2026-01-21 09:50:58,534 - notifiers.wecom - INFO - 企业微信图文推送成功: ❤️ 关注成功: 宿羽阳
+2026-01-21 09:50:58,535 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 09:50:58,815 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 09:50:58,815 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 09:50:58,817 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 09:50:58,817 - app.services.media_service - INFO - 发现新内容: 我不要原谅你（伴奏） (netease:song:3336532414)
+2026-01-21 09:50:58,823 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 09:50:58,824 - app.services.media_service - INFO - 发现新内容: 剜心一刀(伴奏) (netease:song:2735946422)
+2026-01-21 09:50:58,830 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 祝你好梦 (已存在于 qqmusic)
+2026-01-21 09:50:58,831 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (Live) (netease:song:2630942965)
+2026-01-21 09:50:58,836 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (Live, 伴奏) (netease:song:2630945653)
+2026-01-21 09:50:58,841 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (Live) (netease:song:2630945649)
+2026-01-21 09:50:58,846 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (伴奏) (netease:song:2630945652)
+2026-01-21 09:50:58,851 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (伴奏) (netease:song:2630945651)
+2026-01-21 09:50:58,857 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (Live) (netease:song:2630945648)
+2026-01-21 09:50:58,862 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 自己 (已存在于 qqmusic)
+2026-01-21 09:50:58,862 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 09:50:58,863 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱人呢 (已存在于 qqmusic)
+2026-01-21 09:50:58,864 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 美丽人生 (已存在于 qqmusic)
+2026-01-21 09:50:58,864 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 09:50:58,865 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 09:50:58,866 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 09:50:58,867 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 09:50:58,868 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 09:50:58,868 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 09:50:58,869 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 09:50:58,870 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 09:50:58,870 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 09:50:58,871 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 09:50:58,872 - app.services.media_service - INFO - 发现新内容: 无用浪漫（伴奏） (netease:song:1973079834)
+2026-01-21 09:50:58,877 - app.services.media_service - INFO - 发现新内容: Purple Girl（伴奏） (netease:song:1973074578)
+2026-01-21 09:50:58,882 - app.services.media_service - INFO - 发现新内容: 无人岛屿（伴奏） (netease:song:1973074551)
+2026-01-21 09:50:58,887 - app.services.media_service - INFO - 发现新内容: 心想事成歌舞厅（伴奏） (netease:song:1915589032)
+2026-01-21 09:50:58,893 - app.services.media_service - INFO - 发现新内容: 别再为他掉眼泪（伴奏） (netease:song:1913859275)
+2026-01-21 09:50:58,898 - app.services.media_service - INFO - 发现新内容: 导航（伴奏） (netease:song:1901952605)
+2026-01-21 09:50:58,904 - app.services.media_service - INFO - 发现新内容: 西西弗斯（伴奏） (netease:song:1888436501)
+2026-01-21 09:50:58,909 - app.services.media_service - INFO - 发现新内容: 愿她被世界温柔以待（伴奏） (netease:song:1854219045)
+2026-01-21 09:50:58,914 - app.services.media_service - INFO - 发现新内容: 她在遥远星（伴奏） (netease:song:1948456350)
+2026-01-21 09:50:58,920 - app.services.media_service - INFO - 发现新内容: 夏天最后的夜晚 (伴奏) (netease:song:1879657555)
+2026-01-21 09:50:58,926 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 09:50:58,927 - app.services.media_service - INFO - 发现新内容: 蒙马特遗书 (伴奏) (netease:song:1498130615)
+2026-01-21 09:50:58,932 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be) (netease:song:1458896058)
+2026-01-21 09:50:58,937 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季（伴奏） (Summer For Thee, Grant I May Be) (netease:song:1458899533)
+2026-01-21 09:50:58,943 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (Tidal Locked) (netease:song:1441065752)
+2026-01-21 09:50:58,949 - app.services.media_service - INFO - 发现新内容: 潮汐锁定（伴奏） (Tidal Locked) (netease:song:1441064843)
+2026-01-21 09:50:58,955 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 暗恋是一个人的事 (已存在于 qqmusic)
+2026-01-21 09:50:58,956 - app.services.media_service - INFO - 发现新内容: 暗恋是一个人的事 (伴奏) (netease:song:1380080510)
+2026-01-21 09:50:58,961 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 09:50:58,962 - app.services.media_service - INFO - 发现新内容: 成人之美（伴奏） (netease:song:1358275596)
+2026-01-21 09:50:58,967 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我爱你，这就是我的秘密 (已存在于 qqmusic)
+2026-01-21 09:50:58,968 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 09:50:58,969 - app.services.media_service - INFO - 发现新内容: 如果你不开心就来碗螺蛳粉 (伴奏) (netease:song:1333167075)
+2026-01-21 09:50:58,974 - app.services.media_service - INFO - 发现新内容: 我爱你，这就是我的秘密（伴奏） (netease:song:1325711238)
+2026-01-21 09:50:58,979 - app.services.media_service - INFO - 发现新内容: 旱鸭 (netease:song:1325203205)
+2026-01-21 09:50:58,984 - app.services.media_service - INFO - Immediate sync finished for 宿羽阳. Added 28 new songs.
+2026-01-21 09:50:58,985 - app.services.media_service - INFO - Auto-cache start: Found 2 recent songs missing local file.
+2026-01-21 09:50:58,985 - app.services.media_service - INFO - Auto-caching recent song: 我不要原谅你（伴奏） (netease)
+2026-01-21 09:50:58,985 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你（伴奏）
+2026-01-21 09:51:00,697 - core.audio_downloader - INFO - 正在下载音频流...
+2026-01-21 09:51:06,017 - core.audio_downloader - INFO - 正在获取歌词...
+2026-01-21 09:51:06,958 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 09:51:06,959 - core.audio_downloader - INFO - 歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 09:51:06,959 - core.audio_downloader - INFO - 正在下载封面图...
+2026-01-21 09:51:07,048 - core.audio_downloader - INFO - 写入文件: audio_cache\宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-21 09:51:07,067 - core.audio_downloader - INFO - 歌词注入成功 (FLAC): audio_cache\宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-21 09:51:07,081 - core.audio_downloader - INFO - 元数据注入成功: audio_cache\宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-21 09:51:07,089 - app.services.media_service - INFO - Auto-cache success: 我不要原谅你（伴奏）
+2026-01-21 09:51:07,090 - app.services.media_service - INFO - Auto-caching recent song: 剜心一刀(伴奏) (netease)
+2026-01-21 09:51:07,090 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 剜心一刀(伴奏)
+2026-01-21 09:51:09,882 - core.audio_downloader - INFO - 正在下载音频流...
+2026-01-21 09:51:18,340 - core.audio_downloader - INFO - 正在获取歌词...
+2026-01-21 09:51:19,518 - core.audio_downloader - WARNING - 歌词获取失败: 剜心一刀(伴奏)
+2026-01-21 09:51:19,518 - core.audio_downloader - INFO - 正在下载封面图...
+2026-01-21 09:51:19,716 - core.audio_downloader - INFO - 写入文件: audio_cache\宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-21 09:51:19,755 - core.audio_downloader - INFO - 元数据注入成功: audio_cache\宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-21 09:51:19,762 - app.services.media_service - INFO - Auto-cache success: 剜心一刀(伴奏)
+2026-01-21 09:51:59,732 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 09:52:00,670 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 10:14:24,892 - core.audio_downloader - INFO - Search Songs [netease]: 我不要原谅你 宿羽阳
+2026-01-21 10:14:24,893 - core.audio_downloader - INFO - Search Songs [qqmusic]: 我不要原谅你 宿羽阳
+2026-01-21 10:14:24,893 - core.audio_downloader - INFO - Search Songs [kugou]: 我不要原谅你 宿羽阳
+2026-01-21 10:14:24,894 - core.audio_downloader - INFO - Search Songs [kuwo]: 我不要原谅你 宿羽阳
+2026-01-21 10:14:24,894 - core.audio_downloader - INFO - Search Songs [migu]: 我不要原谅你 宿羽阳
+2026-01-21 10:16:40,063 - app.routers.media - INFO - File missing for 我不要原谅你 (ID:manual_宿羽阳_我不要原谅你), attempting immediate re-download...
+2026-01-21 10:16:40,063 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 10:16:40,063 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 10:16:40,071 - app.routers.media - INFO - 收到下载请求: 我不要原谅你 - 宿羽阳
+2026-01-21 10:16:40,072 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 10:16:40,072 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 10:16:40,635 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:16:41,033 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:16:41,410 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:16:41,785 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:16:51,834 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:16:52,192 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:16:53,725 - app.routers.media - INFO - File missing for 自己 (ID:manual_宿羽阳_自己), attempting immediate re-download...
+2026-01-21 10:16:53,725 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 自己
+2026-01-21 10:16:53,726 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 自己.flac
+2026-01-21 10:16:53,733 - app.routers.media - INFO - 收到下载请求: 自己 - 宿羽阳
+2026-01-21 10:16:53,733 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 自己
+2026-01-21 10:16:53,734 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 自己.flac
+2026-01-21 10:16:54,583 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 10:16:55,077 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 10:16:55,611 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 10:16:56,146 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 10:17:02,222 - core.audio_downloader - INFO - Search Songs [netease]: 我不要原谅你 宿羽阳 
+2026-01-21 10:17:02,223 - core.audio_downloader - INFO - Search Songs [qqmusic]: 我不要原谅你 宿羽阳 
+2026-01-21 10:17:02,223 - core.audio_downloader - INFO - Search Songs [kugou]: 我不要原谅你 宿羽阳 
+2026-01-21 10:17:02,223 - core.audio_downloader - INFO - Search Songs [kuwo]: 我不要原谅你 宿羽阳 
+2026-01-21 10:17:02,224 - core.audio_downloader - INFO - Search Songs [migu]: 我不要原谅你 宿羽阳 
+2026-01-21 10:17:07,846 - core.audio_downloader - INFO - Search Songs [netease]: 庙堂之外 
+2026-01-21 10:17:07,846 - core.audio_downloader - INFO - Search Songs [qqmusic]: 庙堂之外 
+2026-01-21 10:17:07,847 - core.audio_downloader - INFO - Search Songs [kugou]: 庙堂之外 
+2026-01-21 10:17:07,847 - core.audio_downloader - INFO - Search Songs [kuwo]: 庙堂之外 
+2026-01-21 10:17:07,848 - core.audio_downloader - INFO - Search Songs [migu]: 庙堂之外 
+2026-01-21 10:39:12,792 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 10:39:13,549 - app.routers.system - ERROR - Failed to save settings: 400: Invalid config structure
+2026-01-21 10:44:37,533 - app.routers.system - INFO - Configuration updated via API
+2026-01-21 10:45:07,916 - app.routers.media - INFO - File missing for 我不要原谅你 (ID:manual_宿羽阳_我不要原谅你), attempting immediate re-download...
+2026-01-21 10:45:07,916 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 10:45:07,916 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 10:45:07,924 - app.routers.media - INFO - 收到下载请求: 我不要原谅你 - 宿羽阳
+2026-01-21 10:45:07,924 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 10:45:07,924 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 10:45:08,353 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:45:08,642 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:45:09,038 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:45:09,351 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:47:50,671 - app.services.media_service - INFO - 开始检查任务: netease...
+2026-01-21 10:47:50,671 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 10:47:50,672 - app.services.media_service - INFO - 开始检查任务: qqmusic...
+2026-01-21 10:47:50,672 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 10:47:53,691 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 10:47:53,692 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 10:47:53,693 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 10:47:53,694 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 10:47:53,696 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 10:47:53,698 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 踏破风的少年 (已存在于 qqmusic)
+2026-01-21 10:47:53,701 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 10:47:53,702 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 10:47:53,703 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 10:47:53,704 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 10:47:53,705 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 10:47:53,705 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 10:47:53,706 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 10:47:53,707 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 10:47:53,708 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 10:47:53,710 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 10:47:53,712 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 10:47:53,713 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 请允许我成为你的夏季 (已存在于 qqmusic)
+2026-01-21 10:47:53,715 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 潮汐锁定 (已存在于 qqmusic)
+2026-01-21 10:47:53,717 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 10:47:53,718 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 10:47:53,719 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我爱你，这就是我的秘密 (已存在于 qqmusic)
+2026-01-21 10:47:53,720 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 旱鸭 (已存在于 netease)
+2026-01-21 10:47:53,721 - app.services.media_service - INFO - 发现新内容: 再见旧时光 (qqmusic:song:004MaIlK22QnK6)
+2026-01-21 10:47:53,728 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 再见旧时光 (已存在于 qqmusic)
+2026-01-21 10:47:53,729 - app.services.media_service - INFO - 发现新内容: 旱鸭 (qqmusic:song:004cNTLf4QXghE)
+2026-01-21 10:47:53,737 - app.services.media_service - INFO - 发现新内容: 冬天时我喜欢靠近温暖的事 (qqmusic:song:0009bEqE4XtdtE)
+2026-01-21 10:47:53,744 - app.services.media_service - INFO - 发现新内容: 给Lyon的歌 (qqmusic:song:001PULzF4N9PSc)
+2026-01-21 10:47:53,751 - app.services.media_service - INFO - 发现新内容: 像少年啦飞驰 (qqmusic:song:002eCZfe1ss4Iu)
+2026-01-21 10:47:53,759 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (qqmusic:song:003KLfPZ26Mh8e)
+2026-01-21 10:47:53,765 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (qqmusic:song:000OvSVu0MpLEY)
+2026-01-21 10:47:53,773 - app.services.media_service - INFO - 发现新内容: 重逢 (qqmusic:song:001J7S7b0F2fZx)
+2026-01-21 10:47:53,779 - app.services.media_service - INFO - 发现新内容: 爱过 (qqmusic:song:0026GSMH3cdCPF)
+2026-01-21 10:47:53,786 - app.services.media_service - INFO - 发现新内容: 给lyon的歌 (qqmusic:song:004fw3dx0o40V6)
+2026-01-21 10:47:53,793 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 像少年啦飞驰 (已存在于 qqmusic)
+2026-01-21 10:47:53,794 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 你说你不知该怎么和妈妈说 (已存在于 qqmusic)
+2026-01-21 10:47:53,795 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 十一种孤独 (已存在于 qqmusic)
+2026-01-21 10:47:53,795 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 重逢 (已存在于 qqmusic)
+2026-01-21 10:47:53,796 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 冬天时我喜欢靠近温暖的事 (已存在于 qqmusic)
+2026-01-21 10:47:53,797 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱过 (已存在于 qqmusic)
+2026-01-21 10:47:53,798 - app.services.media_service - INFO - 发现新内容: 赴约 (qqmusic:song:000rQOkS28BfyJ)
+2026-01-21 10:47:53,804 - app.services.media_service - INFO - 发现新内容: 赴约 (qqmusic:song:002Q5rVC40TghA)
+2026-01-21 10:47:53,809 - app.services.media_service - INFO - Found 12 new items, but none are recent. Skipping notify.
+2026-01-21 10:47:53,809 - app.services.media_service - INFO - 检查完成: qqmusic
+2026-01-21 10:47:54,188 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 10:47:54,188 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 10:47:54,189 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 暗恋是一个人的事 (已存在于 qqmusic)
+2026-01-21 10:47:54,190 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 十一种孤独 (已存在于 qqmusic)
+2026-01-21 10:47:54,190 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 冬天时我喜欢靠近温暖的事 (已存在于 qqmusic)
+2026-01-21 10:47:54,191 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 10:47:54,191 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 美丽人生 (已存在于 qqmusic)
+2026-01-21 10:47:54,192 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 给Lyon的歌 (已存在于 qqmusic)
+2026-01-21 10:47:54,193 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 10:47:54,193 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 10:47:54,194 - app.services.media_service - INFO - 发现新内容: 赴约 (netease:song:518077051)
+2026-01-21 10:47:54,200 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我爱你，这就是我的秘密 (已存在于 qqmusic)
+2026-01-21 10:47:54,200 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 祝你好梦 (已存在于 qqmusic)
+2026-01-21 10:47:54,201 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 10:47:54,202 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 10:47:54,202 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 10:47:54,203 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 重逢 (已存在于 qqmusic)
+2026-01-21 10:47:54,203 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 10:47:54,204 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 10:47:54,205 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 10:47:54,205 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 10:47:54,206 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱过 (已存在于 qqmusic)
+2026-01-21 10:47:54,207 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 再见旧时光 (已存在于 qqmusic)
+2026-01-21 10:47:54,207 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 像少年啦飞驰 (已存在于 qqmusic)
+2026-01-21 10:47:54,208 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 你说你不知该怎么和妈妈说 (已存在于 qqmusic)
+2026-01-21 10:47:54,208 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 自己 (已存在于 qqmusic)
+2026-01-21 10:47:54,209 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱人呢 (已存在于 qqmusic)
+2026-01-21 10:47:54,210 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 10:47:54,211 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 10:47:54,211 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 10:47:54,212 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 10:47:54,212 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 10:47:54,213 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 10:47:54,217 - app.services.media_service - INFO - 发现新内容: 再见旧时光（伴奏） (netease:song:1318377622)
+2026-01-21 10:47:54,223 - app.services.media_service - INFO - 发现新内容: 像少年啦飞驰（伴奏） (netease:song:862174367)
+2026-01-21 10:47:54,229 - app.services.media_service - INFO - 发现新内容: 爱过（伴奏） (netease:song:862173435)
+2026-01-21 10:47:54,235 - app.services.media_service - INFO - 发现新内容: 冬天时我喜欢靠近温暖的事（伴奏） (netease:song:862172419)
+2026-01-21 10:47:54,240 - app.services.media_service - INFO - 发现新内容: 给Lyon的歌（伴奏） (netease:song:862172191)
+2026-01-21 10:47:54,246 - app.services.media_service - INFO - 发现新内容: 十一种孤独（伴奏） (netease:song:862171150)
+2026-01-21 10:47:54,251 - app.services.media_service - INFO - 发现新内容: 重逢（伴奏） (netease:song:862170595)
+2026-01-21 10:47:54,257 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说（伴奏） (netease:song:862170443)
+2026-01-21 10:47:54,262 - app.services.media_service - INFO - 发现新内容: 赴约（伴奏） (netease:song:542697109)
+2026-01-21 10:47:54,268 - app.services.media_service - INFO - 发现新内容: 赴约 (netease:song:542667136)
+2026-01-21 10:47:54,274 - app.services.media_service - INFO - Found 11 new items, but none are recent. Skipping notify.
+2026-01-21 10:47:54,274 - app.services.media_service - INFO - 检查完成: netease
+2026-01-21 10:50:01,710 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 10:50:02,060 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 10:50:05,074 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 10:50:05,425 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 10:50:06,269 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 10:50:06,647 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你（伴奏）
+2026-01-21 10:50:06,683 - app.routers.media - INFO - File missing for 你说你不知该怎么和妈妈说 (ID:manual_宿羽阳_你说你不知该怎么和妈妈说), attempting immediate re-download...
+2026-01-21 10:50:06,683 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 你说你不知该怎么和妈妈说
+2026-01-21 10:50:06,683 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-21 10:50:06,691 - app.routers.media - INFO - 收到下载请求: 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-21 10:50:06,691 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 你说你不知该怎么和妈妈说
+2026-01-21 10:50:06,691 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-21 10:50:07,521 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:50:07,884 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:50:08,207 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:50:08,544 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:50:20,272 - app.routers.media - INFO - File missing for 我偏要吻你破碎 (ID:manual_宿羽阳_我偏要吻你破碎), attempting immediate re-download...
+2026-01-21 10:50:20,273 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我偏要吻你破碎
+2026-01-21 10:50:20,273 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我偏要吻你破碎.flac
+2026-01-21 10:50:20,284 - app.routers.media - INFO - 收到下载请求: 我偏要吻你破碎 - 宿羽阳
+2026-01-21 10:50:20,284 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我偏要吻你破碎
+2026-01-21 10:50:20,284 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我偏要吻你破碎.flac
+2026-01-21 10:50:20,713 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我偏要吻你破碎
+2026-01-21 10:50:21,097 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我偏要吻你破碎
+2026-01-21 10:50:21,380 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我偏要吻你破碎
+2026-01-21 10:50:21,640 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我偏要吻你破碎
+2026-01-21 10:50:24,447 - app.routers.media - INFO - File missing for 你说你不知该怎么和妈妈说 (ID:manual_宿羽阳_你说你不知该怎么和妈妈说), attempting immediate re-download...
+2026-01-21 10:50:24,447 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 你说你不知该怎么和妈妈说
+2026-01-21 10:50:24,447 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-21 10:50:24,455 - app.routers.media - INFO - 收到下载请求: 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-21 10:50:24,455 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 你说你不知该怎么和妈妈说
+2026-01-21 10:50:24,455 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-21 10:50:24,771 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:50:25,084 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:50:25,442 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:50:25,781 - core.audio_downloader - INFO - 酷狗歌词获取成功: 你说你不知该怎么和妈妈说
+2026-01-21 10:53:54,103 - app.routers.media - INFO - File missing for 我不要原谅你 (ID:manual_宿羽阳_我不要原谅你), attempting immediate re-download...
+2026-01-21 10:53:54,104 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 10:53:54,104 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 10:53:54,111 - app.routers.media - INFO - 收到下载请求: 我不要原谅你 - 宿羽阳
+2026-01-21 10:53:54,112 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 10:53:54,112 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 10:53:54,186 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:53:54,445 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:53:54,738 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:53:54,998 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:53:57,763 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:53:58,184 - core.audio_downloader - INFO - 酷狗歌词获取成功: 我不要原谅你
+2026-01-21 10:53:59,271 - app.routers.media - INFO - File missing for 自己 (ID:manual_宿羽阳_自己), attempting immediate re-download...
+2026-01-21 10:53:59,271 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 自己
+2026-01-21 10:53:59,271 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 自己.flac
+2026-01-21 10:53:59,279 - app.routers.media - INFO - 收到下载请求: 自己 - 宿羽阳
+2026-01-21 10:53:59,279 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 自己
+2026-01-21 10:53:59,279 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 自己.flac
+2026-01-21 10:53:59,955 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 10:54:00,364 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 10:54:00,801 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 10:54:01,269 - core.audio_downloader - INFO - 酷狗歌词获取成功: 自己
+2026-01-21 11:09:58,547 - app.routers.media - INFO - 删除歌手 宿羽阳 (netease) 及其 39 首歌曲
+2026-01-21 11:09:58,569 - app.routers.media - INFO - 删除歌手 宿羽阳 (qqmusic) 及其 42 首歌曲
+2026-01-21 11:10:04,086 - app.services.media_service - INFO - Smart Search Netease: Found 宿羽阳 (12459252)
+2026-01-21 11:10:07,023 - app.services.media_service - INFO - Smart Search QQMusic: Found 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 11:10:07,023 - app.services.media_service - INFO - 所有平台搜索成功，找到2个结果
+2026-01-21 11:10:07,025 - app.services.media_service - INFO - Executing immediate sync for new artist: 宿羽阳 (netease)
+2026-01-21 11:10:07,025 - app.services.media_service - INFO - Executing immediate sync for new artist: 宿羽阳 (qqmusic)
+2026-01-21 11:10:07,025 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 11:10:07,186 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 11:10:07,186 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 11:10:07,187 - app.services.media_service - INFO - 发现新内容: 我不要原谅你 (qqmusic:song:000ByIXJ44SsAE)
+2026-01-21 11:10:07,193 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 11:10:07,194 - app.services.media_service - INFO - 发现新内容: 我偏要吻你破碎 (qqmusic:song:002qqgZN2RmQBo)
+2026-01-21 11:10:07,199 - app.services.media_service - INFO - 发现新内容: 折桨 (qqmusic:song:002htG702BWVFV)
+2026-01-21 11:10:07,205 - app.services.media_service - INFO - 发现新内容: 剜心一刀 (qqmusic:song:003mXVqo4N0sB4)
+2026-01-21 11:10:07,211 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 11:10:07,212 - app.services.media_service - INFO - 发现新内容: 祝你好梦 (qqmusic:song:000pXv5v2zXqQn)
+2026-01-21 11:10:07,217 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (qqmusic:song:00320R4m06YaOw)
+2026-01-21 11:10:07,223 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (qqmusic:song:004WjARA3m4rl9)
+2026-01-21 11:10:07,229 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (qqmusic:song:000lo9ts3FLw3o)
+2026-01-21 11:10:07,235 - app.services.media_service - INFO - 发现新内容: 自己 (qqmusic:song:004NBo024DNJE7)
+2026-01-21 11:10:07,240 - app.services.media_service - INFO - 发现新内容: 无人知晓的海 (qqmusic:song:002z8d7M2IS9hB)
+2026-01-21 11:10:07,246 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 11:10:07,247 - app.services.media_service - INFO - 发现新内容: 爱人呢 (qqmusic:song:0004p18T37kstX)
+2026-01-21 11:10:07,252 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 踏破风的少年 (已存在于 qqmusic)
+2026-01-21 11:10:07,253 - app.services.media_service - INFO - 发现新内容: 美丽人生 (qqmusic:song:004PENZm0KEC7y)
+2026-01-21 11:10:07,259 - app.services.media_service - INFO - 发现新内容: 无用浪漫 (qqmusic:song:001DSv0p3UsGW1)
+2026-01-21 11:10:07,264 - app.services.media_service - INFO - 发现新内容: Purple Girl (qqmusic:song:003BTUrf24fqL3)
+2026-01-21 11:10:07,270 - app.services.media_service - INFO - 发现新内容: 别再为他掉眼泪 (qqmusic:song:00194mQO223K8E)
+2026-01-21 11:10:07,275 - app.services.media_service - INFO - 发现新内容: 夏天最后的夜晚 (qqmusic:song:001IILhS0dwGKy)
+2026-01-21 11:10:07,281 - app.services.media_service - INFO - 发现新内容: 无人岛屿 (qqmusic:song:0015EGvq135JCB)
+2026-01-21 11:10:07,286 - app.services.media_service - INFO - 发现新内容: 导航 (qqmusic:song:0014RiEI3YFxRm)
+2026-01-21 11:10:07,292 - app.services.media_service - INFO - 发现新内容: 心想事成歌舞厅 (qqmusic:song:004dhsYq4atFjf)
+2026-01-21 11:10:07,298 - app.services.media_service - INFO - 发现新内容: 她在遥远星 (qqmusic:song:001Y9DFy0aALcb)
+2026-01-21 11:10:07,303 - app.services.media_service - INFO - 发现新内容: 西西弗斯 (qqmusic:song:000m60h20kqaL1)
+2026-01-21 11:10:07,308 - app.services.media_service - INFO - 发现新内容: 愿她被世界温柔以待 (qqmusic:song:002nZtg84WcWuB)
+2026-01-21 11:10:07,314 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 11:10:07,315 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 11:10:07,315 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 11:10:07,316 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 11:10:07,317 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 11:10:07,317 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 11:10:07,318 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 11:10:07,319 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 11:10:07,319 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 11:10:07,320 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 11:10:07,320 - app.services.media_service - INFO - 发现新内容: 奔向浪漫 (qqmusic:song:003drRsT2ZH7tl)
+2026-01-21 11:10:07,326 - app.services.media_service - INFO - 发现新内容: 蒙马特遗书 (qqmusic:song:004UK2z8415G7X)
+2026-01-21 11:10:07,332 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 11:10:07,333 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季 (qqmusic:song:003iok8Q0h5tzf)
+2026-01-21 11:10:07,339 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 请允许我成为你的夏季 (已存在于 qqmusic)
+2026-01-21 11:10:07,340 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (qqmusic:song:0003PkqM3jyy4y)
+2026-01-21 11:10:07,346 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 潮汐锁定 (已存在于 qqmusic)
+2026-01-21 11:10:07,347 - app.services.media_service - INFO - 发现新内容: 暗恋是一个人的事 (qqmusic:song:002M1Gl80gUAzo)
+2026-01-21 11:10:07,353 - app.services.media_service - INFO - 发现新内容: 成人之美 (qqmusic:song:0003AEI426ucsX)
+2026-01-21 11:10:07,359 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 11:10:07,360 - app.services.media_service - INFO - 发现新内容: 如果你不开心就来碗螺蛳粉 (qqmusic:song:001asdLT0JVtgw)
+2026-01-21 11:10:07,366 - app.services.media_service - INFO - 发现新内容: 我爱你，这就是我的秘密 (qqmusic:song:0029vVRD1yU1lM)
+2026-01-21 11:10:07,372 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 11:10:07,372 - app.services.media_service - INFO - Immediate sync finished for 宿羽阳. Added 30 new songs.
+2026-01-21 11:10:07,373 - app.services.media_service - INFO - Auto-cache start: Found 4 recent songs missing local file.
+2026-01-21 11:10:07,373 - app.services.media_service - INFO - Auto-caching recent song: 我不要原谅你 (qqmusic)
+2026-01-21 11:10:07,373 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 11:10:07,374 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 11:10:07,379 - app.services.media_service - INFO - Auto-cache success: 我不要原谅你
+2026-01-21 11:10:07,379 - app.services.media_service - INFO - Auto-caching recent song: 我偏要吻你破碎 (qqmusic)
+2026-01-21 11:10:07,380 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我偏要吻你破碎
+2026-01-21 11:10:07,380 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我偏要吻你破碎.flac
+2026-01-21 11:10:07,385 - app.services.media_service - INFO - Auto-cache success: 我偏要吻你破碎
+2026-01-21 11:10:07,386 - app.services.media_service - INFO - Auto-caching recent song: 折桨 (qqmusic)
+2026-01-21 11:10:07,386 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 折桨
+2026-01-21 11:10:07,386 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 折桨.flac
+2026-01-21 11:10:07,393 - app.services.media_service - INFO - Auto-cache success: 折桨
+2026-01-21 11:10:07,393 - app.services.media_service - INFO - Auto-caching recent song: 剜心一刀 (qqmusic)
+2026-01-21 11:10:07,393 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 剜心一刀
+2026-01-21 11:10:07,393 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 剜心一刀.flac
+2026-01-21 11:10:07,399 - app.services.media_service - INFO - Auto-cache success: 剜心一刀
+2026-01-21 11:10:07,661 - notifiers.wecom - INFO - 企业微信图文推送成功: ❤️ 关注成功: 宿羽阳
+2026-01-21 11:10:07,662 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 11:10:08,043 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 11:10:08,043 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 11:10:08,045 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 11:10:08,045 - app.services.media_service - INFO - 发现新内容: 我不要原谅你（伴奏） (netease:song:3336532414)
+2026-01-21 11:10:08,051 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 11:10:08,052 - app.services.media_service - INFO - 发现新内容: 剜心一刀(伴奏) (netease:song:2735946422)
+2026-01-21 11:10:08,057 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 祝你好梦 (已存在于 qqmusic)
+2026-01-21 11:10:08,058 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (Live) (netease:song:2630942965)
+2026-01-21 11:10:08,063 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (Live, 伴奏) (netease:song:2630945653)
+2026-01-21 11:10:08,069 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (Live) (netease:song:2630945649)
+2026-01-21 11:10:08,074 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (伴奏) (netease:song:2630945652)
+2026-01-21 11:10:08,080 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (伴奏) (netease:song:2630945651)
+2026-01-21 11:10:08,085 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (Live) (netease:song:2630945648)
+2026-01-21 11:10:08,091 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 自己 (已存在于 qqmusic)
+2026-01-21 11:10:08,091 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 11:10:08,092 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱人呢 (已存在于 qqmusic)
+2026-01-21 11:10:08,092 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 美丽人生 (已存在于 qqmusic)
+2026-01-21 11:10:08,093 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 11:10:08,094 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 11:10:08,094 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 11:10:08,095 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 11:10:08,095 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 11:10:08,096 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 11:10:08,096 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 11:10:08,097 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 11:10:08,097 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 11:10:08,098 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 11:10:08,099 - app.services.media_service - INFO - 发现新内容: 无用浪漫（伴奏） (netease:song:1973079834)
+2026-01-21 11:10:08,104 - app.services.media_service - INFO - 发现新内容: Purple Girl（伴奏） (netease:song:1973074578)
+2026-01-21 11:10:08,110 - app.services.media_service - INFO - 发现新内容: 无人岛屿（伴奏） (netease:song:1973074551)
+2026-01-21 11:10:08,115 - app.services.media_service - INFO - 发现新内容: 心想事成歌舞厅（伴奏） (netease:song:1915589032)
+2026-01-21 11:10:08,120 - app.services.media_service - INFO - 发现新内容: 别再为他掉眼泪（伴奏） (netease:song:1913859275)
+2026-01-21 11:10:08,125 - app.services.media_service - INFO - 发现新内容: 导航（伴奏） (netease:song:1901952605)
+2026-01-21 11:10:08,130 - app.services.media_service - INFO - 发现新内容: 西西弗斯（伴奏） (netease:song:1888436501)
+2026-01-21 11:10:08,135 - app.services.media_service - INFO - 发现新内容: 愿她被世界温柔以待（伴奏） (netease:song:1854219045)
+2026-01-21 11:10:08,141 - app.services.media_service - INFO - 发现新内容: 她在遥远星（伴奏） (netease:song:1948456350)
+2026-01-21 11:10:08,146 - app.services.media_service - INFO - 发现新内容: 夏天最后的夜晚 (伴奏) (netease:song:1879657555)
+2026-01-21 11:10:08,151 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 11:10:08,152 - app.services.media_service - INFO - 发现新内容: 蒙马特遗书 (伴奏) (netease:song:1498130615)
+2026-01-21 11:10:08,157 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be) (netease:song:1458896058)
+2026-01-21 11:10:08,162 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季（伴奏） (Summer For Thee, Grant I May Be) (netease:song:1458899533)
+2026-01-21 11:10:08,167 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (Tidal Locked) (netease:song:1441065752)
+2026-01-21 11:10:08,172 - app.services.media_service - INFO - 发现新内容: 潮汐锁定（伴奏） (Tidal Locked) (netease:song:1441064843)
+2026-01-21 11:10:08,177 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 暗恋是一个人的事 (已存在于 qqmusic)
+2026-01-21 11:10:08,178 - app.services.media_service - INFO - 发现新内容: 暗恋是一个人的事 (伴奏) (netease:song:1380080510)
+2026-01-21 11:10:08,183 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 11:10:08,184 - app.services.media_service - INFO - 发现新内容: 成人之美（伴奏） (netease:song:1358275596)
+2026-01-21 11:10:08,189 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我爱你，这就是我的秘密 (已存在于 qqmusic)
+2026-01-21 11:10:08,190 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 11:10:08,190 - app.services.media_service - INFO - 发现新内容: 如果你不开心就来碗螺蛳粉 (伴奏) (netease:song:1333167075)
+2026-01-21 11:10:08,196 - app.services.media_service - INFO - 发现新内容: 我爱你，这就是我的秘密（伴奏） (netease:song:1325711238)
+2026-01-21 11:10:08,201 - app.services.media_service - INFO - 发现新内容: 旱鸭 (netease:song:1325203205)
+2026-01-21 11:10:08,205 - app.services.media_service - INFO - Immediate sync finished for 宿羽阳. Added 28 new songs.
+2026-01-21 11:10:08,206 - app.services.media_service - INFO - Auto-cache start: Found 2 recent songs missing local file.
+2026-01-21 11:10:08,206 - app.services.media_service - INFO - Auto-caching recent song: 我不要原谅你（伴奏） (netease)
+2026-01-21 11:10:08,206 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你（伴奏）
+2026-01-21 11:10:08,207 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-21 11:10:08,211 - app.services.media_service - INFO - Auto-cache success: 我不要原谅你（伴奏）
+2026-01-21 11:10:08,212 - app.services.media_service - INFO - Auto-caching recent song: 剜心一刀(伴奏) (netease)
+2026-01-21 11:10:08,212 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 剜心一刀(伴奏)
+2026-01-21 11:10:08,212 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-21 11:10:08,217 - app.services.media_service - INFO - Auto-cache success: 剜心一刀(伴奏)
+2026-01-21 11:17:53,727 - app.routers.media - INFO - 删除歌手 宿羽阳 (netease) 及其 28 首歌曲
+2026-01-21 11:17:53,743 - app.routers.media - INFO - 删除歌手 宿羽阳 (qqmusic) 及其 30 首歌曲
+2026-01-21 11:18:00,839 - app.services.media_service - INFO - Smart Search Netease: Found 宿羽阳 (12459252)
+2026-01-21 11:18:03,943 - app.services.media_service - INFO - Smart Search QQMusic: Found 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 11:18:03,944 - app.services.media_service - INFO - 所有平台搜索成功，找到2个结果
+2026-01-21 11:18:03,945 - app.services.media_service - INFO - Executing immediate sync for new artist: 宿羽阳 (netease)
+2026-01-21 11:18:03,945 - app.services.media_service - INFO - Executing immediate sync for new artist: 宿羽阳 (qqmusic)
+2026-01-21 11:18:03,946 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 11:18:04,149 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 11:18:04,149 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 11:18:04,151 - app.services.media_service - INFO - 发现新内容: 我不要原谅你 (qqmusic:song:000ByIXJ44SsAE)
+2026-01-21 11:18:04,156 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 11:18:04,157 - app.services.media_service - INFO - 发现新内容: 我偏要吻你破碎 (qqmusic:song:002qqgZN2RmQBo)
+2026-01-21 11:18:04,162 - app.services.media_service - INFO - 发现新内容: 折桨 (qqmusic:song:002htG702BWVFV)
+2026-01-21 11:18:04,167 - app.services.media_service - INFO - 发现新内容: 剜心一刀 (qqmusic:song:003mXVqo4N0sB4)
+2026-01-21 11:18:04,172 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 11:18:04,173 - app.services.media_service - INFO - 发现新内容: 祝你好梦 (qqmusic:song:000pXv5v2zXqQn)
+2026-01-21 11:18:04,179 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (qqmusic:song:00320R4m06YaOw)
+2026-01-21 11:18:04,184 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (qqmusic:song:004WjARA3m4rl9)
+2026-01-21 11:18:04,189 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (qqmusic:song:000lo9ts3FLw3o)
+2026-01-21 11:18:04,194 - app.services.media_service - INFO - 发现新内容: 自己 (qqmusic:song:004NBo024DNJE7)
+2026-01-21 11:18:04,199 - app.services.media_service - INFO - 发现新内容: 无人知晓的海 (qqmusic:song:002z8d7M2IS9hB)
+2026-01-21 11:18:04,204 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 11:18:04,205 - app.services.media_service - INFO - 发现新内容: 爱人呢 (qqmusic:song:0004p18T37kstX)
+2026-01-21 11:18:04,210 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 踏破风的少年 (已存在于 qqmusic)
+2026-01-21 11:18:04,211 - app.services.media_service - INFO - 发现新内容: 美丽人生 (qqmusic:song:004PENZm0KEC7y)
+2026-01-21 11:18:04,216 - app.services.media_service - INFO - 发现新内容: 无用浪漫 (qqmusic:song:001DSv0p3UsGW1)
+2026-01-21 11:18:04,222 - app.services.media_service - INFO - 发现新内容: Purple Girl (qqmusic:song:003BTUrf24fqL3)
+2026-01-21 11:18:04,227 - app.services.media_service - INFO - 发现新内容: 别再为他掉眼泪 (qqmusic:song:00194mQO223K8E)
+2026-01-21 11:18:04,232 - app.services.media_service - INFO - 发现新内容: 夏天最后的夜晚 (qqmusic:song:001IILhS0dwGKy)
+2026-01-21 11:18:04,237 - app.services.media_service - INFO - 发现新内容: 无人岛屿 (qqmusic:song:0015EGvq135JCB)
+2026-01-21 11:18:04,243 - app.services.media_service - INFO - 发现新内容: 导航 (qqmusic:song:0014RiEI3YFxRm)
+2026-01-21 11:18:04,248 - app.services.media_service - INFO - 发现新内容: 心想事成歌舞厅 (qqmusic:song:004dhsYq4atFjf)
+2026-01-21 11:18:04,253 - app.services.media_service - INFO - 发现新内容: 她在遥远星 (qqmusic:song:001Y9DFy0aALcb)
+2026-01-21 11:18:04,259 - app.services.media_service - INFO - 发现新内容: 西西弗斯 (qqmusic:song:000m60h20kqaL1)
+2026-01-21 11:18:04,264 - app.services.media_service - INFO - 发现新内容: 愿她被世界温柔以待 (qqmusic:song:002nZtg84WcWuB)
+2026-01-21 11:18:04,269 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 11:18:04,270 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 11:18:04,270 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 11:18:04,271 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 11:18:04,271 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 11:18:04,272 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 11:18:04,273 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 11:18:04,273 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 11:18:04,274 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 11:18:04,274 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 11:18:04,275 - app.services.media_service - INFO - 发现新内容: 奔向浪漫 (qqmusic:song:003drRsT2ZH7tl)
+2026-01-21 11:18:04,280 - app.services.media_service - INFO - 发现新内容: 蒙马特遗书 (qqmusic:song:004UK2z8415G7X)
+2026-01-21 11:18:04,286 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 11:18:04,287 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季 (qqmusic:song:003iok8Q0h5tzf)
+2026-01-21 11:18:04,292 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 请允许我成为你的夏季 (已存在于 qqmusic)
+2026-01-21 11:18:04,293 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (qqmusic:song:0003PkqM3jyy4y)
+2026-01-21 11:18:04,298 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 潮汐锁定 (已存在于 qqmusic)
+2026-01-21 11:18:04,299 - app.services.media_service - INFO - 发现新内容: 暗恋是一个人的事 (qqmusic:song:002M1Gl80gUAzo)
+2026-01-21 11:18:04,304 - app.services.media_service - INFO - 发现新内容: 成人之美 (qqmusic:song:0003AEI426ucsX)
+2026-01-21 11:18:04,310 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 11:18:04,310 - app.services.media_service - INFO - 发现新内容: 如果你不开心就来碗螺蛳粉 (qqmusic:song:001asdLT0JVtgw)
+2026-01-21 11:18:04,316 - app.services.media_service - INFO - 发现新内容: 我爱你，这就是我的秘密 (qqmusic:song:0029vVRD1yU1lM)
+2026-01-21 11:18:04,321 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 11:18:04,321 - app.services.media_service - INFO - Immediate sync finished for 宿羽阳. Added 30 new songs.
+2026-01-21 11:18:04,322 - app.services.media_service - INFO - Auto-cache start: Found 4 recent songs missing local file.
+2026-01-21 11:18:04,322 - app.services.media_service - INFO - Auto-caching recent song: 我不要原谅你 (qqmusic)
+2026-01-21 11:18:04,322 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你
+2026-01-21 11:18:04,322 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你.flac
+2026-01-21 11:18:04,327 - app.services.media_service - INFO - Auto-cache success: 我不要原谅你
+2026-01-21 11:18:04,327 - app.services.media_service - INFO - Auto-caching recent song: 我偏要吻你破碎 (qqmusic)
+2026-01-21 11:18:04,327 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我偏要吻你破碎
+2026-01-21 11:18:04,327 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我偏要吻你破碎.flac
+2026-01-21 11:18:04,332 - app.services.media_service - INFO - Auto-cache success: 我偏要吻你破碎
+2026-01-21 11:18:04,333 - app.services.media_service - INFO - Auto-caching recent song: 折桨 (qqmusic)
+2026-01-21 11:18:04,333 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 折桨
+2026-01-21 11:18:04,333 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 折桨.flac
+2026-01-21 11:18:04,338 - app.services.media_service - INFO - Auto-cache success: 折桨
+2026-01-21 11:18:04,338 - app.services.media_service - INFO - Auto-caching recent song: 剜心一刀 (qqmusic)
+2026-01-21 11:18:04,338 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 剜心一刀
+2026-01-21 11:18:04,338 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 剜心一刀.flac
+2026-01-21 11:18:04,343 - app.services.media_service - INFO - Auto-cache success: 剜心一刀
+2026-01-21 11:18:04,639 - notifiers.wecom - INFO - 企业微信图文推送成功: ❤️ 关注成功: 宿羽阳
+2026-01-21 11:18:04,640 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 11:18:04,902 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 11:18:04,902 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 11:18:04,905 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 11:18:04,905 - app.services.media_service - INFO - 发现新内容: 我不要原谅你（伴奏） (netease:song:3336532414)
+2026-01-21 11:18:04,911 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 11:18:04,912 - app.services.media_service - INFO - 发现新内容: 剜心一刀(伴奏) (netease:song:2735946422)
+2026-01-21 11:18:04,917 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 祝你好梦 (已存在于 qqmusic)
+2026-01-21 11:18:04,917 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (Live) (netease:song:2630942965)
+2026-01-21 11:18:04,923 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (Live, 伴奏) (netease:song:2630945653)
+2026-01-21 11:18:04,928 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (Live) (netease:song:2630945649)
+2026-01-21 11:18:04,933 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (伴奏) (netease:song:2630945652)
+2026-01-21 11:18:04,939 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (伴奏) (netease:song:2630945651)
+2026-01-21 11:18:04,944 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (Live) (netease:song:2630945648)
+2026-01-21 11:18:04,949 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 自己 (已存在于 qqmusic)
+2026-01-21 11:18:04,950 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 11:18:04,951 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱人呢 (已存在于 qqmusic)
+2026-01-21 11:18:04,951 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 美丽人生 (已存在于 qqmusic)
+2026-01-21 11:18:04,952 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 11:18:04,952 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 11:18:04,953 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 11:18:04,953 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 11:18:04,954 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 11:18:04,954 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 11:18:04,955 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 11:18:04,956 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 11:18:04,956 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 11:18:04,957 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 11:18:04,958 - app.services.media_service - INFO - 发现新内容: 无用浪漫（伴奏） (netease:song:1973079834)
+2026-01-21 11:18:04,963 - app.services.media_service - INFO - 发现新内容: Purple Girl（伴奏） (netease:song:1973074578)
+2026-01-21 11:18:04,969 - app.services.media_service - INFO - 发现新内容: 无人岛屿（伴奏） (netease:song:1973074551)
+2026-01-21 11:18:04,974 - app.services.media_service - INFO - 发现新内容: 心想事成歌舞厅（伴奏） (netease:song:1915589032)
+2026-01-21 11:18:04,979 - app.services.media_service - INFO - 发现新内容: 别再为他掉眼泪（伴奏） (netease:song:1913859275)
+2026-01-21 11:18:04,984 - app.services.media_service - INFO - 发现新内容: 导航（伴奏） (netease:song:1901952605)
+2026-01-21 11:18:04,989 - app.services.media_service - INFO - 发现新内容: 西西弗斯（伴奏） (netease:song:1888436501)
+2026-01-21 11:18:04,995 - app.services.media_service - INFO - 发现新内容: 愿她被世界温柔以待（伴奏） (netease:song:1854219045)
+2026-01-21 11:18:05,001 - app.services.media_service - INFO - 发现新内容: 她在遥远星（伴奏） (netease:song:1948456350)
+2026-01-21 11:18:05,006 - app.services.media_service - INFO - 发现新内容: 夏天最后的夜晚 (伴奏) (netease:song:1879657555)
+2026-01-21 11:18:05,011 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 11:18:05,012 - app.services.media_service - INFO - 发现新内容: 蒙马特遗书 (伴奏) (netease:song:1498130615)
+2026-01-21 11:18:05,017 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be) (netease:song:1458896058)
+2026-01-21 11:18:05,024 - app.services.media_service - INFO - 发现新内容: 请允许我成为你的夏季（伴奏） (Summer For Thee, Grant I May Be) (netease:song:1458899533)
+2026-01-21 11:18:05,031 - app.services.media_service - INFO - 发现新内容: 潮汐锁定 (Tidal Locked) (netease:song:1441065752)
+2026-01-21 11:18:05,036 - app.services.media_service - INFO - 发现新内容: 潮汐锁定（伴奏） (Tidal Locked) (netease:song:1441064843)
+2026-01-21 11:18:05,042 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 暗恋是一个人的事 (已存在于 qqmusic)
+2026-01-21 11:18:05,043 - app.services.media_service - INFO - 发现新内容: 暗恋是一个人的事 (伴奏) (netease:song:1380080510)
+2026-01-21 11:18:05,049 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 11:18:05,050 - app.services.media_service - INFO - 发现新内容: 成人之美（伴奏） (netease:song:1358275596)
+2026-01-21 11:18:05,056 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我爱你，这就是我的秘密 (已存在于 qqmusic)
+2026-01-21 11:18:05,057 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 11:18:05,058 - app.services.media_service - INFO - 发现新内容: 如果你不开心就来碗螺蛳粉 (伴奏) (netease:song:1333167075)
+2026-01-21 11:18:05,064 - app.services.media_service - INFO - 发现新内容: 我爱你，这就是我的秘密（伴奏） (netease:song:1325711238)
+2026-01-21 11:18:05,071 - app.services.media_service - INFO - 发现新内容: 旱鸭 (netease:song:1325203205)
+2026-01-21 11:18:05,076 - app.services.media_service - INFO - Immediate sync finished for 宿羽阳. Added 28 new songs.
+2026-01-21 11:18:05,077 - app.services.media_service - INFO - Auto-cache start: Found 2 recent songs missing local file.
+2026-01-21 11:18:05,077 - app.services.media_service - INFO - Auto-caching recent song: 我不要原谅你（伴奏） (netease)
+2026-01-21 11:18:05,077 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 我不要原谅你（伴奏）
+2026-01-21 11:18:05,077 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-21 11:18:05,083 - app.services.media_service - INFO - Auto-cache success: 我不要原谅你（伴奏）
+2026-01-21 11:18:05,083 - app.services.media_service - INFO - Auto-caching recent song: 剜心一刀(伴奏) (netease)
+2026-01-21 11:18:05,083 - core.audio_downloader - INFO - 开始处理: 宿羽阳 - 剜心一刀(伴奏)
+2026-01-21 11:18:05,084 - core.audio_downloader - INFO - 本地已存在 (恢复): audio_cache\宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-21 11:18:05,089 - app.services.media_service - INFO - Auto-cache success: 剜心一刀(伴奏)
+2026-01-21 11:47:50,662 - app.services.media_service - INFO - 开始检查任务: netease...
+2026-01-21 11:47:50,663 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 11:47:50,663 - app.services.media_service - INFO - 开始检查任务: qqmusic...
+2026-01-21 11:47:50,663 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 11:47:53,535 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 11:47:53,536 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 11:47:53,537 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 11:47:53,538 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 11:47:53,540 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 11:47:53,541 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 踏破风的少年 (已存在于 qqmusic)
+2026-01-21 11:47:53,544 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 11:47:53,545 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 11:47:53,545 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 11:47:53,546 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 11:47:53,546 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 11:47:53,548 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 11:47:53,548 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 11:47:53,549 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 11:47:53,549 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 11:47:53,550 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 11:47:53,551 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 11:47:53,552 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 请允许我成为你的夏季 (已存在于 qqmusic)
+2026-01-21 11:47:53,553 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 潮汐锁定 (已存在于 qqmusic)
+2026-01-21 11:47:53,554 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 11:47:53,555 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 11:47:53,555 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我爱你，这就是我的秘密 (已存在于 qqmusic)
+2026-01-21 11:47:53,556 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 旱鸭 (已存在于 netease)
+2026-01-21 11:47:53,557 - app.services.media_service - INFO - 发现新内容: 再见旧时光 (qqmusic:song:004MaIlK22QnK6)
+2026-01-21 11:47:53,563 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 再见旧时光 (已存在于 qqmusic)
+2026-01-21 11:47:53,564 - app.services.media_service - INFO - 发现新内容: 旱鸭 (qqmusic:song:004cNTLf4QXghE)
+2026-01-21 11:47:53,570 - app.services.media_service - INFO - 发现新内容: 冬天时我喜欢靠近温暖的事 (qqmusic:song:0009bEqE4XtdtE)
+2026-01-21 11:47:53,576 - app.services.media_service - INFO - 发现新内容: 给Lyon的歌 (qqmusic:song:001PULzF4N9PSc)
+2026-01-21 11:47:53,582 - app.services.media_service - INFO - 发现新内容: 像少年啦飞驰 (qqmusic:song:002eCZfe1ss4Iu)
+2026-01-21 11:47:53,589 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说 (qqmusic:song:003KLfPZ26Mh8e)
+2026-01-21 11:47:53,596 - app.services.media_service - INFO - 发现新内容: 十一种孤独 (qqmusic:song:000OvSVu0MpLEY)
+2026-01-21 11:47:53,602 - app.services.media_service - INFO - 发现新内容: 重逢 (qqmusic:song:001J7S7b0F2fZx)
+2026-01-21 11:47:53,608 - app.services.media_service - INFO - 发现新内容: 爱过 (qqmusic:song:0026GSMH3cdCPF)
+2026-01-21 11:47:53,613 - app.services.media_service - INFO - 发现新内容: 给lyon的歌 (qqmusic:song:004fw3dx0o40V6)
+2026-01-21 11:47:53,619 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 像少年啦飞驰 (已存在于 qqmusic)
+2026-01-21 11:47:53,620 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 你说你不知该怎么和妈妈说 (已存在于 qqmusic)
+2026-01-21 11:47:53,620 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 十一种孤独 (已存在于 qqmusic)
+2026-01-21 11:47:53,621 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 重逢 (已存在于 qqmusic)
+2026-01-21 11:47:53,621 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 冬天时我喜欢靠近温暖的事 (已存在于 qqmusic)
+2026-01-21 11:47:53,622 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱过 (已存在于 qqmusic)
+2026-01-21 11:47:53,622 - app.services.media_service - INFO - 发现新内容: 赴约 (qqmusic:song:000rQOkS28BfyJ)
+2026-01-21 11:47:53,628 - app.services.media_service - INFO - 发现新内容: 赴约 (qqmusic:song:002Q5rVC40TghA)
+2026-01-21 11:47:53,632 - app.services.media_service - INFO - Found 12 new items, but none are recent. Skipping notify.
+2026-01-21 11:47:53,633 - app.services.media_service - INFO - 检查完成: qqmusic
+2026-01-21 11:47:53,897 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 11:47:53,897 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 11:47:53,898 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 暗恋是一个人的事 (已存在于 qqmusic)
+2026-01-21 11:47:53,899 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 十一种孤独 (已存在于 qqmusic)
+2026-01-21 11:47:53,899 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 冬天时我喜欢靠近温暖的事 (已存在于 qqmusic)
+2026-01-21 11:47:53,900 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 愿她被世界温柔以待 (已存在于 qqmusic)
+2026-01-21 11:47:53,901 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 美丽人生 (已存在于 qqmusic)
+2026-01-21 11:47:53,901 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 给Lyon的歌 (已存在于 qqmusic)
+2026-01-21 11:47:53,902 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我不要原谅你 (已存在于 qqmusic)
+2026-01-21 11:47:53,903 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 成人之美 (已存在于 qqmusic)
+2026-01-21 11:47:53,903 - app.services.media_service - INFO - 发现新内容: 赴约 (netease:song:518077051)
+2026-01-21 11:47:53,909 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 我爱你，这就是我的秘密 (已存在于 qqmusic)
+2026-01-21 11:47:53,910 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 祝你好梦 (已存在于 qqmusic)
+2026-01-21 11:47:53,911 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 夏天最后的夜晚 (已存在于 qqmusic)
+2026-01-21 11:47:53,911 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 剜心一刀 (已存在于 qqmusic)
+2026-01-21 11:47:53,912 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 导航 (已存在于 qqmusic)
+2026-01-21 11:47:53,912 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 重逢 (已存在于 qqmusic)
+2026-01-21 11:47:53,913 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人知晓的海 (已存在于 qqmusic)
+2026-01-21 11:47:53,914 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 西西弗斯 (已存在于 qqmusic)
+2026-01-21 11:47:53,914 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 蒙马特遗书 (已存在于 qqmusic)
+2026-01-21 11:47:53,915 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 心想事成歌舞厅 (已存在于 qqmusic)
+2026-01-21 11:47:53,915 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱过 (已存在于 qqmusic)
+2026-01-21 11:47:53,916 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 再见旧时光 (已存在于 qqmusic)
+2026-01-21 11:47:53,917 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 像少年啦飞驰 (已存在于 qqmusic)
+2026-01-21 11:47:53,917 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 你说你不知该怎么和妈妈说 (已存在于 qqmusic)
+2026-01-21 11:47:53,918 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 自己 (已存在于 qqmusic)
+2026-01-21 11:47:53,919 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 爱人呢 (已存在于 qqmusic)
+2026-01-21 11:47:53,920 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 如果你不开心就来碗螺蛳粉 (已存在于 qqmusic)
+2026-01-21 11:47:53,920 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 她在遥远星 (已存在于 qqmusic)
+2026-01-21 11:47:53,921 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无人岛屿 (已存在于 qqmusic)
+2026-01-21 11:47:53,922 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 无用浪漫 (已存在于 qqmusic)
+2026-01-21 11:47:53,922 - app.services.media_service - INFO - 跳过重复内容 (跨平台): 别再为他掉眼泪 (已存在于 qqmusic)
+2026-01-21 11:47:53,923 - app.services.media_service - INFO - 跳过重复内容 (跨平台): Purple Girl (已存在于 qqmusic)
+2026-01-21 11:47:53,927 - app.services.media_service - INFO - 发现新内容: 再见旧时光（伴奏） (netease:song:1318377622)
+2026-01-21 11:47:53,932 - app.services.media_service - INFO - 发现新内容: 像少年啦飞驰（伴奏） (netease:song:862174367)
+2026-01-21 11:47:53,938 - app.services.media_service - INFO - 发现新内容: 爱过（伴奏） (netease:song:862173435)
+2026-01-21 11:47:53,944 - app.services.media_service - INFO - 发现新内容: 冬天时我喜欢靠近温暖的事（伴奏） (netease:song:862172419)
+2026-01-21 11:47:53,949 - app.services.media_service - INFO - 发现新内容: 给Lyon的歌（伴奏） (netease:song:862172191)
+2026-01-21 11:47:53,955 - app.services.media_service - INFO - 发现新内容: 十一种孤独（伴奏） (netease:song:862171150)
+2026-01-21 11:47:53,961 - app.services.media_service - INFO - 发现新内容: 重逢（伴奏） (netease:song:862170595)
+2026-01-21 11:47:53,967 - app.services.media_service - INFO - 发现新内容: 你说你不知该怎么和妈妈说（伴奏） (netease:song:862170443)
+2026-01-21 11:47:53,973 - app.services.media_service - INFO - 发现新内容: 赴约（伴奏） (netease:song:542697109)
+2026-01-21 11:47:53,979 - app.services.media_service - INFO - 发现新内容: 赴约 (netease:song:542667136)
+2026-01-21 11:47:53,985 - app.services.media_service - INFO - Found 11 new items, but none are recent. Skipping notify.
+2026-01-21 11:47:53,985 - app.services.media_service - INFO - 检查完成: netease
+2026-01-21 12:17:32,443 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:17:32,444 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:17:32,444 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:17:32,444 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:17:32,445 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:17:32,445 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:17:49,385 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:17:49,409 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:17:49,421 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:17:51,911 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:17:51,936 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:17:51,948 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:19,700 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:20:19,700 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:20:19,700 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:20:19,701 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:20:19,701 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:20:19,701 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:20:25,085 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:25,098 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:25,121 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:38,114 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:55,933 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:57,523 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:57,524 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:20:58,228 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:21:05,976 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:21:16,784 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:21:16,949 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:21:16,966 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:21:18,576 - __main__ - ERROR - Session Middleware not active
+2026-01-21 12:22:56,336 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:22:56,337 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:22:56,337 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:22:56,338 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:22:56,338 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:22:56,338 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:27:36,763 - uvicorn.error - INFO - Started server process [39228]
+2026-01-21 12:27:36,763 - uvicorn.error - INFO - Started server process [39228]
+2026-01-21 12:27:36,763 - uvicorn.error - INFO - Waiting for application startup.
+2026-01-21 12:27:36,763 - uvicorn.error - INFO - Waiting for application startup.
+2026-01-21 12:27:36,770 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:27:36,770 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:27:36,770 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:27:36,771 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:27:36,771 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:27:36,771 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:27:36,771 - uvicorn.error - INFO - Application startup complete.
+2026-01-21 12:27:36,771 - uvicorn.error - INFO - Application startup complete.
+2026-01-21 12:27:36,772 - uvicorn.error - ERROR - [Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000): [winerror 10048] 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+2026-01-21 12:27:36,772 - uvicorn.error - ERROR - [Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000): [winerror 10048] 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+2026-01-21 12:27:36,772 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-01-21 12:27:36,772 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-01-21 12:27:36,772 - uvicorn.error - INFO - Application shutdown complete.
+2026-01-21 12:27:36,772 - uvicorn.error - INFO - Application shutdown complete.
+2026-01-21 12:30:16,496 - uvicorn.error - INFO - Started server process [6904]
+2026-01-21 12:30:16,496 - uvicorn.error - INFO - Started server process [6904]
+2026-01-21 12:30:16,496 - uvicorn.error - INFO - Waiting for application startup.
+2026-01-21 12:30:16,496 - uvicorn.error - INFO - Waiting for application startup.
+2026-01-21 12:30:16,501 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:30:16,502 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:30:16,502 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:30:16,502 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:30:16,502 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:30:16,502 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:30:16,503 - uvicorn.error - INFO - Application startup complete.
+2026-01-21 12:30:16,503 - uvicorn.error - INFO - Application startup complete.
+2026-01-21 12:30:16,503 - uvicorn.error - INFO - Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-01-21 12:30:16,503 - uvicorn.error - INFO - Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-01-21 12:30:30,065 - uvicorn.access - INFO - 127.0.0.1:52699 - "GET /login HTTP/1.1" 200
+2026-01-21 12:30:30,153 - uvicorn.access - INFO - 127.0.0.1:52699 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:30:30,194 - uvicorn.access - INFO - 127.0.0.1:64171 - "GET /api/artists HTTP/1.1" 200
+2026-01-21 12:30:30,194 - uvicorn.access - INFO - 127.0.0.1:52699 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:30:30,254 - uvicorn.access - INFO - 127.0.0.1:52699 - "GET /api/history HTTP/1.1" 200
+2026-01-21 12:30:30,260 - uvicorn.access - INFO - 127.0.0.1:52699 - "GET /api/status HTTP/1.1" 200
+2026-01-21 12:31:06,208 - uvicorn.access - INFO - 127.0.0.1:62740 - "GET /api/artists HTTP/1.1" 200
+2026-01-21 12:31:28,836 - uvicorn.access - INFO - 127.0.0.1:64487 - "GET /api/artists HTTP/1.1" 200
+2026-01-21 12:35:04,736 - uvicorn.access - INFO - 127.0.0.1:57857 - "GET /api/artists HTTP/1.1" 200
+2026-01-21 12:35:04,737 - uvicorn.access - INFO - 127.0.0.1:57856 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:35:04,753 - uvicorn.access - INFO - 127.0.0.1:54767 - "GET /api/history?limit=20&offset=0&downloaded_only=false HTTP/1.1" 200
+2026-01-21 12:35:04,763 - uvicorn.access - INFO - 127.0.0.1:50207 - "GET /api/status HTTP/1.1" 200
+2026-01-21 12:35:18,042 - uvicorn.error - INFO - Started server process [11356]
+2026-01-21 12:35:18,042 - uvicorn.error - INFO - Started server process [11356]
+2026-01-21 12:35:18,043 - uvicorn.error - INFO - Waiting for application startup.
+2026-01-21 12:35:18,043 - uvicorn.error - INFO - Waiting for application startup.
+2026-01-21 12:35:18,049 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:35:18,049 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:35:18,049 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:35:18,050 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:35:18,050 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:35:18,050 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:35:18,050 - uvicorn.error - INFO - Application startup complete.
+2026-01-21 12:35:18,050 - uvicorn.error - INFO - Application startup complete.
+2026-01-21 12:35:18,051 - uvicorn.error - INFO - Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-01-21 12:35:18,051 - uvicorn.error - INFO - Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-01-21 12:35:37,127 - uvicorn.access - INFO - 127.0.0.1:50584 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:35:37,198 - uvicorn.access - INFO - 127.0.0.1:61415 - "GET /api/artists HTTP/1.1" 200
+2026-01-21 12:35:37,199 - uvicorn.access - INFO - 127.0.0.1:50584 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:35:37,250 - uvicorn.access - INFO - 127.0.0.1:50584 - "GET /api/history HTTP/1.1" 200
+2026-01-21 12:35:37,264 - uvicorn.access - INFO - 127.0.0.1:50584 - "GET /api/status HTTP/1.1" 200
+2026-01-21 12:35:54,013 - uvicorn.access - INFO - 127.0.0.1:59172 - "GET /api/settings HTTP/1.1" 200
+2026-01-21 12:35:54,548 - app.routers.system - INFO - Configuration updated via API
+2026-01-21 12:35:54,548 - uvicorn.access - INFO - 127.0.0.1:59172 - "POST /api/settings HTTP/1.1" 200
+2026-01-21 12:36:14,777 - uvicorn.access - INFO - 127.0.0.1:57722 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:36:14,782 - app.routers.auth - WARNING - 获取统计信息失败: name 'select' is not defined
+2026-01-21 12:36:14,782 - uvicorn.access - INFO - 127.0.0.1:57722 - "GET /api/profile_stats HTTP/1.1" 200
+2026-01-21 12:36:14,850 - uvicorn.access - INFO - 127.0.0.1:57722 - "GET /uploads/avatars/35fdc915b375421cbb1250f90a7b692c.jpg?t=1768970174780 HTTP/1.1" 200
+2026-01-21 12:36:24,094 - uvicorn.access - INFO - 127.0.0.1:63903 - "POST /api/logout HTTP/1.1" 200
+2026-01-21 12:36:24,681 - uvicorn.access - INFO - 127.0.0.1:63903 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:36:24,687 - uvicorn.access - INFO - 127.0.0.1:63903 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:36:28,655 - uvicorn.access - INFO - 127.0.0.1:63903 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:36:28,690 - uvicorn.access - INFO - 127.0.0.1:63903 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:37:35,986 - uvicorn.access - INFO - 127.0.0.1:60355 - "POST /api/login HTTP/1.1" 200
+2026-01-21 12:37:36,021 - uvicorn.access - INFO - 127.0.0.1:60355 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:37:36,046 - uvicorn.access - INFO - 127.0.0.1:60355 - "GET /api/check_auth HTTP/1.1" 200
+2026-01-21 12:37:36,048 - uvicorn.access - INFO - 127.0.0.1:60355 - "GET /api/artists HTTP/1.1" 200
+2026-01-21 12:37:36,093 - uvicorn.access - INFO - 127.0.0.1:60355 - "GET /api/history HTTP/1.1" 200
+2026-01-21 12:37:36,103 - uvicorn.access - INFO - 127.0.0.1:60355 - "GET /api/status HTTP/1.1" 200
+2026-01-21 12:39:52,253 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:39:52,253 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:39:52,253 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:39:52,254 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:39:52,254 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:39:52,254 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:39:55,903 - uvicorn.error - INFO - Shutting down
+2026-01-21 12:39:55,903 - uvicorn.error - INFO - Shutting down
+2026-01-21 12:39:56,011 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-01-21 12:39:56,011 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-01-21 12:39:56,011 - uvicorn.error - INFO - Application shutdown complete.
+2026-01-21 12:39:56,011 - uvicorn.error - INFO - Application shutdown complete.
+2026-01-21 12:39:56,012 - uvicorn.error - INFO - Finished server process [11356]
+2026-01-21 12:39:56,012 - uvicorn.error - INFO - Finished server process [11356]
+2026-01-21 12:39:58,320 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:39:58,320 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:39:58,320 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:39:58,321 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:39:58,321 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:39:58,321 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 12:48:01,753 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 12:48:01,754 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 12:48:01,754 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 12:48:01,755 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 12:48:01,755 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 12:48:01,755 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 13:09:05,695 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 13:09:05,695 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 13:09:05,695 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 13:09:05,696 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 13:09:05,696 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 13:09:05,696 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 13:09:28,591 - app.routers.auth - WARNING - 获取统计信息失败: name 'select' is not defined
+2026-01-21 13:09:44,811 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:09:44,812 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:09:44,813 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:09:44,813 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:09:44,814 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:09:44,814 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:09:49,324 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:09:49,326 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:09:49,330 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): type object 'Song' has no attribute 'author'
+2026-01-21 13:09:49,331 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:09:49,998 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:09:49,999 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:09:50,000 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): type object 'Song' has no attribute 'author'
+2026-01-21 13:09:50,001 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:10:15,366 - app.routers.auth - WARNING - 获取统计信息失败: name 'select' is not defined
+2026-01-21 13:17:18,046 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:17:18,046 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:17:18,046 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:17:18,796 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:17:18,797 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:17:18,800 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): type object 'Song' has no attribute 'author'
+2026-01-21 13:17:18,800 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:27:10,416 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 13:27:10,417 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 13:27:10,417 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 13:27:10,417 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 13:27:10,418 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 13:27:10,418 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 13:27:27,668 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:27:27,670 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:27:27,670 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:27:27,674 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:27:27,676 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:27:27,676 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:27:31,870 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:27:31,870 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:27:31,877 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): type object 'Song' has no attribute 'author'
+2026-01-21 13:27:31,878 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:27:32,203 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:27:32,206 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:27:32,207 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): type object 'Song' has no attribute 'author'
+2026-01-21 13:27:32,208 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:29:10,177 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 13:29:10,177 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 13:29:10,177 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 13:29:10,178 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 13:29:10,178 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 13:29:10,178 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 13:29:15,170 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:29:15,171 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:29:15,172 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:29:15,172 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:29:15,172 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:29:15,173 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:29:18,219 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:29:18,221 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:29:18,223 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): type object 'Song' has no attribute 'author'
+2026-01-21 13:29:18,224 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:29:18,532 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:29:18,533 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:29:18,534 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): type object 'Song' has no attribute 'author'
+2026-01-21 13:29:18,534 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:31:32,489 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 13:31:32,490 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 13:31:32,490 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 13:31:32,491 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 13:31:32,491 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 13:31:32,491 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 13:31:37,755 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:31:37,756 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:31:37,756 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:31:37,756 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:31:37,757 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:31:37,757 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:31:41,287 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:31:41,289 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:31:41,291 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:000ByIXJ44SsAE',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:31:41,291 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:31:41,714 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:31:41,715 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:31:41,716 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:1380075991',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:31:41,716 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:33:01,511 - app.services.media_service - INFO - Subscribed to 宿羽阳. Syncing...
+2026-01-21 13:33:01,511 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:33:01,511 - app.services.media_service - INFO - Subscribed to 宿羽阳. Syncing...
+2026-01-21 13:33:01,511 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:33:01,743 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:33:01,748 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:33:01,749 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:33:01,749 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:33:01,752 - app.services.media_service - ERROR - Sync failed: (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:000ByIXJ44SsAE',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:33:01,753 - app.services.media_service - ERROR - Sync failed: (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:3336533365',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:35:20,740 - app.services.media_service - INFO - Subscribed to 宿羽阳. Syncing...
+2026-01-21 13:35:20,740 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:35:20,740 - app.services.media_service - INFO - Subscribed to 宿羽阳. Syncing...
+2026-01-21 13:35:20,740 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:35:20,935 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:35:20,936 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:35:20,938 - app.services.media_service - ERROR - Sync failed: (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:000ByIXJ44SsAE',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:35:20,999 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:35:20,999 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:35:21,001 - app.services.media_service - ERROR - Sync failed: (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:3336533365',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:36:11,811 - app.services.media_service - INFO - Subscribed to 陈奕迅. Syncing...
+2026-01-21 13:36:11,811 - plugins.netease - INFO - 正在获取网易云歌曲: 陈奕迅 (2116)
+2026-01-21 13:36:11,820 - app.services.media_service - INFO - Subscribed to 陈奕迅. Syncing...
+2026-01-21 13:36:11,820 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 陈奕迅 (003Nz2So3XXYek)
+2026-01-21 13:36:12,266 - plugins.qqmusic - INFO - qqmusic_api返回 500 首歌曲
+2026-01-21 13:36:12,269 - plugins.qqmusic - INFO - QQ音乐获取完成: 陈奕迅 共 500 首歌曲
+2026-01-21 13:36:12,280 - plugins.netease - INFO - 网易云返回 200 首歌曲 (歌手共 1844 首)
+2026-01-21 13:36:12,280 - plugins.netease - INFO - 网易云获取完成: 陈奕迅 共 200 首歌曲
+2026-01-21 13:36:12,282 - app.services.media_service - ERROR - Sync failed: (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:0037CDtL3BCRwb',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:36:12,283 - app.services.media_service - ERROR - Sync failed: (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:2756303345',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:36:48,148 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:36:48,149 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:36:48,149 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:36:48,150 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:36:48,150 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:36:48,151 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:36:51,683 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:36:51,683 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:36:51,685 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:1380075991',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:36:51,685 - plugins.netease - INFO - 正在获取网易云歌曲: 陈奕迅 (2116)
+2026-01-21 13:36:51,755 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:36:51,755 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:36:51,757 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:000ByIXJ44SsAE',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:36:51,757 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 陈奕迅 (003Nz2So3XXYek)
+2026-01-21 13:36:52,093 - plugins.netease - INFO - 网易云返回 200 首歌曲 (歌手共 1844 首)
+2026-01-21 13:36:52,094 - plugins.netease - INFO - 网易云获取完成: 陈奕迅 共 200 首歌曲
+2026-01-21 13:36:52,096 - app.services.media_service - ERROR - Error checking user 陈奕迅 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:65766',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:36:52,097 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:36:52,172 - plugins.qqmusic - INFO - qqmusic_api返回 500 首歌曲
+2026-01-21 13:36:52,176 - plugins.qqmusic - INFO - QQ音乐获取完成: 陈奕迅 共 500 首歌曲
+2026-01-21 13:36:52,178 - app.services.media_service - ERROR - Error checking user 陈奕迅 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:0037CDtL3BCRwb',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:36:52,179 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:38:07,194 - app.routers.system - INFO - Configuration updated via API
+2026-01-21 13:39:03,755 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:39:03,756 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:39:03,756 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:39:03,760 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:39:03,761 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:39:03,761 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:39:07,980 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:39:07,981 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:39:07,984 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:1380075991',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:07,984 - plugins.netease - INFO - 正在获取网易云歌曲: 陈奕迅 (2116)
+2026-01-21 13:39:08,279 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:39:08,280 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:39:08,281 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:000ByIXJ44SsAE',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:08,282 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 陈奕迅 (003Nz2So3XXYek)
+2026-01-21 13:39:08,358 - plugins.netease - INFO - 网易云返回 200 首歌曲 (歌手共 1844 首)
+2026-01-21 13:39:08,359 - plugins.netease - INFO - 网易云获取完成: 陈奕迅 共 200 首歌曲
+2026-01-21 13:39:08,361 - app.services.media_service - ERROR - Error checking user 陈奕迅 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:65766',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:08,362 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:39:08,654 - plugins.qqmusic - INFO - qqmusic_api返回 500 首歌曲
+2026-01-21 13:39:08,659 - plugins.qqmusic - INFO - QQ音乐获取完成: 陈奕迅 共 500 首歌曲
+2026-01-21 13:39:08,661 - app.services.media_service - ERROR - Error checking user 陈奕迅 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:0037CDtL3BCRwb',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:08,661 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:39:45,047 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:39:45,048 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:39:45,048 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:39:45,052 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:39:45,053 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:39:45,054 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:39:49,311 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:39:49,311 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:39:49,316 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:1380075991',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:49,316 - plugins.netease - INFO - 正在获取网易云歌曲: 陈奕迅 (2116)
+2026-01-21 13:39:49,616 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:39:49,616 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:39:49,618 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:000ByIXJ44SsAE',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:49,618 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 陈奕迅 (003Nz2So3XXYek)
+2026-01-21 13:39:49,718 - plugins.netease - INFO - 网易云返回 200 首歌曲 (歌手共 1844 首)
+2026-01-21 13:39:49,719 - plugins.netease - INFO - 网易云获取完成: 陈奕迅 共 200 首歌曲
+2026-01-21 13:39:49,722 - app.services.media_service - ERROR - Error checking user 陈奕迅 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:65766',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:49,723 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 13:39:50,019 - plugins.qqmusic - INFO - qqmusic_api返回 500 首歌曲
+2026-01-21 13:39:50,022 - plugins.qqmusic - INFO - QQ音乐获取完成: 陈奕迅 共 500 首歌曲
+2026-01-21 13:39:50,025 - app.services.media_service - ERROR - Error checking user 陈奕迅 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:0037CDtL3BCRwb',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:39:50,025 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:41:21,928 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 13:41:21,929 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 13:41:21,930 - app.services.media_service - INFO - Starting check job: netease...
+2026-01-21 13:41:21,930 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 13:41:21,930 - app.services.media_service - INFO - Starting check job: qqmusic...
+2026-01-21 13:41:21,931 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 13:41:25,732 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 13:41:25,732 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 13:41:25,734 - app.services.media_service - ERROR - Error checking user 宿羽阳 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:000ByIXJ44SsAE',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:41:25,734 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 陈奕迅 (003Nz2So3XXYek)
+2026-01-21 13:41:26,135 - plugins.qqmusic - INFO - qqmusic_api返回 500 首歌曲
+2026-01-21 13:41:26,140 - plugins.qqmusic - INFO - QQ音乐获取完成: 陈奕迅 共 500 首歌曲
+2026-01-21 13:41:26,144 - app.services.media_service - ERROR - Error checking user 陈奕迅 (qqmusic): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('qqmusic:song:0037CDtL3BCRwb',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:41:26,145 - app.services.media_service - INFO - Check finished: qqmusic
+2026-01-21 13:41:26,222 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 13:41:26,222 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 13:41:26,224 - app.services.media_service - ERROR - Error checking user 宿羽阳 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:1380075991',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:41:26,224 - plugins.netease - INFO - 正在获取网易云歌曲: 陈奕迅 (2116)
+2026-01-21 13:41:26,611 - plugins.netease - INFO - 网易云返回 200 首歌曲 (歌手共 1844 首)
+2026-01-21 13:41:26,611 - plugins.netease - INFO - 网易云获取完成: 陈奕迅 共 200 首歌曲
+2026-01-21 13:41:26,614 - app.services.media_service - ERROR - Error checking user 陈奕迅 (netease): (sqlite3.OperationalError) no such column: songs.author
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.author, songs.album, songs.cover, songs.media_type, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs 
+WHERE songs.unique_key = ?]
+[parameters: ('netease:song:65766',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 13:41:26,615 - app.services.media_service - INFO - Check finished: netease
+2026-01-21 14:48:19,889 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 14:48:19,889 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 14:51:14,936 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 14:51:14,937 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 14:55:20,662 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 14:55:20,663 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 14:55:20,663 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 14:55:20,664 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 14:55:20,664 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 14:55:20,664 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 14:56:06,477 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 14:56:08,129 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 14:56:19,030 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 14:56:19,030 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 14:56:19,031 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 14:56:19,031 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 14:56:19,031 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 14:56:19,031 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 14:56:31,309 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 14:56:32,130 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 14:56:33,207 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 14:56:36,314 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 14:58:16,515 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 14:58:16,516 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 14:58:16,516 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 14:58:16,516 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 14:58:16,516 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 14:58:16,517 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 14:58:24,537 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 14:58:25,719 - app.routers.media - ERROR - Get history error: (sqlite3.OperationalError) no such table: songs
+[SQL: SELECT songs.id, songs.unique_key, songs.title, songs.album, songs.artist_id, songs.source, songs.media_id, songs.duration, songs.local_path, songs.status, songs.is_favorite, songs.url, songs.is_pushed, songs.push_time, songs.audio_quality, songs.publish_time, songs.created_at, songs.metadata_json 
+FROM songs
+ LIMIT ? OFFSET ?]
+[parameters: (20, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-21 15:01:52,709 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:01:52,710 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:01:52,710 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:01:52,710 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:01:52,710 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:01:52,711 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:02:29,966 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:02:29,967 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:02:29,967 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:02:29,967 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:02:29,967 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:02:29,968 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:02:33,365 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 15:02:33,366 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 15:02:33,367 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 15:02:33,369 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 15:02:36,198 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 15:02:36,199 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 15:02:36,199 - app.services.media_service - ERROR - Error processing 宿羽阳: 'MediaInfo' object has no attribute 'media_type'
+2026-01-21 15:02:36,547 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 15:02:36,549 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 15:02:36,549 - app.services.media_service - ERROR - Error processing 宿羽阳: 'MediaInfo' object has no attribute 'media_type'
+2026-01-21 15:03:15,752 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:03:15,753 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:03:15,753 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:03:15,753 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:03:15,753 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:03:15,753 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:03:34,317 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:03:34,318 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:03:34,318 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:03:34,318 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:03:34,318 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:03:34,319 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:03:36,397 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 15:03:36,397 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 15:03:36,398 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 15:03:36,400 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 15:03:39,193 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 15:03:39,193 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 15:03:39,193 - app.services.media_service - ERROR - Error processing 宿羽阳: 'MediaInfo' object has no attribute 'media_type'
+2026-01-21 15:03:39,463 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 15:03:39,464 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 15:03:39,464 - app.services.media_service - ERROR - Error processing 宿羽阳: 'MediaInfo' object has no attribute 'media_type'
+2026-01-21 15:04:31,355 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:04:31,356 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:04:31,356 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:04:31,357 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:04:31,357 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:04:31,357 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:06:27,526 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:06:27,527 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:06:27,527 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:06:27,527 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:06:27,528 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:06:27,528 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:06:39,835 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 15:06:39,835 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 15:06:39,836 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 15:06:39,838 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 15:06:42,609 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 15:06:42,610 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 15:06:42,612 - app.services.media_service - ERROR - Error processing 宿羽阳: 'trial_url' is an invalid keyword argument for MediaRecord
+2026-01-21 15:06:42,885 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 15:06:42,886 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 15:06:42,887 - app.services.media_service - ERROR - Error processing 宿羽阳: 'trial_url' is an invalid keyword argument for MediaRecord
+2026-01-21 15:08:17,392 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:08:17,393 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:08:17,393 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:08:17,393 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:08:17,394 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:08:17,394 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:09:26,078 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:09:26,079 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:09:26,079 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:09:26,079 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:09:26,079 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:09:26,079 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:09:31,813 - app.routers.system - INFO - 手动触发 netease 同步检查
+2026-01-21 15:09:31,813 - plugins.netease - INFO - 正在获取网易云歌曲: 宿羽阳 (12459252)
+2026-01-21 15:09:31,814 - app.routers.system - INFO - 手动触发 qqmusic 同步检查
+2026-01-21 15:09:31,817 - plugins.qqmusic - INFO - 正在获取 QQ 音乐数据: 宿羽阳 (000GBnpV1IcEfl)
+2026-01-21 15:09:34,536 - plugins.netease - INFO - 网易云返回 69 首歌曲 (歌手共 69 首)
+2026-01-21 15:09:34,536 - plugins.netease - INFO - 网易云获取完成: 宿羽阳 共 69 首歌曲
+2026-01-21 15:09:34,546 - app.services.media_service - INFO - Added new media item: 暗恋是一个人的事
+2026-01-21 15:09:34,818 - plugins.qqmusic - INFO - qqmusic_api返回 80 首歌曲
+2026-01-21 15:09:34,820 - plugins.qqmusic - INFO - QQ音乐获取完成: 宿羽阳 共 71 首歌曲
+2026-01-21 15:09:34,826 - app.services.media_service - INFO - Added new media item: 我不要原谅你
+2026-01-21 15:09:35,086 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 暗恋是一个人的事
+2026-01-21 15:09:35,093 - app.services.media_service - INFO - Added new media item: 十一种孤独
+2026-01-21 15:09:35,369 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我不要原谅你
+2026-01-21 15:09:35,375 - app.services.media_service - INFO - Added new media item: 我不要原谅你
+2026-01-21 15:09:35,657 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 十一种孤独
+2026-01-21 15:09:35,663 - app.services.media_service - INFO - Added new media item: 冬天时我喜欢靠近温暖的事
+2026-01-21 15:09:35,848 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我不要原谅你
+2026-01-21 15:09:35,855 - app.services.media_service - INFO - Added new media item: 我偏要吻你破碎
+2026-01-21 15:09:36,183 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 冬天时我喜欢靠近温暖的事
+2026-01-21 15:09:36,189 - app.services.media_service - INFO - Added new media item: 愿她被世界温柔以待
+2026-01-21 15:09:36,333 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我偏要吻你破碎
+2026-01-21 15:09:36,339 - app.services.media_service - INFO - Added new media item: 折桨
+2026-01-21 15:09:36,639 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 愿她被世界温柔以待
+2026-01-21 15:09:36,645 - app.services.media_service - INFO - Added new media item: 美丽人生
+2026-01-21 15:09:36,807 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 折桨
+2026-01-21 15:09:36,814 - app.services.media_service - INFO - Added new media item: 剜心一刀
+2026-01-21 15:09:37,063 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 美丽人生
+2026-01-21 15:09:37,069 - app.services.media_service - INFO - Added new media item: 给Lyon的歌
+2026-01-21 15:09:37,264 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 剜心一刀
+2026-01-21 15:09:37,270 - app.services.media_service - INFO - Added new media item: 剜心一刀
+2026-01-21 15:09:37,510 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 给Lyon的歌
+2026-01-21 15:09:37,517 - app.services.media_service - INFO - Added new media item: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-21 15:09:37,728 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 剜心一刀
+2026-01-21 15:09:37,734 - app.services.media_service - INFO - Added new media item: 祝你好梦
+2026-01-21 15:09:38,012 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-21 15:09:38,019 - app.services.media_service - INFO - Added new media item: 我不要原谅你
+2026-01-21 15:09:38,217 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 祝你好梦
+2026-01-21 15:09:38,224 - app.services.media_service - INFO - Added new media item: 潮汐锁定
+2026-01-21 15:09:38,477 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我不要原谅你
+2026-01-21 15:09:38,484 - app.services.media_service - INFO - Added new media item: 成人之美
+2026-01-21 15:09:38,687 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 潮汐锁定
+2026-01-21 15:09:38,694 - app.services.media_service - INFO - Added new media item: 你说你不知该怎么和妈妈说
+2026-01-21 15:09:38,964 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 成人之美
+2026-01-21 15:09:38,971 - app.services.media_service - INFO - Added new media item: 赴约
+2026-01-21 15:09:39,100 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 你说你不知该怎么和妈妈说
+2026-01-21 15:09:39,107 - app.services.media_service - INFO - Added new media item: 十一种孤独
+2026-01-21 15:09:39,444 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 赴约
+2026-01-21 15:09:39,451 - app.services.media_service - INFO - Added new media item: 我爱你，这就是我的秘密
+2026-01-21 15:09:39,537 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 十一种孤独
+2026-01-21 15:09:39,543 - app.services.media_service - INFO - Added new media item: 自己
+2026-01-21 15:09:39,897 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我爱你，这就是我的秘密
+2026-01-21 15:09:39,904 - app.services.media_service - INFO - Added new media item: 祝你好梦
+2026-01-21 15:09:39,994 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 自己
+2026-01-21 15:09:40,000 - app.services.media_service - INFO - Added new media item: 无人知晓的海
+2026-01-21 15:09:40,337 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 祝你好梦
+2026-01-21 15:09:40,344 - app.services.media_service - INFO - Added new media item: 夏天最后的夜晚
+2026-01-21 15:09:40,416 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无人知晓的海
+2026-01-21 15:09:40,423 - app.services.media_service - INFO - Added new media item: 无人知晓的海
+2026-01-21 15:09:40,811 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 夏天最后的夜晚
+2026-01-21 15:09:40,818 - app.services.media_service - INFO - Added new media item: 剜心一刀
+2026-01-21 15:09:40,846 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无人知晓的海
+2026-01-21 15:09:40,853 - app.services.media_service - INFO - Added new media item: 爱人呢
+2026-01-21 15:09:41,288 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 爱人呢
+2026-01-21 15:09:41,295 - app.services.media_service - INFO - Added new media item: 踏破风的少年
+2026-01-21 15:09:41,306 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 剜心一刀
+2026-01-21 15:09:41,313 - app.services.media_service - INFO - Added new media item: 导航
+2026-01-21 15:09:41,741 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 踏破风的少年
+2026-01-21 15:09:41,748 - app.services.media_service - INFO - Added new media item: 踏破风的少年
+2026-01-21 15:09:41,771 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 导航
+2026-01-21 15:09:41,778 - app.services.media_service - INFO - Added new media item: 重逢
+2026-01-21 15:09:42,195 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 踏破风的少年
+2026-01-21 15:09:42,201 - app.services.media_service - INFO - Added new media item: 美丽人生
+2026-01-21 15:09:42,217 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 重逢
+2026-01-21 15:09:42,224 - app.services.media_service - INFO - Added new media item: 无人知晓的海
+2026-01-21 15:09:42,663 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 美丽人生
+2026-01-21 15:09:42,669 - app.services.media_service - INFO - Added new media item: 无用浪漫
+2026-01-21 15:09:42,687 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无人知晓的海
+2026-01-21 15:09:42,694 - app.services.media_service - INFO - Added new media item: 西西弗斯
+2026-01-21 15:09:43,136 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无用浪漫
+2026-01-21 15:09:43,142 - app.services.media_service - INFO - Added new media item: Purple Girl
+2026-01-21 15:09:43,177 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 西西弗斯
+2026-01-21 15:09:43,184 - app.services.media_service - INFO - Added new media item: 蒙马特遗书
+2026-01-21 15:09:43,616 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: Purple Girl
+2026-01-21 15:09:43,622 - app.services.media_service - INFO - Added new media item: 别再为他掉眼泪
+2026-01-21 15:09:43,639 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 蒙马特遗书
+2026-01-21 15:09:43,646 - app.services.media_service - INFO - Added new media item: 心想事成歌舞厅
+2026-01-21 15:09:44,099 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 别再为他掉眼泪
+2026-01-21 15:09:44,105 - app.services.media_service - INFO - Added new media item: 夏天最后的夜晚
+2026-01-21 15:09:44,111 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 心想事成歌舞厅
+2026-01-21 15:09:44,117 - app.services.media_service - INFO - Added new media item: 爱过
+2026-01-21 15:09:44,568 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 夏天最后的夜晚
+2026-01-21 15:09:44,574 - app.services.media_service - INFO - Added new media item: 无人岛屿
+2026-01-21 15:09:44,593 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 爱过
+2026-01-21 15:09:44,600 - app.services.media_service - INFO - Added new media item: 潮汐锁定 (Tidal Locked)
+2026-01-21 15:09:45,013 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无人岛屿
+2026-01-21 15:09:45,020 - app.services.media_service - INFO - Added new media item: 导航
+2026-01-21 15:09:45,072 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 潮汐锁定 (Tidal Locked)
+2026-01-21 15:09:45,078 - app.services.media_service - INFO - Added new media item: 再见旧时光
+2026-01-21 15:09:45,498 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 导航
+2026-01-21 15:09:45,504 - app.services.media_service - INFO - Added new media item: 心想事成歌舞厅
+2026-01-21 15:09:45,541 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 再见旧时光
+2026-01-21 15:09:45,548 - app.services.media_service - INFO - Added new media item: 像少年啦飞驰
+2026-01-21 15:09:46,008 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 心想事成歌舞厅
+2026-01-21 15:09:46,015 - app.services.media_service - INFO - Added new media item: 她在遥远星
+2026-01-21 15:09:46,049 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 像少年啦飞驰
+2026-01-21 15:09:46,055 - app.services.media_service - INFO - Added new media item: 你说你不知该怎么和妈妈说
+2026-01-21 15:09:46,475 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 她在遥远星
+2026-01-21 15:09:46,481 - app.services.media_service - INFO - Added new media item: 西西弗斯
+2026-01-21 15:09:46,487 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 你说你不知该怎么和妈妈说
+2026-01-21 15:09:46,493 - app.services.media_service - INFO - Added new media item: 自己
+2026-01-21 15:09:46,955 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 自己
+2026-01-21 15:09:46,962 - app.services.media_service - INFO - Added new media item: 爱人呢
+2026-01-21 15:09:46,971 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 西西弗斯
+2026-01-21 15:09:46,977 - app.services.media_service - INFO - Added new media item: 愿她被世界温柔以待
+2026-01-21 15:09:47,437 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 愿她被世界温柔以待
+2026-01-21 15:09:47,444 - app.services.media_service - INFO - Added new media item: 无用浪漫
+2026-01-21 15:09:47,460 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 爱人呢
+2026-01-21 15:09:47,467 - app.services.media_service - INFO - Added new media item: 十一种孤独 (Live)
+2026-01-21 15:09:47,908 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 十一种孤独 (Live)
+2026-01-21 15:09:47,915 - app.services.media_service - INFO - Added new media item: 旱鸭
+2026-01-21 15:09:47,954 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无用浪漫
+2026-01-21 15:09:47,961 - app.services.media_service - INFO - Added new media item: Purple Girl
+2026-01-21 15:09:48,404 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: Purple Girl
+2026-01-21 15:09:48,411 - app.services.media_service - INFO - Added new media item: 别再为他掉眼泪
+2026-01-21 15:09:48,412 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 旱鸭
+2026-01-21 15:09:48,418 - app.services.media_service - INFO - Added new media item: 如果你不开心就来碗螺蛳粉
+2026-01-21 15:09:48,844 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 别再为他掉眼泪
+2026-01-21 15:09:48,850 - app.services.media_service - INFO - Added new media item: 夏天最后的夜晚
+2026-01-21 15:09:48,871 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 如果你不开心就来碗螺蛳粉
+2026-01-21 15:09:48,878 - app.services.media_service - INFO - Added new media item: 她在遥远星
+2026-01-21 15:09:49,300 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 夏天最后的夜晚
+2026-01-21 15:09:49,306 - app.services.media_service - INFO - Added new media item: 无人岛屿
+2026-01-21 15:09:49,315 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 她在遥远星
+2026-01-21 15:09:49,322 - app.services.media_service - INFO - Added new media item: 无人岛屿
+2026-01-21 15:09:49,770 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无人岛屿
+2026-01-21 15:09:49,776 - app.services.media_service - INFO - Added new media item: 我不要原谅你（伴奏）
+2026-01-21 15:09:49,783 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无人岛屿
+2026-01-21 15:09:49,790 - app.services.media_service - INFO - Added new media item: 导航
+2026-01-21 15:09:50,217 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 导航
+2026-01-21 15:09:50,224 - app.services.media_service - INFO - Added new media item: 心想事成歌舞厅
+2026-01-21 15:09:50,236 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我不要原谅你（伴奏）
+2026-01-21 15:09:50,242 - app.services.media_service - INFO - Added new media item: 无用浪漫
+2026-01-21 15:09:50,674 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 心想事成歌舞厅
+2026-01-21 15:09:50,681 - app.services.media_service - INFO - Added new media item: 她在遥远星
+2026-01-21 15:09:50,721 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无用浪漫
+2026-01-21 15:09:50,728 - app.services.media_service - INFO - Added new media item: 别再为他掉眼泪
+2026-01-21 15:09:51,150 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 别再为他掉眼泪
+2026-01-21 15:09:51,156 - app.services.media_service - INFO - Added new media item: 暗恋是一个人的事 (伴奏)
+2026-01-21 15:09:51,194 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 她在遥远星
+2026-01-21 15:09:51,202 - app.services.media_service - INFO - Added new media item: 西西弗斯
+2026-01-21 15:09:51,641 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 暗恋是一个人的事 (伴奏)
+2026-01-21 15:09:51,648 - app.services.media_service - INFO - Added new media item: Purple Girl
+2026-01-21 15:09:51,698 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 西西弗斯
+2026-01-21 15:09:51,705 - app.services.media_service - INFO - Added new media item: 愿她被世界温柔以待
+2026-01-21 15:09:52,129 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 愿她被世界温柔以待
+2026-01-21 15:09:52,135 - app.services.media_service - INFO - Added new media item: 奔向浪漫
+2026-01-21 15:09:52,149 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: Purple Girl
+2026-01-21 15:09:52,155 - app.services.media_service - INFO - Added new media item: 剜心一刀(伴奏)
+2026-01-21 15:09:52,601 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 剜心一刀(伴奏)
+2026-01-21 15:09:52,608 - app.services.media_service - INFO - Added new media item: 十一种孤独 (Live, 伴奏)
+2026-01-21 15:09:52,616 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 奔向浪漫
+2026-01-21 15:09:52,623 - app.services.media_service - INFO - Added new media item: 蒙马特遗书
+2026-01-21 15:09:53,041 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 十一种孤独 (Live, 伴奏)
+2026-01-21 15:09:53,047 - app.services.media_service - INFO - Added new media item: 你说你不知该怎么和妈妈说 (Live)
+2026-01-21 15:09:53,112 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 蒙马特遗书
+2026-01-21 15:09:53,118 - app.services.media_service - INFO - Added new media item: 蒙马特遗书
+2026-01-21 15:09:53,543 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 你说你不知该怎么和妈妈说 (Live)
+2026-01-21 15:09:53,550 - app.services.media_service - INFO - Added new media item: 无用浪漫（伴奏）
+2026-01-21 15:09:53,601 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 蒙马特遗书
+2026-01-21 15:09:53,609 - app.services.media_service - INFO - Added new media item: 请允许我成为你的夏季
+2026-01-21 15:09:53,999 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无用浪漫（伴奏）
+2026-01-21 15:09:54,006 - app.services.media_service - INFO - Added new media item: Purple Girl（伴奏）
+2026-01-21 15:09:54,057 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 请允许我成为你的夏季
+2026-01-21 15:09:54,064 - app.services.media_service - INFO - Added new media item: 请允许我成为你的夏季
+2026-01-21 15:09:54,509 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 请允许我成为你的夏季
+2026-01-21 15:09:54,516 - app.services.media_service - INFO - Added new media item: 潮汐锁定
+2026-01-21 15:09:54,535 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: Purple Girl（伴奏）
+2026-01-21 15:09:54,542 - app.services.media_service - INFO - Added new media item: 无人岛屿（伴奏）
+2026-01-21 15:09:54,951 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 潮汐锁定
+2026-01-21 15:09:54,957 - app.services.media_service - INFO - Added new media item: 潮汐锁定
+2026-01-21 15:09:54,991 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 无人岛屿（伴奏）
+2026-01-21 15:09:54,998 - app.services.media_service - INFO - Added new media item: 心想事成歌舞厅（伴奏）
+2026-01-21 15:09:55,446 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 心想事成歌舞厅（伴奏）
+2026-01-21 15:09:55,453 - app.services.media_service - INFO - Added new media item: 别再为他掉眼泪（伴奏）
+2026-01-21 15:09:55,460 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 潮汐锁定
+2026-01-21 15:09:55,466 - app.services.media_service - INFO - Added new media item: 暗恋是一个人的事
+2026-01-21 15:09:55,898 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 别再为他掉眼泪（伴奏）
+2026-01-21 15:09:55,905 - app.services.media_service - INFO - Added new media item: 导航（伴奏）
+2026-01-21 15:09:55,908 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 暗恋是一个人的事
+2026-01-21 15:09:55,914 - app.services.media_service - INFO - Added new media item: 成人之美
+2026-01-21 15:09:56,376 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 导航（伴奏）
+2026-01-21 15:09:56,383 - app.services.media_service - INFO - Added new media item: 西西弗斯（伴奏）
+2026-01-21 15:09:56,414 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 成人之美
+2026-01-21 15:09:56,421 - app.services.media_service - INFO - Added new media item: 成人之美
+2026-01-21 15:09:56,865 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 成人之美
+2026-01-21 15:09:56,865 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 西西弗斯（伴奏）
+2026-01-21 15:09:56,872 - app.services.media_service - INFO - Added new media item: 如果你不开心就来碗螺蛳粉
+2026-01-21 15:09:56,879 - app.services.media_service - INFO - Added new media item: 愿她被世界温柔以待（伴奏）
+2026-01-21 15:09:57,329 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 愿她被世界温柔以待（伴奏）
+2026-01-21 15:09:57,337 - app.services.media_service - INFO - Added new media item: 蒙马特遗书 (伴奏)
+2026-01-21 15:09:57,361 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 如果你不开心就来碗螺蛳粉
+2026-01-21 15:09:57,368 - app.services.media_service - INFO - Added new media item: 我爱你，这就是我的秘密
+2026-01-21 15:09:57,801 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 蒙马特遗书 (伴奏)
+2026-01-21 15:09:57,808 - app.services.media_service - INFO - Added new media item: 潮汐锁定（伴奏） (Tidal Locked)
+2026-01-21 15:09:57,868 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我爱你，这就是我的秘密
+2026-01-21 15:09:57,881 - app.services.media_service - INFO - Added new media item: 如果你不开心就来碗螺蛳粉
+2026-01-21 15:09:58,239 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 潮汐锁定（伴奏） (Tidal Locked)
+2026-01-21 15:09:58,256 - app.services.media_service - INFO - Added new media item: 成人之美（伴奏）
+2026-01-21 15:09:58,300 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 如果你不开心就来碗螺蛳粉
+2026-01-21 15:09:58,316 - app.services.media_service - INFO - Added new media item: 我爱你，这就是我的秘密
+2026-01-21 15:09:58,726 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 成人之美（伴奏）
+2026-01-21 15:09:58,732 - app.services.media_service - INFO - Added new media item: 如果你不开心就来碗螺蛳粉 (伴奏)
+2026-01-21 15:09:58,799 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我爱你，这就是我的秘密
+2026-01-21 15:09:58,805 - app.services.media_service - INFO - Added new media item: 旱鸭
+2026-01-21 15:09:59,222 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 如果你不开心就来碗螺蛳粉 (伴奏)
+2026-01-21 15:09:59,229 - app.services.media_service - INFO - Added new media item: 我爱你，这就是我的秘密（伴奏）
+2026-01-21 15:09:59,262 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 旱鸭
+2026-01-21 15:09:59,269 - app.services.media_service - INFO - Added new media item: 再见旧时光
+2026-01-21 15:09:59,690 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 我爱你，这就是我的秘密（伴奏）
+2026-01-21 15:09:59,697 - app.services.media_service - INFO - Added new media item: 再见旧时光（伴奏）
+2026-01-21 15:09:59,715 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 再见旧时光
+2026-01-21 15:09:59,721 - app.services.media_service - INFO - Added new media item: 再见旧时光
+2026-01-21 15:10:00,195 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 再见旧时光
+2026-01-21 15:10:00,202 - app.services.media_service - INFO - Added new media item: 旱鸭
+2026-01-21 15:10:00,211 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 再见旧时光（伴奏）
+2026-01-21 15:10:00,218 - app.services.media_service - INFO - Added new media item: 像少年啦飞驰（伴奏）
+2026-01-21 15:10:00,636 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 旱鸭
+2026-01-21 15:10:00,642 - app.services.media_service - INFO - Added new media item: 冬天时我喜欢靠近温暖的事
+2026-01-21 15:10:00,714 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 像少年啦飞驰（伴奏）
+2026-01-21 15:10:00,720 - app.services.media_service - INFO - Added new media item: 爱过（伴奏）
+2026-01-21 15:10:01,089 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 冬天时我喜欢靠近温暖的事
+2026-01-21 15:10:01,096 - app.services.media_service - INFO - Added new media item: 给Lyon的歌
+2026-01-21 15:10:01,227 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 爱过（伴奏）
+2026-01-21 15:10:01,233 - app.services.media_service - INFO - Added new media item: 冬天时我喜欢靠近温暖的事（伴奏）
+2026-01-21 15:10:01,573 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 给Lyon的歌
+2026-01-21 15:10:01,580 - app.services.media_service - INFO - Added new media item: 像少年啦飞驰
+2026-01-21 15:10:01,741 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 冬天时我喜欢靠近温暖的事（伴奏）
+2026-01-21 15:10:01,747 - app.services.media_service - INFO - Added new media item: 给Lyon的歌（伴奏）
+2026-01-21 15:10:02,090 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 像少年啦飞驰
+2026-01-21 15:10:02,096 - app.services.media_service - INFO - Added new media item: 你说你不知该怎么和妈妈说
+2026-01-21 15:10:02,256 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 给Lyon的歌（伴奏）
+2026-01-21 15:10:02,262 - app.services.media_service - INFO - Added new media item: 十一种孤独（伴奏）
+2026-01-21 15:10:02,543 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 你说你不知该怎么和妈妈说
+2026-01-21 15:10:02,549 - app.services.media_service - INFO - Added new media item: 十一种孤独
+2026-01-21 15:10:02,719 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 十一种孤独（伴奏）
+2026-01-21 15:10:02,726 - app.services.media_service - INFO - Added new media item: 重逢（伴奏）
+2026-01-21 15:10:02,974 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 十一种孤独
+2026-01-21 15:10:02,981 - app.services.media_service - INFO - Added new media item: 重逢
+2026-01-21 15:10:03,218 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 重逢（伴奏）
+2026-01-21 15:10:03,224 - app.services.media_service - INFO - Added new media item: 你说你不知该怎么和妈妈说（伴奏）
+2026-01-21 15:10:03,459 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 重逢
+2026-01-21 15:10:03,465 - app.services.media_service - INFO - Added new media item: 爱过
+2026-01-21 15:10:03,695 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 你说你不知该怎么和妈妈说（伴奏）
+2026-01-21 15:10:03,701 - app.services.media_service - INFO - Added new media item: 赴约（伴奏）
+2026-01-21 15:10:03,920 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 爱过
+2026-01-21 15:10:03,927 - app.services.media_service - INFO - Added new media item: 给lyon的歌
+2026-01-21 15:10:04,176 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 赴约（伴奏）
+2026-01-21 15:10:04,182 - app.services.media_service - INFO - Added new media item: 赴约
+2026-01-21 15:10:04,431 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 给lyon的歌
+2026-01-21 15:10:04,437 - app.services.media_service - INFO - Added new media item: 像少年啦飞驰
+2026-01-21 15:10:04,638 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 赴约
+2026-01-21 15:10:04,644 - app.services.media_service - INFO - Added new media item: 你说你不知该怎么和妈妈说 (伴奏)
+2026-01-21 15:10:04,900 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 像少年啦飞驰
+2026-01-21 15:10:04,906 - app.services.media_service - INFO - Added new media item: 你说你不知该怎么和妈妈说
+2026-01-21 15:10:05,112 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 你说你不知该怎么和妈妈说 (伴奏)
+2026-01-21 15:10:05,118 - app.services.media_service - INFO - Added new media item: 潮汐锁定 (伴奏)
+2026-01-21 15:10:05,390 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 你说你不知该怎么和妈妈说
+2026-01-21 15:10:05,397 - app.services.media_service - INFO - Added new media item: 十一种孤独
+2026-01-21 15:10:05,601 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 潮汐锁定 (伴奏)
+2026-01-21 15:10:05,607 - app.services.media_service - INFO - Added new media item: 潮汐锁定 (Live)
+2026-01-21 15:10:05,881 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 十一种孤独
+2026-01-21 15:10:05,888 - app.services.media_service - INFO - Added new media item: 重逢
+2026-01-21 15:10:06,030 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 潮汐锁定 (Live)
+2026-01-21 15:10:06,036 - app.services.media_service - INFO - Added new media item: 她在遥远星（伴奏）
+2026-01-21 15:10:06,353 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 重逢
+2026-01-21 15:10:06,359 - app.services.media_service - INFO - Added new media item: 冬天时我喜欢靠近温暖的事
+2026-01-21 15:10:06,476 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 她在遥远星（伴奏）
+2026-01-21 15:10:06,483 - app.services.media_service - INFO - Added new media item: 夏天最后的夜晚 (伴奏)
+2026-01-21 15:10:06,848 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 冬天时我喜欢靠近温暖的事
+2026-01-21 15:10:06,854 - app.services.media_service - INFO - Added new media item: 爱过
+2026-01-21 15:10:06,915 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 夏天最后的夜晚 (伴奏)
+2026-01-21 15:10:06,921 - app.services.media_service - INFO - Added new media item: 请允许我成为你的夏季（伴奏） (Summer For Thee, Grant I May Be)
+2026-01-21 15:10:07,278 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 爱过
+2026-01-21 15:10:07,288 - app.services.media_service - INFO - Added new media item: 赴约
+2026-01-21 15:10:07,408 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 请允许我成为你的夏季（伴奏） (Summer For Thee, Grant I May Be)
+2026-01-21 15:10:07,751 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 赴约
+2026-01-21 15:10:07,758 - app.services.media_service - INFO - Added new media item: 赴约
+2026-01-21 15:10:08,243 - notifiers.wecom - INFO - 企业微信图文推送成功: 🎵 新歌发布: 赴约
+2026-01-21 15:14:52,719 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:14:52,720 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:14:52,720 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:14:52,720 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:14:52,720 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:14:52,721 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:16:18,764 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:16:18,764 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:16:18,764 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:16:18,764 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:16:18,765 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:16:18,765 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:19:42,924 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:19:42,925 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:19:42,925 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:19:42,925 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:19:42,926 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:19:42,926 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:21:23,094 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:21:23,094 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:21:23,094 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:21:23,095 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:21:23,095 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:21:23,095 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:23:27,885 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:23:27,886 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:23:27,886 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:23:27,886 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:23:27,886 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:23:27,886 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:25:06,972 - app.routers.media - INFO - 收到下载请求: 重逢 - 宿羽阳
+2026-01-21 15:25:06,973 - app.routers.media - ERROR - Download error: type object 'Song' has no attribute 'source_id'
+2026-01-21 15:29:57,565 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:29:57,566 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:29:57,566 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:29:57,566 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:29:57,566 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:29:57,567 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:31:09,868 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:31:09,868 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:31:09,868 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:31:09,869 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:31:09,869 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:31:09,869 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:36:23,852 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:36:23,852 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:36:23,852 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:36:23,852 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:36:23,853 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:36:23,853 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:36:56,108 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:36:56,109 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:36:56,109 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:36:56,109 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:36:56,109 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:36:56,109 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:41:48,530 - app.routers.media - INFO - 收到下载请求: 我不要原谅你（伴奏） - 宿羽阳
+2026-01-21 15:41:48,530 - app.routers.media - ERROR - Download error: type object 'Song' has no attribute 'source_id'
+2026-01-21 15:43:13,071 - app.routers.media - ERROR - Get history error: type object 'MediaRecord' has no attribute 'local_path'
+2026-01-21 15:44:22,275 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:44:22,275 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:44:22,275 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:44:22,276 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:44:22,276 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:44:22,276 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:45:03,234 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:45:03,235 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:45:03,235 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:45:03,235 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:45:03,236 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:45:03,236 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:55:22,056 - main - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:55:22,056 - main - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:55:22,056 - main - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:55:22,057 - main - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:55:22,057 - main - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:55:22,057 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 15:55:55,812 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 15:55:55,813 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 15:55:55,813 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 15:55:55,813 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 15:55:55,814 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 15:55:55,814 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 16:02:58,299 - __main__ - INFO - 已调度 netease 任务，每 60 分钟执行一次
+2026-01-21 16:02:58,300 - __main__ - INFO - 已调度 qqmusic 任务，每 60 分钟执行一次
+2026-01-21 16:02:58,300 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-21 16:02:58,301 - __main__ - INFO - 已调度缓存清理任务，每 24 小时执行一次
+2026-01-21 16:02:58,301 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-21 16:02:58,301 - app.services.notification - INFO - NotificationService: WeCom initialized
+2026-01-21 16:03:58,580 - app.routers.media - ERROR - Get history error: type object 'MediaRecord' has no attribute 'local_path'
+2026-01-21 16:04:25,341 - app.routers.media - ERROR - Get history error: type object 'MediaRecord' has no attribute 'local_path'
+2026-01-21 16:11:15,848 - app.routers.media - ERROR - Get history error: type object 'MediaRecord' has no attribute 'local_path'

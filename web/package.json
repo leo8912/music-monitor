@@ -9,12 +9,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vant/use": "^1.6.0",
     "@vicons/ionicons5": "^0.13.0",
     "axios": "^1.13.2",
+    "colorthief": "^2.6.0",
     "naive-ui": "^2.43.2",
+    "pinia": "^3.0.4",
+    "typescript": "^5.9.3",
+    "vant": "^4.9.22",
     "vfonts": "^0.0.3",
     "vue": "^3.5.24",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "vue-tsc": "^3.2.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",

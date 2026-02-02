@@ -1,115 +1,48 @@
-/* Apple Design System Tokens */
+/* Spotify Design System Tokens */
 :root {
-  /* Typography - 统一字体体系 */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC",
-    "Helvetica Neue", "Microsoft YaHei", sans-serif;
-  --font-mono: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
+  --font-sans: "Circular Sp", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "SF Mono", monospace;
 
-  /* 兼容旧引用 */
-  --font-stack: var(--font-sans);
+  /* Spotify Colors */
+  --sp-green: #1DB954;
+  --sp-green-hover: #1ED760;
+  --sp-black: #000000;
+  --sp-base: #121212;
+  --sp-card: #181818;
+  --sp-card-hover: #282828;
+  --sp-highlight: #333333;
 
-  /* Colors - Light Mode */
-  --bg-body: #F5F5F7;
-  --bg-app: #F5F5F7;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: rgba(0, 0, 0, 0.02);
+  --text-primary: #FFFFFF;
+  --text-secondary: #B3B3B3;
+  --text-tertiary: #A7A7A7;
 
-  --text-primary: #1D1D1F;
-  --text-secondary: #636366;
-  /* 提升对比度: 原 #86868B */
-  --text-tertiary: #D2D2D7;
-
-  /* Accent Colors */
-  --accent-primary: #FA233B;
-  /* Apple Music Red-Pink */
-  --accent-netease: #E60026;
-  --accent-qq: #2EBD59;
-
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-float: 0 20px 40px rgba(0, 0, 0, 0.12);
-
-  /* Radius */
-  --radius-card: 18px;
-  --radius-btn: 99px;
-
-  /* Spacing */
-  --spacing-container: 1000px;
+  /* Layout */
+  --sidebar-width: 240px;
+  --player-height: 90px;
+  --main-padding: 32px;
+  --radius-lg: 8px;
+  --radius-md: 4px;
 }
 
-/* Dark Mode - Apple Music Style */
-:root[data-theme="dark"] {
-  --bg-body: #000000;
-  --bg-app: #000000;
-  --bg-card: #1C1C1E;
-  /* Secondary Grouped Background */
-  --bg-card-hover: #2C2C2E;
-
-  /* 优化文字亮度，避免 HDR 屏幕刺眼 */
-  --text-primary: rgba(255, 255, 255, 0.92);
-  --text-secondary: rgba(235, 235, 245, 0.6);
-  --text-tertiary: rgba(235, 235, 245, 0.3);
-
-  /* Shadows - Dark Mode */
-  --shadow-sm: 0 0 0 1px rgba(255, 255, 255, 0.08);
-  /* Border-like shadow for separation */
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
-  --shadow-float: 0 20px 50px rgba(0, 0, 0, 0.8);
-
-  /* Borders */
-  --border-color: #38383A;
-}
-
-/* 深色模式滚动条 */
-:root[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: #58585E;
-}
-
-:root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: #7C7C80;
-}
-
-/* 深色模式骨架屏 */
-:root[data-theme="dark"] .skeleton {
-  background: #1C1C1E;
-  background: linear-gradient(90deg, #1C1C1E 25%, #2C2C2E 50%, #1C1C1E 75%);
-  background-size: 200% 100%;
+/* Global Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  font-family: var(--font-stack);
-  background-color: var(--bg-body);
+  font-family: var(--font-sans);
+  background-color: var(--sp-black);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
-  overflow-y: scroll;
+  overflow: hidden;
+  height: 100vh;
 }
 
-/* Utilities */
-.app-container {
-  max-width: var(--spacing-container);
-  margin: 0 auto;
-  padding: 0 24px 60px;
-}
-
-/* Typography Reset */
-h1,
-h2,
-h3,
-h4,
-p {
-  margin: 0;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* Custom Scrollbar */
+/* Scrollbar Customization - Spotify Style */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
 }
 
 ::-webkit-scrollbar-track {
@@ -117,89 +50,212 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D2D2D7;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  border: 4px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #86868B;
+  background: rgba(255, 255, 255, 0.5);
 }
 
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* Legacy Effect Stripping */
+.glass,
+.glass-dark,
+.material-surface,
+.aurora-container {
+  display: none !important;
+}
+
+/* Typography */
+.text-huge {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.text-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.text-body {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.clickable:active {
+  transform: scale(0.98);
+}
+
+/* Layout Classes */
+.app-layout {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--sp-black);
+  overflow: hidden;
+}
+
+.sidebar-area {
+  position: fixed;
+  /* Force Fixed */
+  top: 0;
+  left: 0;
+  bottom: var(--player-height);
+  width: var(--sidebar-width);
+  z-index: 5000;
+  /* Extremely high z-index */
+  background-color: var(--sp-black);
+}
+
+.player-area {
+  position: fixed;
+  /* Force Fixed */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--player-height);
+  background-color: #181818;
+  border-top: 1px solid #282828;
+  z-index: 6000;
+  /* Player is top-most */
+}
+
+.main-content-area {
+  position: absolute;
+  top: 8px;
+  left: var(--sidebar-width);
+  right: 8px;
+  bottom: calc(var(--player-height) + 8px);
+  background: linear-gradient(to bottom, #202020 0%, #121212 100%);
+  border-radius: var(--radius-lg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--main-padding);
+  z-index: 1;
+  isolation: isolate;
+  /* Create new stacking context */
+}
+
+/* Mobile Responsive Overrides */
+@media (max-width: 768px) {
+  .app-layout {
+    display: block;
+    height: 100vh;
+    /* Use full viewport */
+    width: 100%;
+    grid-template-areas: none;
+    grid-template-columns: none;
+    grid-template-rows: none;
+    overflow-y: auto;
+    /* Enable native scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .sidebar-area {
+    display: none !important;
+  }
+
+  /* 
+     Hide Desktop BottomPlayer on mobile. 
+     Mobile views have their own player or tabbar.
+  */
+  .player-area {
+    display: none !important;
+  }
+
+  .main-content-area {
+    position: relative;
+    /* Reset from absolute */
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    height: auto;
+    /* Let content grow */
+    overflow: visible;
+    background: transparent;
   }
 }
 
-.stagger-anim {
-  animation: fadeInUp 0.4s ease forwards;
-  opacity: 0;
-  /* Initial state hidden */
+/* --- Global UI Components Overrides --- */
+
+/* NPagination Simple Mode Styling */
+.n-pagination.n-pagination--simple {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Generate stagger delays for up to 20 items */
-.stagger-anim:nth-child(1) {
-  animation-delay: 0.05s;
+/* The Square Boxes (Buttons and Input) */
+.n-pagination.n-pagination--simple .n-pagination-item {
+  margin: 0 2px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  color: var(--text-primary) !important;
 }
 
-.stagger-anim:nth-child(2) {
-  animation-delay: 0.1s;
+.n-pagination.n-pagination--simple .n-pagination-item:hover:not(.n-pagination-item--button):not(.n-pagination-item--disabled) {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-.stagger-anim:nth-child(3) {
-  animation-delay: 0.15s;
+.n-pagination.n-pagination--simple .n-pagination-item--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
-.stagger-anim:nth-child(4) {
-  animation-delay: 0.2s;
+/* Specific constraint for the Page Number Box (Input) */
+.n-pagination.n-pagination--simple .n-pagination-item:not(.n-pagination-item--button) {
+  width: 32px !important;
+  /* Narrower width to match single digits better */
+  padding: 0 !important;
 }
 
-.stagger-anim:nth-child(5) {
-  animation-delay: 0.25s;
+.n-pagination.n-pagination--simple .n-pagination-item input {
+  text-align: center !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--sp-green) !important;
 }
 
-.stagger-anim:nth-child(6) {
-  animation-delay: 0.3s;
+.n-pagination.n-pagination--simple .n-pagination-quick-jumper {
+  color: var(--text-secondary) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  margin-left: 4px !important;
 }
 
-.stagger-anim:nth-child(7) {
-  animation-delay: 0.35s;
-}
-
-.stagger-anim:nth-child(8) {
-  animation-delay: 0.4s;
-}
-
-.stagger-anim:nth-child(9) {
-  animation-delay: 0.45s;
-}
-
-.stagger-anim:nth-child(10) {
-  animation-delay: 0.5s;
-}
-
-/* Skeleton Loading */
-.skeleton {
-  background: #f0f0f0;
-  background: linear-gradient(90deg, #f0f0f0 25%, #f7f7f7 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 4px;
-}
-
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
+/* Helper for header placement */
+.header-pagination-container {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }

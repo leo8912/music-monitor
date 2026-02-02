@@ -1,265 +1,468 @@
-<script setup>
-import { NButton, NIcon, NEmpty } from 'naive-ui'
-import { CloseOutline, PlayCircleOutline } from '@vicons/ionicons5'
+<script setup lang="ts">
+/**
+ * 歌曲列表组件 - Spotify 风格重构版
+ * 专注于列表的视觉张力、排版和交互响应。
+ */
+
+import { computed, h } from 'vue'
+import { NButton, NIcon, NEmpty, NDropdown } from 'naive-ui'
+import { 
+    PlayCircleOutline, 
+    HeartOutline, 
+    Heart, 
+    EllipsisHorizontal, 
+    TrashOutline, 
+    FlashOutline, 
+    CloudDownloadOutline,
+    ChevronUp,
+    ChevronDown
+} from '@vicons/ionicons5'
+import Skeleton from '@/components/common/Skeleton.vue'
 
 const props = defineProps({
-  history: { type: Array, default: () => [] },
+  history: { type: Array as () => any[], default: () => [] },
   loading: { type: Boolean, default: false },
   selectedArtistName: { type: String, default: null },
-  oneWord: { type: String, default: '' }
+  mode: { type: String, default: 'library' },
+  sortField: { type: String, default: 'publish_time' },
+  sortOrder: { type: String, default: 'desc' }
 })
 
-const emit = defineEmits(['play', 'clear-filter'])
+const emit = defineEmits(['play', 'repair', 'toggleFavorite', 'delete', 'redownload', 'sort'])
 
-const formatDate = (dateStr) => {
+const handlePlay = (song: any) => {
+  emit('play', song)
+}
+
+const getSourceName = (source: string) => {
+    const map: Record<string, string> = { 
+        'netease': '网易云', 
+        'qqmusic': 'QQ音乐', 
+        'local': '本地',
+        'manual': '手动'
+    }
+    return map[source] || source
+}
+
+// Action Menu Options
+const renderIcon = (icon: any) => {
+  return () => h(NIcon, null, { default: () => h(icon) })
+}
+
+const createRowOptions = (song: any) => [
+    {
+        label: '重新刮削 (整理信息)',
+        key: 'enrich',
+        icon: renderIcon(FlashOutline)
+    },
+    {
+        label: '重新下载',
+        key: 'redownload',
+        icon: renderIcon(CloudDownloadOutline)
+    },
+    {
+        label: '删除歌曲',
+        key: 'delete',
+        icon: renderIcon(TrashOutline)
+    }
+]
+
+const handleSelect = (key: string, song: any) => {
+    if (key === 'delete') emit('delete', song)
+    if (key === 'enrich') emit('repair', song) // Reuse repair/enrich logic
+    if (key === 'redownload') emit('redownload', song)
+}
+
+const handleSort = (field: string) => {
+    emit('sort', field)
+}
+
+const getQualityLabel = (quality: any) => {
+    if (!quality) return ''
+    // If it's already a string label like SQ/HQ/HR
+    if (String(quality).match(/^(SQ|HQ|HR|PQ)$/i)) return String(quality).toUpperCase()
+    
+    // If it's a bitrate number
+    const q = parseInt(String(quality))
+    if (!isNaN(q)) {
+        if (q >= 2000) return 'HR'
+        if (q >= 900) return 'SQ' // relaxed threshold for FLAC roughly
+        if (q >= 320) return 'HQ'
+        return 'PQ'
+    }
+    // If it's a string like 'PQ', return it
+    return String(quality)
+}
+
+const getQualityClass = (quality: any) => {
+    const label = getQualityLabel(quality)
+    if (label === 'HR' || label === 'HI-RES') return 'quality-gold-hires' 
+    if (label === 'SQ' || label === 'FLAC') return 'quality-gold-sq'
+    if (label === 'HQ') return 'quality-green'
+    return 'quality-gray'
+}
+
+const formatDate = (dateStr: string | null | undefined) => {
     if (!dateStr) return '-'
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diff = now - date
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    
-    if (days === 0) return '今天'
-    if (days === 1) return '昨天'
-    if (days < 30) return `${days}天前`
-    
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    return `${year === now.getFullYear() ? '' : year + '/'}${month}/${day}`
-}
-
-const handlePlay = (song) => {
-    emit('play', song)
-}
-
-const handleClearHelper = () => {
-    emit('clear-filter')
+    // Assuming ISO string or similar, take first 10 chars for YYYY-MM-DD
+    return String(dateStr).substring(0, 10)
 }
 </script>
 
 <template>
-    <section class="feed-section">
-        <h2 class="section-title">
-            {{ selectedArtistName ? `🎵 ${selectedArtistName}` : '📢 最新动态' }}
-            <span v-if="!selectedArtistName && oneWord" class="one-word-badge">{{ oneWord }}</span>
-            <n-button v-if="selectedArtistName" text size="tiny" class="clear-filter-btn" @click="handleClearHelper">
-                <template #icon><n-icon><CloseOutline /></n-icon></template>
-                ❎ 清除筛选
-            </n-button>
-        </h2>
+  <div class="song-list-container">
+    <div v-if="loading" class="song-list">
+        <!-- 骨架屏表头 -->
+        <div class="song-header">
+            <div class="index">#</div>
+            <div class="title-head">标题</div>
+            <div class="artist-head">歌手</div>
+            <div class="album-head">专辑</div>
+            <div class="date-head">发布时间</div>
+            <div class="actions-head"></div>
+        </div>
+        <!-- 骨架屏行循环 -->
+        <div v-for="i in 10" :key="`skel-row-${i}`" class="song-item surface-card">
+            <div class="index"><Skeleton width="16px" height="16px" shape="text" /></div>
+            <div class="song-info-main">
+                <div class="song-cover skeleton-box">
+                    <Skeleton width="100%" height="100%" />
+                </div>
+                <div class="song-meta" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                    <Skeleton width="60%" height="16px" />
+                </div>
+            </div>
+            <div class="song-artist"><Skeleton width="60%" height="14px" /></div>
+            <div class="song-album"><Skeleton width="80%" height="14px" /></div>
+            <div class="song-date"><Skeleton width="50%" height="12px" /></div>
+            <div class="song-actions"></div>
+        </div>
+    </div>
+    <div v-else-if="history.length > 0" class="song-list">
+      <!-- 表头 -->
+      <div class="song-header">
+        <div class="index">#</div>
+        <div class="title-head sortable" @click="handleSort('title')">
+            标题
+            <n-icon v-if="sortField === 'title'" :component="sortOrder === 'asc' ? ChevronUp : ChevronDown" class="sort-icon" />
+        </div>
+        <div class="artist-head">歌手</div>
+        <div class="album-head">专辑</div>
+        <div class="quality-head">音质</div>
+        <div class="date-head sortable" @click="handleSort(mode === 'library' ? 'created_at' : (mode === 'history' ? 'found_at' : 'publish_time'))">
+            {{ mode === 'library' ? '添加时间' : (mode === 'history' ? '播放时间' : '发布时间') }}
+            <n-icon v-if="(mode === 'library' && sortField === 'created_at') || (mode === 'history' && sortField === 'found_at') || (mode !== 'library' && mode !== 'history' && sortField === 'publish_time')" 
+                    :component="sortOrder === 'asc' ? ChevronUp : ChevronDown" 
+                    class="sort-icon" />
+        </div>
+        <div class="actions-head"></div>
+      </div>
+
+      <div 
+        v-for="(song, index) in history" 
+        :key="song.id || index"
+        class="song-item surface-card clickable"
+        @click="handlePlay(song)"
+      >
+        <div class="index">{{ index + 1 }}</div>
         
-        <div v-if="loading" class="skeleton-table">
-             <div v-for="i in 5" :key="i" class="table-row skeleton-row">
-                 <div class="col-cover skeleton"></div>
-                 <div class="col-track skeleton" style="width: 40%; height: 20px;"></div>
-                 <div class="col-artist skeleton" style="width: 20%; height: 20px; margin-left: auto;"></div>
-             </div>
+        <div class="song-info-main">
+          <img 
+            :src="song.cover || '/default-cover.png'" 
+            class="song-cover" 
+            loading="lazy"
+            @error="(e) => (e.target as HTMLImageElement).src = '/default-cover.png'"
+          >
+          <div class="song-meta">
+            <div class="song-title truncate">{{ song.title }}</div>
+            <div class="song-sources">
+                <template v-if="song.availableSources && song.availableSources.length > 0">
+                     <span v-for="src in song.availableSources" :key="src" class="source-tag" :class="src">
+                        {{ getSourceName(src) }}
+                     </span>
+                </template>
+                <template v-else>
+                     <span class="source-tag" :class="song.source">{{ getSourceName(song.source) }}</span>
+                </template>
+            </div>
+          </div>
         </div>
 
-        <div class="song-table" v-else-if="history.length > 0">
-                <div class="table-header">
-                    <div class="col-cover"></div>
-                    <div class="col-track">🎵 歌曲</div>
-                    <div class="col-artist">👤 歌手</div>
-                    <div class="col-album">💿 专辑</div>
-                    <div class="col-time">📅 发布时间</div>
-                    <div class="col-action"></div>
-                </div>
-                
-                <div v-for="(song, index) in history" :key="song.unique_key" 
-                     class="table-row stagger-anim"
-                     :style="{ animationDelay: `${index * 0.05}s` }">
-                    <!-- Cover -->
-                    <div class="col-cover">
-                        <div class="cover-wrapper">
-                            <img :src="song.cover || `https://ui-avatars.com/api/?name=${song.title}&length=1&background=random&size=128`" 
-                                 class="song-cover-img" 
-                                 loading="lazy" />
-                            <div class="play-overlay" @click.stop="handlePlay(song)">
-                                <n-icon><PlayCircleOutline /></n-icon>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Track Info -->
-                    <div class="col-track">
-                         <div class="track-name" :title="song.title">{{ song.title }}
-                             <span v-if="song.source === 'netease'" class="platform-dot netease" title="网易云"></span>
-                             <span v-if="song.source === 'qqmusic'" class="platform-dot qq" title="QQ音乐"></span>
-                         </div>
-                    </div>
-                    
-                    <!-- Artist -->
-                    <div class="col-artist">
-                        {{ song.author }}
-                    </div>
-                    
-                    <!-- Album -->
-                    <div class="col-album" :title="song.album">
-                        {{ song.album || '-' }}
-                    </div>
-                    
-                    <!-- Time -->
-                    <div class="col-time" :title="song.publish_time">
-                        {{ formatDate(song.publish_time) }}
-                    </div>
-                    
-                    <!-- Action -->
-                    <div class="col-action">
-                         <a href="javascript:void(0)" @click.stop="handlePlay(song)" class="action-link">
-                             播放
-                         </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div v-else class="empty-state">
-                <n-empty description="📭 暂无最新动态，岁月静好" size="large" />
-            </div>
-    </section>
+        <div class="song-artist truncate">{{ song.artist }}</div>
+        <div class="song-album truncate">{{ song.album }}</div>
+        
+        <!-- Quality Badge Column -->
+        <div class="song-quality">
+            <span v-if="song.quality" 
+                  class="quality-badge" 
+                  :class="getQualityClass(song.quality)">
+                {{ getQualityLabel(song.quality) }}
+            </span>
+        </div>
+
+        <!-- Date handling is below -->
+        
+
+        <div class="song-date">
+             <template v-if="mode === 'library'">
+                 {{ song.createdAt ? song.createdAt.substring(0, 10) : (song.publishTime ? song.publishTime.substring(0, 10) : '-') }}
+             </template>
+             <template v-else-if="mode === 'history'">
+                 {{ song.foundAt ? song.foundAt.substring(0, 10) : (song.createdAt ? song.createdAt.substring(0, 10) : '-') }}
+             </template>
+             <template v-else>
+                 {{ song.publishTime ? song.publishTime.substring(0, 10) : '-' }}
+             </template>
+        </div>
+
+        <div class="song-actions">
+          <button class="action-btn fav" @click.stop="emit('toggleFavorite', song)">
+            <n-icon :component="song.isFavorite ? Heart : HeartOutline" />
+          </button>
+          
+          <n-dropdown 
+             trigger="click" 
+             :options="createRowOptions(song)" 
+             @select="(key) => handleSelect(key, song)"
+             @click.stop
+          >
+             <button class="action-btn" @click.stop>
+                <n-icon :component="EllipsisHorizontal" />
+             </button>
+          </n-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="empty-state">
+      <n-empty description="此列表中尚无歌曲" />
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.section-title {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.one-word-badge {
-    display: inline-block;
-    font-size: 13px;
-    font-weight: 400;
-    color: #86868B;
-    background: transparent;
-    margin-left: 12px;
-    font-style: italic;
-    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    vertical-align: middle;
-    opacity: 0.8;
+.song-list-container {
+  width: 100%;
 }
 
-/* Feed Song Table (iTunes Style) */
-.song-table {
-    display: flex;
-    flex-direction: column;
-}
-.table-header {
-    display: flex;
-    padding: 0 16px 12px;
-    border-bottom: 1px solid #E5E5E5;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-}
-.table-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 16px;
-    border-radius: 8px;
-    margin-bottom: 2px;
-    transition: background 0.1s;
-}
-.table-row:hover {
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transform: scale(1.01);
-    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+/* 调整 Grid 列宽: Index, Title, Artist, Album, Date, Actions */
+.song-header, .song-item {
+  display: grid;
+  /* Columns: Index | Title | Artist | Album | Quality | Date | Actions */
+  /* Old: 40px 4fr 2fr 2fr 100px 80px */
+  /* New: Added Quality column (60px) */
+  /* Index | Title | Artist | Album | Quality | Date | Actions */
+  /* 40px | 3fr | 2fr | 2fr | 50px | 90px | 40px */
+  grid-template-columns: 32px 3fr 2fr 2fr 50px 90px 40px;
+  gap: 4px;
+  align-items: center;
 }
 
-/* Columns */
-.col-cover { width: 56px; margin-right: 16px; }
-.col-track { flex: 2; min-width: 0; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-.col-artist { flex: 1; min-width: 0; color: var(--text-primary); }
-.col-album { flex: 1.5; min-width: 0; color: var(--text-secondary); }
-.col-time { width: 100px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-.col-action { width: 60px; text-align: right; opacity: 0; transition: opacity 0.2s; }
-.table-row:hover .col-action { opacity: 1; }
-
-.cover-wrapper {
-    width: 48px; /* Slightly larger */
-    height: 48px;
-    position: relative;
-    border-radius: 8px; /* Softer radius */
-    overflow: hidden;
-    background: #f2f2f7;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    transition: transform 0.2s;
+.song-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
-.song-cover-img { width: 100%; height: 100%; object-fit: cover; }
-.play-overlay {
-    position: absolute;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 20px;
-    opacity: 0;
+
+.sortable {
     cursor: pointer;
-}
-.cover-wrapper:hover .play-overlay { opacity: 1; }
-
-.track-name { 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-}
-.platform-dot {
-    width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0;
-}
-.platform-dot.netease { background-color: var(--accent-netease); }
-.platform-dot.qq { background-color: var(--accent-qq); }
-
-.col-artist, .col-album {
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px;
-}
-.col-time { font-size: 13px; }
-
-.action-link {
-    font-size: 13px;
-    color: var(--accent-primary);
-    font-weight: 500;
-}
-
-/* Skeleton Specific */
-.skeleton-table { padding: 0 16px; }
-.skeleton-row {
-    height: 64px;
+    display: flex;
     align-items: center;
-    gap: 16px;
-}
-.skeleton-row .col-cover.skeleton {
-    width: 44px; height: 44px; border-radius: 6px;
-}
-.skeleton { background: rgba(0,0,0,0.06); border-radius: 4px; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-.table-row:hover .cover-wrapper {
-     transform: scale(1.05) translateZ(0); /* Subtle pop for album art */
+    gap: 4px;
+    transition: color 0.2s;
 }
 
-.empty-state { text-align: center; padding: 40px; }
+.sortable:hover {
+    color: #fff;
+}
 
-/* 深色模式 */
-:root[data-theme="dark"] .section-title {
-    color: var(--text-primary);
+.sort-icon {
+    font-size: 14px;
+    color: var(--sp-green);
 }
-:root[data-theme="dark"] .one-word-badge {
-    color: var(--text-secondary);
+
+.song-item {
+  padding: 10px 16px; /* Slightly more compact */
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 4px;
 }
-:root[data-theme="dark"] .table-header {
-    border-color: rgba(255, 255, 255, 0.1);
+
+.song-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }
-:root[data-theme="dark"] .table-row:hover {
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+.index {
+  color: var(--text-secondary);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
 }
-:root[data-theme="dark"] .cover-wrapper {
-    background: #2C2C2E;
+
+.song-info-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
-:root[data-theme="dark"] .skeleton {
-    background: rgba(255, 255, 255, 0.08);
+
+.song-cover {
+  width: 42px; /* Slightly smaller cover for tighter list */
+  height: 42px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background-color: var(--sp-card-hover);
+}
+
+.song-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+}
+
+.song-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.song-artist {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.song-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.source-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.1);
+    color: var(--text-tertiary);
+    line-height: 1.4;
+}
+
+/* Source Colors for Tags */
+.source-tag.qqmusic { color: #20d25c; background: rgba(32, 210, 92, 0.1); }
+.source-tag.netease { color: #ec4141; background: rgba(236, 65, 65, 0.1); }
+.source-tag.local { color: #409eff; background: rgba(64, 158, 255, 0.1); }
+.source-tag.downloaded { color: #409eff; background: rgba(64, 158, 255, 0.1); }
+
+.song-album {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.quality-head {
+  display: flex;
+  justify-content: center;
+}
+
+.song-quality {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.quality-badge {
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 700;
+    line-height: 1.2;
+    border: 1px solid currentColor;
+}
+
+.quality-badge.quality-gold-hires {
+    background-color: #000;
+    color: #d4af37;
+    border: 1px solid #d4af37;
+    border-radius: 2px;
+    font-weight: 900;
+    font-family: serif;
+    font-style: italic;
+    padding: 0 4px;
+    line-height: 12px;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    box-shadow: none;
+}
+
+.quality-badge.quality-gold-sq {
+    color: #d4af37;
+    border: 1px solid #d4af37;
+    background: transparent;
+    border-radius: 2px;
+    font-weight: 700;
+    padding: 0 3px;
+}
+
+.quality-badge.quality-green {
+    color: #20d25c;
+    border: 1px solid #20d25c;
+    background: transparent;
+    border-radius: 2px;
+}
+
+.quality-badge.quality-gray {
+    color: #888;
+    border: 1px solid #555;
+    background: transparent;
+    border-radius: 2px;
+}
+
+.quality-badge.quality-blue {
+    color: #3498db;
+    background: rgba(52, 152, 219, 0.1);
+    border-color: rgba(52, 152, 219, 0.4);
+}
+
+.song-date {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+
+.song-item:hover .song-actions {
+  opacity: 1;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.action-btn:hover {
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.action-btn.fav {
+  color: var(--sp-green);
+}
+
+.empty-state {
+  padding: 100px 0;
+  display: flex;
+  justify-content: center;
+  color: var(--text-tertiary);
 }
 </style>

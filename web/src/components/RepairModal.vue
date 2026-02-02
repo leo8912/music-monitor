@@ -72,9 +72,9 @@ const handleSearch = async () => {
   try {
     const res = await axios.get('/api/search_songs', {
       params: { 
-        title: props.songInfo?.title || '',
-        artist: props.songInfo?.author || props.songInfo?.artist || '',
-        album: props.songInfo?.album || ''
+        title: searchKeyword.value, // Use valid input
+        artist: '', // Reset strict filters
+        album: ''   // Reset strict filters
       }
     });
     results.value = res.data || [];

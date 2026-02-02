@@ -20,6 +20,7 @@ from typing import Optional
 from dataclasses import dataclass
 from pathlib import Path
 import anyio
+from app.utils.cache import persistent_cache
 
 try:
     import mutagen
@@ -28,8 +29,6 @@ try:
     from mutagen.mp4 import MP4
 except ImportError:
     mutagen = None
-
-from app.services.smart_merger import SongMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +43,8 @@ class MetadataResult:
     publish_time: Optional[str] = None
     success: bool = False
     error_message: Optional[str] = None
+    cover_size_bytes: int = 0  # 封面大小（字节）
+    source: str = ""  # 数据来源
 
 
 class MetadataService:
@@ -81,6 +82,7 @@ class MetadataService:
     
     # ========== 歌词获取 ==========
     
+    @persistent_cache(namespace="lyrics")
     async def fetch_lyrics(self, title: str, artist: str, 
                            source: str = None, source_id: str = None,
                            local_path: str = None) -> Optional[str]:
@@ -254,6 +256,7 @@ class MetadataService:
     
     # ========== 封面获取 ==========
     
+    @persistent_cache(namespace="cover_url")
     async def fetch_cover_url(self, title: str, artist: str) -> Optional[str]:
         """
         获取封面URL
@@ -377,40 +380,114 @@ class MetadataService:
         result.success = bool(result.lyrics or result.cover_url or result.publish_time)
         return result
     
-    async def get_best_match_metadata(self, title: str, artist: str) -> SongMetadata:
-        """
-        获取最佳匹配元数据 (标准化输出)
-        
-        Args:
-            title: 歌曲标题
-            artist: 歌手
-            
-        Returns:
-            SongMetadata 对象
-        """
-        # 复用现有的 fetch_metadata 逻辑
-        # TODO: 未来可以将 search 逻辑移入这里，实现更细粒度的控制
-        raw_result = await self.fetch_metadata(title, artist)
-        
-        # 计算置信度
-        confidence = 0.0
-        if raw_result.success:
-            confidence += 0.5
-            if raw_result.lyrics: confidence += 0.2
-            if raw_result.cover_url: confidence += 0.2
-            if raw_result.album: confidence += 0.1
-            
-        return SongMetadata(
-            title=title,
-            artist=artist,
-            album=raw_result.album,
-            cover_url=raw_result.cover_url,
-            publish_time=raw_result.publish_time,
-            lyrics=raw_result.lyrics,
-            source="aggregator", # 实际上是 netease/qq混合
-            confidence=min(confidence, 1.0)
-        )
-    
     async def close(self):
         """关闭服务"""
         pass
+    
+    async def get_best_match_metadata(self, title: str, artist: str) -> MetadataResult:
+        """
+        聚合多源数据，返回最佳元数据
+        
+        策略：
+        1. 并发调用网易云和QQ音乐
+        2. 优先网易云的歌词（质量更好）
+        3. 优先QQ音乐的封面/专辑信息（更全）
+        4. 计算封面大小用于后续画质对比
+        
+        Args:
+            title: 歌曲标题
+            artist: 歌手名
+            
+        Returns:
+            MetadataResult: 聚合后的最佳元数据
+        """
+        import asyncio
+        
+        logger.info(f"🔍 聚合获取最佳元数据: {title} - {artist}")
+        result = MetadataResult()
+        
+        providers = [
+            ("netease", self._get_netease_provider()),
+            ("qqmusic", self._get_qqmusic_provider())
+        ]
+        
+        # 并发搜索所有源
+        async def search_provider(source_name: str, provider):
+            if not provider:
+                return source_name, None
+            try:
+                keyword = f"{title} {artist}"
+                search_results = await provider.search_song(keyword, limit=3)
+                if search_results:
+                    best_match = search_results[0]
+                    # 获取完整元数据
+                    try:
+                        full_meta = await provider.get_song_metadata(best_match.id)
+                        return source_name, {
+                            "lyrics": full_meta.get("lyrics") if full_meta else None,
+                            "cover_url": full_meta.get("cover_url") if full_meta else best_match.cover_url,
+                            "album": full_meta.get("album") if full_meta else best_match.album,
+                            "publish_time": full_meta.get("publish_time") if full_meta else best_match.publish_time,
+                            "search_result": best_match
+                        }
+                    except Exception:
+                        return source_name, {
+                            "lyrics": None,
+                            "cover_url": best_match.cover_url,
+                            "album": best_match.album,
+                            "publish_time": best_match.publish_time,
+                            "search_result": best_match
+                        }
+            except Exception as e:
+                logger.warning(f"从 {source_name} 获取元数据失败: {e}")
+            return source_name, None
+        
+        # 并发执行
+        tasks = [search_provider(name, provider) for name, provider in providers]
+        results = await asyncio.gather(*tasks)
+        
+        source_data = {name: data for name, data in results if data}
+        
+        # 聚合策略
+        # 优先网易云歌词
+        if "netease" in source_data and source_data["netease"].get("lyrics"):
+            result.lyrics = source_data["netease"]["lyrics"]
+            result.source = "netease"
+        elif "qqmusic" in source_data and source_data["qqmusic"].get("lyrics"):
+            result.lyrics = source_data["qqmusic"]["lyrics"]
+            result.source = "qqmusic"
+        
+        # 优先QQ音乐封面和专辑
+        if "qqmusic" in source_data:
+            qq_data = source_data["qqmusic"]
+            if qq_data.get("cover_url"):
+                result.cover_url = qq_data["cover_url"]
+            if qq_data.get("album"):
+                result.album = qq_data["album"]
+            if qq_data.get("publish_time"):
+                result.publish_time = qq_data["publish_time"]
+        
+        # 网易云补全
+        if "netease" in source_data:
+            ne_data = source_data["netease"]
+            if not result.cover_url and ne_data.get("cover_url"):
+                result.cover_url = ne_data["cover_url"]
+            if not result.album and ne_data.get("album"):
+                result.album = ne_data["album"]
+            if not result.publish_time and ne_data.get("publish_time"):
+                result.publish_time = ne_data["publish_time"]
+        
+        # 获取封面大小（用于画质对比）
+        if result.cover_url:
+            try:
+                cover_data = await self.fetch_cover_data(result.cover_url)
+                if cover_data:
+                    result.cover_data = cover_data
+                    result.cover_size_bytes = len(cover_data)
+            except Exception as e:
+                logger.warning(f"获取封面大小失败: {e}")
+        
+        result.success = bool(result.lyrics or result.cover_url or result.album)
+        logger.info(f"✅ 聚合元数据完成: lyrics={bool(result.lyrics)}, cover={bool(result.cover_url)}, album={result.album}")
+        
+        return result

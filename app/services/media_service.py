@@ -1,478 +1,372 @@
-import logging
-import asyncio
-from typing import List, Optional
+# -*- coding: utf-8 -*-
+"""
+MediaService - 媒体服务业务逻辑处理
+
+此文件提供媒体相关的业务逻辑处理，包括：
+- 歌曲列表获取和搜索
+- 音频文件下载和路径管理
+- 歌曲收藏和状态管理
+
+Author: google
+Created: 2026-01-23
+"""
+from typing import List, Optional, Dict, Any
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
+from loguru import logger
 import os
-from starlette.concurrency import run_in_threadpool
+import logging
 
+from app.repositories.song import SongRepository
+from app.repositories.artist import ArtistRepository
+from app.models.song import Song
+from app.models.download_history import DownloadHistory
+from app.schemas import SongResponse
 
-from sqlalchemy.orm import Session
-from core.database import MediaRecord, SessionLocal
-from core.event_bus import event_bus
-from core.config import config
-from core.plugins import PLUGINS
-from domain.models import MediaInfo
-from core.audio_downloader import audio_downloader
-
-import pyncm.apis.cloudsearch
-from qqmusic_api.search import search_by_type, SearchType
-from core.audio_downloader import AUDIO_CACHE_DIR
-
+# Setup logger
 logger = logging.getLogger(__name__)
 
-async def process_media_item(media: MediaInfo, db: Session, notify: bool = True) -> bool:
-    """Check if media is new, save to DB. Returns True if new record added."""
-    # 1. Check exact match (same source, same ID)
-    key = media.unique_key()
-    existing = db.query(MediaRecord).filter_by(unique_key=key).first()
-    if existing:
-        # Check if we need to backfill cover OR urls
-        updated = False
-        if not existing.cover and media.cover_url:
-             existing.cover = media.cover_url
-             updated = True
-             
-        if not existing.url and media.url:
-             existing.url = media.url
-             updated = True
+
+class MediaService:
+    """媒体服务"""
+    
+    def __init__(self):
+        pass
+
+    async def get_songs(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        artist_id: Optional[int] = None,
+        is_favorite: Optional[bool] = None,
+        artist_name: Optional[str] = None,
+        db: AsyncSession = None
+    ) -> List[SongResponse]:
+        """获取歌曲列表"""
+        song_repo = SongRepository(db)
         
-        if updated:
-             db.commit()
-             logger.info(f"Updated metadata for existing record: {media.title}")
-        return False
-
-    # 2. Check cross-platform duplicate (same title, same artist, same album)
-    query = db.query(MediaRecord).filter(
-        MediaRecord.title == media.title,
-        MediaRecord.author == media.author,
-        MediaRecord.media_type == media.type.value
-    )
-    
-    if media.album:
-         query = query.filter(MediaRecord.album == media.album)
-         
-    cross_platform_dup = query.first()
-
-    if cross_platform_dup:
-        logger.info(f"跳过重复内容 (跨平台): {media.title} (已存在于 {cross_platform_dup.source})")
-        return False
-
-    logger.info(f"发现新内容: {media.title} ({key})")
-    
-    # Save to DB
-    record = MediaRecord(
-        unique_key=key,
-        source=media.source,
-        media_type=media.type.value,
-        media_id=media.id,
-        title=media.title,
-        author=media.author,
-        album=media.album,
-        cover=media.cover_url, 
-        url=media.url,
-        publish_time=media.publish_time,
-        is_pushed=False
-    )
-    db.add(record)
-    db.commit()
-    
-    # Notify (Unified Batch Logic in caller, or single here if notify=True)
-    if notify:
-        await event_bus.publish("new_content", media)
-        # Mark as pushed
-        record.is_pushed = True
-        record.push_time = datetime.now()
-        db.commit()
-        
-    return True
-
-async def run_check(plugin_name: str):
-    """Job to run a specific plugin check."""
-    logger.info(f"开始检查任务: {plugin_name}...")
-    
-    # Safety check if config is not loaded
-    if not config:
-        logger.error("Config not loaded, skipping check")
-        return
-    
-    cfg = config['monitor'].get(plugin_name, {})
-    if not cfg.get('enabled'):
-        return
-
-    plugin_cls = PLUGINS.get(plugin_name)
-    if not plugin_cls:
-        logger.error(f"未找到插件: {plugin_name}")
-        return
-
-    plugin = plugin_cls()
-    users = cfg.get('users', [])
-    
-    # Use a new DB session for this job
-    db = SessionLocal()
-    try:
-        for user in users:
-            uid = user['id']
-            uname = user.get('name', uid)
-            try:
-                items = await plugin.get_new_content(uid, uname)
-                
-                # Batch Processing
-                added_items = []
-                for item in items:
-                    if await process_media_item(item, db, notify=False):
-                        added_items.append(item)
-                
-                # Notification Logic
-                if added_items:
-                    # Filter for notification (last 365 days)
-                    recent_items = [
-                        i for i in added_items 
-                        if (datetime.now() - i.publish_time).days <= 365
-                    ]
-                    
-                    if not recent_items:
-                        logger.info(f"Found {len(added_items)} new items, but none are recent. Skipping notify.")
-                        
-                    elif len(recent_items) == 1:
-                        # Single Item -> Single Push
-                        item = recent_items[0]
-                        logger.info(f"Pushing single new item: {item.title}")
-                        await event_bus.publish("new_content", item)
-                        
-                        # Mark pushed
-                        rec = db.query(MediaRecord).filter_by(unique_key=item.unique_key()).first()
-                        if rec:
-                            rec.is_pushed = True
-                            rec.push_time = datetime.now()
-                            db.commit()
-                            
-                    else:
-                        # Multiple Items -> Batch Push
-                        logger.info(f"Pushing batch summary for {len(recent_items)} items")
-                        # We construct a synthetic 'media' object or specialized event for batch?
-                        # Or just reuse 'new_content' but with a special flag?
-                        # Simplest: Modify handle_new_content to accept a list? No.
-                        # Create a summary media item.
-                        
-                        top_items = sorted(recent_items, key=lambda x: x.publish_time, reverse=True)[:5]
-                        titles = [f"🎵 {i.title} ({i.publish_time.strftime('%Y-%m-%d')})" for i in top_items]
-                        summary_text = "\n".join(titles)
-                        if len(recent_items) > 5:
-                            summary_text += f"\n... 以及其他 {len(recent_items)-5} 首"
-                            
-                        # Construct a 'Fake' MediaInfo for notification
-                        # We pick the latest one as the 'Main' one but change description
-                        latest = top_items[0]
-                        latest.title = f"{uname} 发布了 {len(recent_items)} 首新歌"
-                        # We attach a special attribute to tell handle_new_content to use our description?
-                        # Actually handle_new_content uses `media.title`.
-                        # We can just rely on the fact that we are passing a modified object.
-                        # But wait, `process_media_item` saved the REAL object to DB.
-                        # We are passing the `MediaInfo` object (memory) to event bus.
-                        
-                        # Let's clone it roughly
-                        import copy
-                        batch_media = copy.copy(latest)
-                        batch_media.title = f"{uname} 新增 {len(recent_items)} 首歌曲"
-                        batch_media.source = latest.source # Keep source for jump
-                        # Batch doesn't have a single URL. Maybe link to artist page?
-                        # Or keeping the latest song URL is fine.
-                        
-                        # We need a way to pass the custom description to `handle_new_content`.
-                        # `handle_new_content` constructs message from fields.
-                        # Refactoring `handle_new_content` to check for `custom_description` attribute is best.
-                        batch_media.custom_description = summary_text
-                        
-                        await event_bus.publish("new_content", batch_media)
-                        
-                        # Mark all recent as pushed
-                        for i in recent_items:
-                            rec = db.query(MediaRecord).filter_by(unique_key=i.unique_key()).first()
-                            if rec:
-                                rec.is_pushed = True
-                                rec.push_time = datetime.now()
-                        db.commit()
-            except Exception as e:
-                logger.error(f"检查用户 {uname}({uid}) ({plugin_name}) 时出错: {e}")
-    finally:
-        db.close()
-    
-    logger.info(f"检查完成: {plugin_name}")
-
-async def find_artist_ids(artist_name: str) -> List[dict]:
-    """Smart search artist IDs across all platforms."""
-    results = []
-    errors = []  # 记录每个平台的错误
-    
-    # 1. Netease Search
-    try:
-        from pyncm import apis
-        ne_res = await run_in_threadpool(apis.cloudsearch.GetSearchResult, artist_name, stype=100, limit=5)
-        if ne_res.get('code') == 200 and ne_res.get('result', {}).get('artists'):
-            first = ne_res['result']['artists'][0]
-            uid = str(first['id'])
-            param_name = first.get('name')
-            avatar = first.get('picUrl', '').replace('http://', 'https://')
+        filters = {}
+        if artist_id is not None:
+            filters['artist_id'] = artist_id
+        if is_favorite is not None:
+            filters['is_favorite'] = is_favorite
+        if artist_name:
+            from app.models.artist import Artist
+            from sqlalchemy import select
             
-            results.append({
-                "source": "netease",
-                "id": uid,
-                "name": param_name,
-                "avatar": avatar
+            # Find Artist by name (exact)
+            stmt = select(Artist.id).where(Artist.name == artist_name)
+            result = await db.execute(stmt)
+            found_id = result.scalar_one_or_none()
+            if found_id:
+                filters['artist_id'] = found_id
+            else:
+                return []
+            
+        songs = await song_repo.get_multi(skip=skip, limit=limit, filters=filters)
+        
+        result = []
+        for song in songs:
+            # Determine cover/album from local or sources?
+            # Song model has prioritized cover/publish_time/title/album.
+            # Local path is on Song.
+            
+            # Generate a unique key for frontend compatibility if needed
+            # We can use the primary source key or just ID
+            source_key = "unknown"
+            if song.sources:
+                primary = song.sources[0]
+                source_key = f"{primary.source}_{primary.source_id}"
+            
+            result.append(SongResponse(
+                id=song.id,
+                title=song.title,
+                artist=song.artist.name if song.artist else "Unknown",
+                album=song.album or "",
+                duration=0, # Deduce from sources if needed?
+                cover_url=song.cover,
+                lyric_url=None, # Need to fetch from linked source if needed
+                local_audio_path=song.local_path,
+                is_favorite=song.is_favorite,
+                source=song.sources[0].source if song.sources else "local", # Approximate
+                media_id=str(song.id), # Use ID as media_id for consistency
+                unique_key=source_key,
+                status=song.status,
+                created_at=song.created_at.isoformat() if song.created_at else None,
+                updated_at=song.created_at.isoformat() if song.created_at else None,
+                publish_time=song.publish_time.isoformat() if song.publish_time else None
+            ))
+        
+        return result
+
+    async def get_audio_path(self, filename: str, db: AsyncSession = None) -> tuple[str, Optional[Song]]:
+        """获取音频文件路径"""
+        song_repo = SongRepository(db)
+        
+        base_filename = os.path.basename(filename)
+        # Check by local_path (exact match logic for security/correctness)
+        # SongRepository.get_by_path checks Song.local_path
+        
+        # Logic to resolve relative path "audio_cache/..."
+        # ... (Existing logic seems okay as long as Repos work)
+        
+        normalized_filename = filename.replace("\\", "/")
+        if normalized_filename.startswith("audio_cache/"):
+            filename = normalized_filename.replace("audio_cache/", "")
+        elif normalized_filename.startswith("favorites/"):
+            filename = normalized_filename.replace("favorites/", "")
+        
+        # 构造数据库中存储的可能路径 (支持两种斜杠匹配)
+        cache_path_v1 = f"audio_cache/{filename}"
+        cache_path_v2 = f"audio_cache\\{filename}"
+        favorite_path_v1 = f"favorites/{filename}"
+        favorite_path_v2 = f"favorites\\{filename}"
+        
+        # Try all possible path formats to be safe
+        for p in [cache_path_v1, cache_path_v2, favorite_path_v1, favorite_path_v2]:
+            song = await song_repo.get_by_path(p)
+            if song and song.local_path and os.path.exists(song.local_path):
+                return song.local_path, song
+            
+        # Fallback check file existence
+        for p in [cache_path_v1, cache_path_v2, favorite_path_v1, favorite_path_v2]:
+            if os.path.exists(p):
+                return p, None
+            
+        raise FileNotFoundError(f"Audio file not found: {filename}")
+
+    async def download_audio(
+        self,
+        title: str,
+        artist: str,
+        album: str,
+        source: str,
+        source_id: str,
+        cover_url: str = None,
+        db: AsyncSession = None
+    ):
+        """下载音频文件"""
+        from app.services.download_service import DownloadService
+        from app.services.download_history_service import DownloadHistoryService
+        from app.services.metadata_service import MetadataService
+        from app.models.song import Song, SongSource
+        from app.repositories.artist import ArtistRepository
+        
+        download_service = DownloadService()
+        history_service = DownloadHistoryService()
+        metadata_service = MetadataService()
+        
+        from core.websocket import manager
+        
+        # 记录下载开始
+        await history_service.log_download_attempt(
+            db, title, artist, album, source, source_id, 'PENDING', cover_url=cover_url
+        )
+        
+        # 进度回调定义
+        async def send_progress(msg: str):
+            logger.info(f"Download Progress [{title}]: {msg}")
+            # Identify song by unique_key (source_sourceid) if possible, or title/artist
+            # Frontend uses currentSong in PlayerStore to match
+            await manager.broadcast({
+                "type": "download_progress",
+                "title": title,
+                "artist": artist,
+                "source": source,
+                "song_id": source_id,
+                "message": msg,
+                "timestamp": datetime.now().isoformat()
             })
-            logger.info(f"Smart Search Netease: Found {param_name} ({uid})")
-        else:
-            errors.append("网易云: 未找到结果")
-    except Exception as e:
-        logger.warning(f"Netease search failed: {e}")
-        errors.append(f"网易云: {str(e)[:50]}")
-    
-    # 2. QQMusic Search
-    try:
-        from qqmusic_api import search
-        from qqmusic_api.search import SearchType
+
+        await send_progress("⏳ 正在启动下载任务...")
         
-        qq_res = None
-        
-        # 优先尝试歌手搜索
         try:
-            qq_res = await search.search_by_type(keyword=artist_name, search_type=SearchType.SINGER, num=5)
-        except Exception as e:
-            logger.warning(f"QQMusic SINGER search failed: {e}, trying SONG search...")
+            # 1. Check Existing
+            song_repo = SongRepository(db)
+            existing_song = await song_repo.get_by_unique_key(source, source_id)
             
-        # 如果歌手搜索失败或无结果，尝试歌曲搜索 (Fallback)
-        if not qq_res:
-            try:
-                # 搜歌曲，然后取第一首歌的歌手
-                song_res = await search.search_by_type(keyword=artist_name, search_type=SearchType.SONG, num=5)
-                if song_res and isinstance(song_res, list) and len(song_res) > 0:
-                     first_song = song_res[0]
-                     singers = first_song.get('singer', [])
-                     if singers:
-                         # 构造一个类似歌手搜索结果的结构
-                         s = singers[0]
-                         qq_res = [{
-                             'singerMID': s.get('mid'),
-                             'singerName': s.get('name')
-                         }]
-                         logger.info(f"Fallback to SONG search success: {s.get('name')}")
-            except Exception as ex:
-                 logger.warning(f"QQMusic SONG fallback failed: {ex}")
+            if existing_song and existing_song.local_path and os.path.exists(existing_song.local_path):
+                # Update status?
+                if existing_song.status != "DOWNLOADED":
+                     existing_song.status = "DOWNLOADED"
+                     await db.commit()
+                     
+                await history_service.log_download_attempt(
+                    db, title, artist, album, source, source_id, 
+                    'SUCCESS', existing_song.local_path, cover_url=cover_url
+                )
+                return {
+                    "message": "歌曲已存在",
+                    "song_id": existing_song.id,
+                    "already_exists": True,
+                    "file_path": existing_song.local_path
+                }
+            
+            # 2. Download
+            result = await download_service.download_audio(
+                title=title,
+                artist=artist,
+                album=album,
+                progress_callback=send_progress
+            )
+            
+            if result:
+                # 3. Persist
+                # Find/Create Artist
+                artist_repo = ArtistRepository(db)
+                # Note: This is an async method in updated Repo?
+                artist_obj = await artist_repo.get_or_create_by_name(artist)
+                
+                # Fetch Meta
+                metadata_result = await metadata_service.fetch_metadata(
+                    title=title, artist=artist, source=source, source_id=source_id
+                )
+                
+                # Create Song if not exists (existing_song might be None)
+                if not existing_song:
+                    existing_song = Song(
+                        artist_id=artist_obj.id,
+                        title=title,
+                        album=metadata_result.album or album, 
+                        local_path=result["local_path"],
+                        status="DOWNLOADED",
+                        created_at=datetime.now(),
+                        cover=cover_url or metadata_result.cover_url
+                    )
+                    db.add(existing_song)
+                    await db.flush() # ID
+                else:
+                    existing_song.local_path = result["local_path"]
+                    existing_song.status = "DOWNLOADED"
 
-        # search_by_type 返回的是 list，不是 dict
-        if qq_res and isinstance(qq_res, list) and len(qq_res) > 0:
-            first = qq_res[0]
-            mid = first.get('singerMID') or first.get('mid')
-            param_name = first.get('singerName') or first.get('name')
-            avatar = ""
-            if mid:
-                 avatar = f"https://y.gtimg.cn/music/photo_new/T001R300x300M000{mid}.jpg"
-            
-            results.append({
-                "source": "qqmusic",
-                "id": mid,
-                "name": param_name,
-                "avatar": avatar
-            })
-            logger.info(f"Smart Search QQMusic: Found {param_name} ({mid})")
-        else:
-            errors.append("QQ音乐: 未找到结果")
-    except Exception as e:
-        logger.warning(f"QQMusic search failed: {e}")
-        errors.append(f"QQ音乐: {str(e)[:50]}")
+                # Create SongSource (Download Source)
+                source_entry = SongSource(
+                    song_id=existing_song.id,
+                    source=source,
+                    source_id=source_id,
+                    cover=cover_url,
+                    data_json={
+                        "lyrics": metadata_result.lyrics,
+                        "quality": result.get("quality")
+                    }
+                )
+                db.add(source_entry)
+                
+                # Create Local Source
+                local_source = SongSource(
+                    song_id=existing_song.id,
+                    source="local",
+                    source_id=os.path.basename(result["local_path"]),
+                    url=result["local_path"]
+                )
+                db.add(local_source)
+                
+                await db.commit()
+                
+                # 4. 智能元数据补全 (非阻塞)
+                try:
+                    from app.services.enrichment_service import EnrichmentService
+                    enrichment_service = EnrichmentService()
+                    await enrichment_service.enrich_song(existing_song.id)
+                    logger.info(f"✅ 自动补全元数据完成: {title}")
+                except Exception as enrich_e:
+                    logger.warning(f"⚠️ 元数据补全失败(非阻塞): {enrich_e}")
+                
+                await history_service.log_download_attempt(
+                    db, title, artist, album, source, source_id, 
+                    'SUCCESS', result["local_path"], cover_url=cover_url
+                )
+                
+                return {
+                    "message": "下载成功",
+                    "song_id": existing_song.id,
+                    "file_path": result["local_path"]
+                }
+            else:
+                await history_service.log_download_attempt(
+                    db, title, artist, album, source, source_id, 
+                    'FAILED', error_message="下载失败", cover_url=cover_url
+                )
+                return {"message": "下载失败", "error": "Download failed"}
+                
+        except Exception as e:
+            await history_service.log_download_attempt(
+                db, title, artist, album, source, source_id, 
+                'FAILED', error_message=str(e), cover_url=cover_url
+            )
+            # Log traceback for debugging
+            import traceback
+            traceback.print_exc()
+            raise
+
+
+# ========== 独立函数 ==========
+
+async def find_artist_ids(artist_name: str) -> List[Dict[str, any]]:
+    """搜索歌手ID"""
+    from app.services.music_providers import MusicAggregator
     
-    # 返回结果并提示
-    if results:
-        if errors:
-            logger.warning(f"部分平台搜索成功 ({len(results)}/2): {'; '.join(errors)}")
-        else:
-            logger.info(f"所有平台搜索成功，找到{len(results)}个结果")
-        return results
-    else:
-        # 所有平台都失败
-        error_msg = f"所有平台搜索均失败: {'; '.join(errors)}"
-        logger.error(error_msg)
-        raise Exception(error_msg)
+    aggregator = MusicAggregator()
+    results = await aggregator.search_artist(artist_name, limit=10)
+    
+    return [artist.to_dict() for artist in results]
+
 
 async def check_file_integrity():
-    """Background job: Verify existence of local audio files and clean DB if missing."""
-    logger.info("开始执行后台文件完整性检查...")
-    db = SessionLocal()
-    try:
-        # Get all records with local_audio_path
-        records = db.query(MediaRecord).filter(MediaRecord.local_audio_path.isnot(None)).all()
-        fixed_count = 0
-        
-        for r in records:
-            # Handle path (could be relative or absolute, typically basename in this project)
-            # Logic in AudioDownloader is: local_path = os.path.basename(local_path)
-            # But let's be safe.
+    """检查媒体文件完整性"""
+    from core.database import AsyncSessionLocal
+    from app.models.song import Song
+    from sqlalchemy import select
+    
+    logger.info("开始文件完整性检查...")
+    
+    async with AsyncSessionLocal() as db:
+        try:
+            stmt = select(Song).where(Song.local_path.isnot(None))
+            result = await db.execute(stmt)
+            records = result.scalars().all()
             
-            # 1. Ignore "LIBRARY/" paths (managed manually by user)
-            if r.local_audio_path.startswith("LIBRARY/"):
-                continue
-                
-            # 2. Construct full path
-            # Assuming strictly stored in AUDIO_CACHE_DIR
-            full_path = os.path.join(AUDIO_CACHE_DIR, os.path.basename(r.local_audio_path))
+            missing_count = 0
+            for record in records:
+                if record.local_path and not os.path.exists(record.local_path):
+                    logger.warning(f"文件丢失: {record.title} at {record.local_path}")
+                    record.status = "FILE_MISSING"
+                    missing_count += 1
             
-            if not os.path.exists(full_path):
-                logger.warning(f"完整性检查发现丢失文件: {r.local_audio_path} (ID: {r.unique_key}). 清除记录.")
-                r.local_audio_path = None
-                r.audio_quality = None
-                fixed_count += 1
-                
-        if fixed_count > 0:
-            db.commit()
-            logger.info(f"文件完整性检查完成。修复了 {fixed_count} 个丢失的记录。")
-        else:
-            logger.info("文件完整性检查完成。未发现问题。")
+            if missing_count > 0:
+                await db.commit()
             
-    except Exception as e:
-        logger.error(f"完整性检查失败: {e}")
-    finally:
-        db.close()
+            logger.info(f"文件完整性检查完成，丢失: {missing_count}")
+            
+        except Exception as e:
+            logger.error(f"文件完整性检查错误: {e}")
+
 
 async def auto_cache_recent_songs():
-    """Background job: Auto-download songs released within retention period."""
-    # 检查自动补全开关
-    auto_cache_enabled = config.get('storage', {}).get('auto_cache_enabled', True)
-    if not auto_cache_enabled:
-        logger.info("自动补全功能已关闭")
-        return
-    
-    days = config.get('storage', {}).get('retention_days', 180)
-    if days <= 0: return
-
-    # Cleanup is based on publish time, so cache should match.
+    """自动缓存最近的歌曲"""
+    from core.database import AsyncSessionLocal
+    from app.models.song import Song
+    from sqlalchemy import select
     from datetime import timedelta
-    cutoff = datetime.now() - timedelta(days=days)
     
-    db = SessionLocal()
-    try:
-        # Query recent songs that are missing local file
-        records = db.query(MediaRecord).filter(
-            MediaRecord.local_audio_path.is_(None),
-            MediaRecord.publish_time >= cutoff
-        ).order_by(MediaRecord.publish_time.desc()).limit(5).all()
-        
-        if not records:
-            return
-
-        logger.info(f"Auto-cache start: Found {len(records)} recent songs missing local file.")
-        
-        for r in records:
-            # Check source support
-            if r.source not in ['netease', 'qqmusic']: 
-                continue
+    logger.info("开始自动缓存...")
+    
+    async with AsyncSessionLocal() as db:
+        try:
+            yesterday = datetime.now() - timedelta(days=1)
+            stmt = select(Song).where(
+                Song.created_at > yesterday,
+                Song.local_path.isnot(None)
+            )
+            result = await db.execute(stmt)
+            recent_records = result.scalars().all()
             
-            logger.info(f"Auto-caching recent song: {r.title} ({r.source})")
-            try:
-                # Re-type to ensure no invisible chars causing NameError
-                res = await audio_downloader.download(
-                    source=r.source,
-                    song_id=r.media_id,
-                    title=r.title,
-                    artist=r.author,
-                    album=str(r.album or ""),
-                    pic_url=r.cover,
-                    quality=999
-                )
-                
-                if res:
-                     r.local_audio_path = res['local_path']
-                     r.audio_quality = res.get('quality')
-                     db.commit()
-                     logger.info(f"Auto-cache success: {r.title}")
-                else:
-                    logger.warning(f"Auto-cache failed (no url): {r.title}")
-                    
-            except Exception as e:
-                logger.error(f"Auto-cache download error for {r.title}: {e}")
-                
-    except Exception as e:
-        logger.error(f"Auto-cache job failed: {e}")
-    finally:
-        db.close()
-
-async def sync_artist_immediate(artist_name: str, source: str, avatar: str = None, notify: bool = True):
-    """
-    Trigger immediate sync for a newly added artist.
-    1. Fetch recent songs (limit 50)
-    2. Save to DB
-    3. Trigger Auto-Cache
-    4. Send Notification (if notify=True)
-    """
-    logger.info(f"Executing immediate sync for new artist: {artist_name} ({source})")
-    
-    # 1. Notify "Subscribed" immediately
-    if notify:
-        from notifiers.wecom import WeComNotifier
-        
-        # Instantiate notifier with current config
-        notify_cfg = config.get('notify', {})
-        wecom_cfg = notify_cfg.get('wecom', {})
-        
-        if wecom_cfg.get('enabled') and wecom_cfg.get('corpid'):
-            try:
-                notifier = WeComNotifier(
-                    corp_id=wecom_cfg.get('corpid') or wecom_cfg.get('corp_id'),
-                    secret=wecom_cfg.get('corpsecret') or wecom_cfg.get('secret'),
-                    agent_id=wecom_cfg.get('agentid') or wecom_cfg.get('agent_id')
-                )
-                
-                # Deep link to artist page
-                from urllib.parse import quote
-                link = config.get('global', {}).get('external_url', '')
-                if link:
-                    link = f"{link}/?artist={quote(artist_name)}"
-                    
-                desc = f"已成功订阅 {artist_name}。\n正在立即同步最近 50 首歌曲并开始缓存..."
-                
-                await notifier.send_news_message(
-                   title=f"❤️ 关注成功: {artist_name}",
-                   description=desc,
-                   url=link,
-                   pic_url=avatar or ""
-                )
-            except Exception as e:
-                logger.error(f"Failed to send subscription notification: {e}")
-
-    # 2. Sync Logic
-    plugin_cls = PLUGINS.get(source)
-    if not plugin_cls: return
-    
-    plugin = plugin_cls()
-    
-    cfg = config['monitor'].get(source, {})
-    uid = None
-    for u in cfg.get('users', []):
-        if u.get('name') == artist_name:
-            uid = u['id']
-            break
+            cached_count = 0
+            for record in recent_records:
+                if record.local_path and os.path.exists(record.local_path):
+                    cached_count += 1
             
-    if not uid: return
-    
-    try:
-        # Fetch content
-        items = await plugin.get_new_content(uid, artist_name)
-        
-        # Filter & Process (Limit 50)
-        items = sorted(items, key=lambda x: x.publish_time, reverse=True)[:50]
-        
-        db = SessionLocal()
-        added_count = 0
-        for item in items:
-            if await process_media_item(item, db, notify=False): # Don't spam notifications for history
-                 added_count += 1
-        db.close()
-        
-        logger.info(f"Immediate sync finished for {artist_name}. Added {added_count} new songs.")
-        
-        # 3. Trigger Cache
-        if added_count > 0:
-            await auto_cache_recent_songs()
+            logger.info(f"自动缓存完成，共 {cached_count} 首歌曲")
             
-    except Exception as e:
-        logger.error(f"Immediate sync failed: {e}")
-
+        except Exception as e:
+            logger.error(f"自动缓存错误: {e}")

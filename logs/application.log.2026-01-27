@@ -1,0 +1,1409 @@
+2026-01-27 09:26:25,031 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 09:26:25,032 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 09:26:30,243 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 09:27:45,363 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 09:27:48,307 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 09:27:48,535 - app.services.music_providers.qqmusic_provider - ERROR - QQMusic search_artist failed: [2001] API 返回的响应 code 不符合预期
+2026-01-27 09:27:48,536 - app.services.music_providers.aggregator - INFO - Found 1 total results before deduplication
+2026-01-27 09:27:48,536 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 09:29:15,220 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 09:29:17,878 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 09:29:20,813 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 09:29:21,046 - app.services.music_providers.qqmusic_provider - ERROR - QQMusic search_artist failed: [2001] API 返回的响应 code 不符合预期
+2026-01-27 09:29:21,046 - app.services.music_providers.aggregator - INFO - Found 1 total results before deduplication
+2026-01-27 09:29:21,046 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 09:56:02,198 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 09:56:02,198 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 09:56:05,028 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 09:56:09,362 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 09:56:12,299 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 09:56:12,609 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 09:56:12,609 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 09:56:12,609 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 09:56:12,610 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 09:56:12,610 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:01:33,451 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:01:35,942 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:01:38,829 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:01:39,035 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:01:39,036 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:01:39,036 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:01:39,356 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 10:01:39,655 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 10:01:39,655 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 10:01:39,655 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:01:43,236 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:01:46,159 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:01:48,849 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:01:49,072 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:01:49,072 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:01:49,072 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:01:49,361 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 10:01:49,645 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 10:01:49,646 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 10:01:49,646 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:09:03,171 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:09:06,942 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:09:09,918 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:09:10,130 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:09:10,130 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:09:10,130 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:09:10,528 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 10:09:10,834 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 10:09:10,835 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 10:09:10,835 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:10:44,032 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:10:46,908 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:10:47,137 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:10:47,137 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:10:47,137 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:10:47,435 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 10:10:47,735 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 10:10:47,735 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 10:10:47,736 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:14:42,281 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:17:34,609 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:17:38,186 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:17:41,044 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:17:41,255 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:17:41,255 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:17:41,255 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:17:41,600 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 10:17:41,930 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 10:17:41,930 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 10:17:41,930 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:18:21,598 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:18:25,416 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:18:28,300 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:18:28,528 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:18:28,528 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:18:28,528 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:18:28,606 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 0 results for '宿羽阳'
+2026-01-27 10:18:28,689 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳' (after fallback)
+2026-01-27 10:18:28,690 - app.services.music_providers.aggregator - INFO - Found 1 total results before deduplication
+2026-01-27 10:18:28,690 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:18:42,487 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:18:45,387 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:18:45,599 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:18:45,599 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:18:45,599 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:18:45,875 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 10:18:46,188 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 10:18:46,188 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 10:18:46,188 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:18:55,603 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:18:58,334 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:18:58,566 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:18:58,566 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:18:58,566 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:18:58,654 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 0 results for '宿羽阳'
+2026-01-27 10:18:58,738 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳' (after fallback)
+2026-01-27 10:18:58,738 - app.services.music_providers.aggregator - INFO - Found 1 total results before deduplication
+2026-01-27 10:18:58,738 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:21:25,505 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:21:29,079 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 10:21:32,033 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 10:21:32,236 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 10:21:32,237 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 10:21:32,237 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 10:21:32,511 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 10:21:32,774 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 10:21:32,774 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 10:21:32,774 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 10:21:58,374 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 10:21:58,376 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 10:22:01,202 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 10:22:01,523 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 80 songs for artist 000GBnpV1IcEfl
+2026-01-27 10:22:01,524 - app.services.music_providers.aggregator - INFO - Filtered 66 dirty songs (Remix/Inst/DJ)
+2026-01-27 10:22:01,524 - app.services.music_providers.aggregator - INFO - Found 149 raw songs -> 83 valid -> 47 after deduplication
+2026-01-27 10:22:01,604 - app.services.library - INFO - Refreshed 宿羽阳: Added 47 new songs.
+2026-01-27 10:22:01,623 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:22:28,435 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:22:29,784 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:22:30,438 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:22:32,582 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:22:33,132 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:23:28,542 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:23:30,819 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:23:46,158 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:14,828 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:16,528 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:17,190 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:19,383 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:20,260 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:20,709 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:21,550 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:25:28,166 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:26:02,203 - app.services.media_service - INFO - 开始自动缓存...
+2026-01-27 10:26:02,205 - app.services.media_service - INFO - 自动缓存完成，共 0 首歌曲
+2026-01-27 10:27:40,716 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:28:12,582 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:28:12,591 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:28:38,970 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:28:38,977 - function.get_history - INFO - Function get_history executed successfully
+2026-01-27 10:44:32,430 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 10:44:32,430 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 10:56:40,878 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 10:56:40,879 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 10:57:03,679 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 10:57:03,680 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 10:59:54,009 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 10:59:54,009 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 11:00:01,152 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 11:00:01,154 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 11:00:04,200 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 11:00:04,486 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 80 songs for artist 000GBnpV1IcEfl
+2026-01-27 11:00:04,486 - app.services.music_providers.aggregator - INFO - Filtered 66 dirty songs (Remix/Inst/DJ)
+2026-01-27 11:00:04,486 - app.services.music_providers.aggregator - INFO - Found 149 raw songs -> 83 valid -> 47 after deduplication
+2026-01-27 11:00:04,515 - app.services.library - INFO - Refreshed 宿羽阳: Up to date.
+2026-01-27 11:00:30,824 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 11:00:33,529 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 11:00:33,708 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 0
+2026-01-27 11:00:33,709 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 0 results for '宿羽阳'
+2026-01-27 11:00:33,709 - app.services.music_providers.qqmusic_provider - INFO - QQMusic SINGER search returned no results. Falling back to SONG search.
+2026-01-27 11:00:34,076 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 10 results for '宿羽阳'
+2026-01-27 11:00:34,361 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 11:00:34,362 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 11:00:34,362 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 11:00:37,353 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 11:00:37,354 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 11:00:40,008 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 11:00:40,271 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 80 songs for artist 000GBnpV1IcEfl
+2026-01-27 11:00:40,271 - app.services.music_providers.aggregator - INFO - Filtered 66 dirty songs (Remix/Inst/DJ)
+2026-01-27 11:00:40,271 - app.services.music_providers.aggregator - INFO - Found 149 raw songs -> 83 valid -> 47 after deduplication
+2026-01-27 11:00:40,312 - app.services.library - INFO - Refreshed 宿羽阳: Added 47 new songs.
+2026-01-27 11:02:32,619 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 11:02:32,620 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 11:02:35,486 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 11:02:35,801 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 80 songs for artist 000GBnpV1IcEfl
+2026-01-27 11:02:35,801 - app.services.music_providers.aggregator - INFO - Filtered 66 dirty songs (Remix/Inst/DJ)
+2026-01-27 11:02:35,802 - app.services.music_providers.aggregator - INFO - Found 149 raw songs -> 83 valid -> 47 after deduplication
+2026-01-27 11:02:35,827 - app.services.library - INFO - Refreshed 宿羽阳: Up to date.
+2026-01-27 11:07:46,520 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 11:07:46,520 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 11:21:46,155 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 11:21:46,156 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 11:22:46,194 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:22:46,214 - app.services.library - INFO - Enriching metadata for: 稻香 - audio_cache/周杰伦 - 稻香.flac
+2026-01-27 11:22:46,215 - app.services.library - INFO -   🔍 元数据补全搜索: 稻香 - 周杰伦
+2026-01-27 11:22:46,215 - app.services.metadata_service - INFO - 获取元数据: 稻香 - 周杰伦
+2026-01-27 11:22:46,940 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '稻香 周杰伦'
+2026-01-27 11:22:46,942 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '稻香 周杰伦'
+2026-01-27 11:22:46,942 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 稻香
+2026-01-27 11:22:47,080 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 3328595679
+2026-01-27 11:22:47,081 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 稻香
+2026-01-27 11:22:47,227 - app.services.library - INFO -   ✅ FLAC封面内嵌成功
+2026-01-27 11:22:47,227 - app.services.library - INFO -   📝 内嵌歌词到文件: audio_cache/周杰伦 - 稻香.flac
+2026-01-27 11:22:47,231 - app.services.library - INFO -   ✅ FLAC歌词内嵌成功
+2026-01-27 11:22:47,237 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:22:47,239 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:22:47,241 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:22:47,242 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:23:46,173 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:23:46,174 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:23:46,175 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:23:46,176 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:23:46,177 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:23:46,178 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:24:46,179 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:24:46,180 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:24:46,181 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:24:46,182 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:24:46,183 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:24:46,183 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:25:46,186 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:25:46,187 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:25:46,188 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:25:46,189 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:25:46,189 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:25:46,190 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:26:46,175 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:26:46,176 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:26:46,177 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:26:46,178 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:26:46,179 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:26:46,180 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:27:20,397 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 11:27:20,397 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 11:28:20,425 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:28:20,439 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:28:20,440 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:28:20,441 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:28:20,442 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:28:20,443 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:29:20,422 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:29:20,423 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:29:20,424 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:29:20,425 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:29:20,426 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:29:20,427 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:30:20,431 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:30:20,432 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:30:20,433 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:30:20,434 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:30:20,435 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:30:20,435 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:31:20,419 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:31:20,420 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:31:20,421 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:31:20,422 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:31:20,423 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:31:20,423 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:32:20,420 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:32:20,422 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:32:20,422 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:32:20,423 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:32:20,424 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:32:20,425 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:33:20,426 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:33:20,427 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:33:20,428 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:33:20,429 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:33:20,430 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:33:20,431 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:34:20,430 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:34:20,431 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:34:20,432 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:34:20,433 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:34:20,434 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:34:20,434 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:35:20,418 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:35:20,419 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:35:20,420 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:35:20,420 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:35:20,421 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:35:20,422 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:36:20,426 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:36:20,427 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:36:20,428 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:36:20,429 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:36:20,430 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:36:20,431 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:37:20,427 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:37:20,428 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:37:20,429 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:37:20,429 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:37:20,430 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:37:20,431 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:38:20,423 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:38:20,425 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:38:20,426 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:38:20,427 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:38:20,428 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:38:20,429 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:39:20,423 - app.services.library - INFO - Enriching metadata for: 困 - audio_cache/任素汐 - 困.flac
+2026-01-27 11:39:20,424 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:39:20,426 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:39:20,427 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:39:20,428 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:39:20,429 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:40:20,420 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:40:20,421 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:40:20,423 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:40:20,424 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:40:20,425 - app.services.library - INFO - Enriching metadata for: 我不要原谅你 - audio_cache/宿羽阳 - 我不要原谅你.flac
+2026-01-27 11:40:20,426 - app.services.library - INFO -   🔍 元数据补全搜索: 我不要原谅你 - 宿羽阳
+2026-01-27 11:40:20,426 - app.services.metadata_service - INFO - 获取元数据: 我不要原谅你 - 宿羽阳
+2026-01-27 11:40:21,195 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '我不要原谅你 宿羽阳'
+2026-01-27 11:40:21,195 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 我不要原谅你
+2026-01-27 11:40:21,195 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '我不要原谅你 宿羽阳'
+2026-01-27 11:40:21,312 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 3336533365
+2026-01-27 11:40:21,312 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 我不要原谅你
+2026-01-27 11:40:21,438 - app.services.library - INFO -   ✅ FLAC封面内嵌成功
+2026-01-27 11:40:21,439 - app.services.library - INFO -   📝 内嵌歌词到文件: audio_cache/宿羽阳 - 我不要原谅你.flac
+2026-01-27 11:40:21,440 - app.services.library - INFO -   ✅ FLAC歌词内嵌成功
+2026-01-27 11:40:21,449 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:41:20,432 - app.services.library - INFO - Enriching metadata for: 你说你不知该怎么和妈妈说 - audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 11:41:20,433 - app.services.library - INFO - Enriching metadata for: 剜心一刀(伴奏) - audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 11:41:20,434 - app.services.library - INFO - Enriching metadata for: 剜心一刀 - audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 11:41:20,434 - app.services.library - INFO - Enriching metadata for: 回望VOL.01 (Live) - audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 11:41:20,436 - app.services.library - INFO - Enriching metadata for: 我不要原谅你（伴奏） - audio_cache/宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-27 11:41:20,438 - scheduler - INFO - [monitor] Enriched 5 songs.
+2026-01-27 11:41:45,718 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 11:41:45,718 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 11:42:45,748 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:43:45,737 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:44:45,747 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:45:45,744 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:46:45,738 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:47:45,737 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:48:45,738 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:49:45,741 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:50:45,747 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:51:45,743 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:52:45,734 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:53:45,746 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:54:45,744 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:55:45,754 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:56:45,746 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:57:45,746 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:58:45,754 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 11:59:45,736 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:00:45,733 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:01:45,737 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:02:45,740 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:03:45,747 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:04:45,746 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:05:45,743 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:06:45,742 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:07:45,736 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:08:45,740 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:09:41,203 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 12:09:41,203 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 12:09:59,202 - app.services.library - INFO - Refreshing library metadata for: 你说你不知该怎么和妈妈说
+2026-01-27 12:09:59,203 - app.services.metadata_service - INFO - 获取元数据: 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 12:10:00,019 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '你说你不知该怎么和妈妈说 宿羽阳'
+2026-01-27 12:10:00,020 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 你说你不知该怎么和妈妈说
+2026-01-27 12:10:00,053 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '你说你不知该怎么和妈妈说 宿羽阳'
+2026-01-27 12:10:00,181 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 546723295
+2026-01-27 12:10:00,181 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 你说你不知该怎么和妈妈说
+2026-01-27 12:10:00,234 - app.services.library - INFO - Refreshing library metadata for: 剜心一刀(伴奏)
+2026-01-27 12:10:00,234 - app.services.metadata_service - INFO - 获取元数据: 剜心一刀(伴奏) - 宿羽阳
+2026-01-27 12:10:00,377 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '剜心一刀(伴奏) 宿羽阳'
+2026-01-27 12:10:00,405 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '剜心一刀(伴奏) 宿羽阳'
+2026-01-27 12:10:00,405 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 剜心一刀(伴奏)
+2026-01-27 12:10:00,508 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2735946422
+2026-01-27 12:10:00,508 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 剜心一刀(伴奏)
+2026-01-27 12:10:00,678 - app.services.library - INFO - Refreshing library metadata for: 剜心一刀
+2026-01-27 12:10:00,678 - app.services.metadata_service - INFO - 获取元数据: 剜心一刀 - 宿羽阳
+2026-01-27 12:10:00,848 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '剜心一刀 宿羽阳'
+2026-01-27 12:10:00,849 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 剜心一刀
+2026-01-27 12:10:00,871 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '剜心一刀 宿羽阳'
+2026-01-27 12:10:01,006 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2735946421
+2026-01-27 12:10:01,006 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 剜心一刀
+2026-01-27 12:10:01,079 - app.services.library - INFO - Refreshing library metadata for: 回望VOL.01 (Live)
+2026-01-27 12:10:01,079 - app.services.metadata_service - INFO - 获取元数据: 回望VOL.01 (Live) - 宿羽阳
+2026-01-27 12:10:01,236 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '回望VOL.01 (Live) 宿羽阳'
+2026-01-27 12:10:01,236 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 回望VOL.01 (Live)
+2026-01-27 12:10:01,251 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '回望VOL.01 (Live) 宿羽阳'
+2026-01-27 12:10:01,379 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2630942965
+2026-01-27 12:10:01,379 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 回望VOL.01 (Live)
+2026-01-27 12:10:01,630 - app.services.library - INFO - Refreshing library metadata for: 我不要原谅你（伴奏）
+2026-01-27 12:10:01,631 - app.services.metadata_service - INFO - 获取元数据: 我不要原谅你（伴奏） - 宿羽阳
+2026-01-27 12:10:01,797 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '我不要原谅你（伴奏） 宿羽阳'
+2026-01-27 12:10:01,797 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 我不要原谅你（伴奏）
+2026-01-27 12:10:01,806 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '我不要原谅你（伴奏） 宿羽阳'
+2026-01-27 12:10:01,947 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 3336532414
+2026-01-27 12:10:01,947 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 我不要原谅你（伴奏）
+2026-01-27 12:10:01,999 - app.services.library - INFO - Refreshing library metadata for: 我偏要吻你破碎
+2026-01-27 12:10:02,000 - app.services.metadata_service - INFO - 获取元数据: 我偏要吻你破碎 - 宿羽阳
+2026-01-27 12:10:02,193 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '我偏要吻你破碎 宿羽阳'
+2026-01-27 12:10:02,193 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 我偏要吻你破碎
+2026-01-27 12:10:02,202 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '我偏要吻你破碎 宿羽阳'
+2026-01-27 12:10:02,331 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2752496285
+2026-01-27 12:10:02,331 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 我偏要吻你破碎
+2026-01-27 12:10:02,497 - app.services.library - INFO - Refreshing library metadata for: 折桨
+2026-01-27 12:10:02,497 - app.services.metadata_service - INFO - 获取元数据: 折桨 - 宿羽阳
+2026-01-27 12:10:02,711 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '折桨 宿羽阳'
+2026-01-27 12:10:02,711 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 折桨
+2026-01-27 12:10:02,747 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '折桨 宿羽阳'
+2026-01-27 12:10:02,879 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2704505087
+2026-01-27 12:10:02,879 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 折桨
+2026-01-27 12:10:02,965 - app.services.library - INFO - Refreshing library metadata for: 潮汐锁定
+2026-01-27 12:10:02,965 - app.services.metadata_service - INFO - 获取元数据: 潮汐锁定 - 宿羽阳
+2026-01-27 12:10:03,141 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '潮汐锁定 宿羽阳'
+2026-01-27 12:10:03,151 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '潮汐锁定 宿羽阳'
+2026-01-27 12:10:03,151 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 潮汐锁定
+2026-01-27 12:10:03,278 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1441065752
+2026-01-27 12:10:03,278 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 潮汐锁定
+2026-01-27 12:10:03,613 - app.services.library - INFO - Refreshing library metadata for: 祝你好梦
+2026-01-27 12:10:03,613 - app.services.metadata_service - INFO - 获取元数据: 祝你好梦 - 宿羽阳
+2026-01-27 12:10:03,792 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '祝你好梦 宿羽阳'
+2026-01-27 12:10:03,792 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 祝你好梦
+2026-01-27 12:10:03,792 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '祝你好梦 宿羽阳'
+2026-01-27 12:10:03,920 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2724075281
+2026-01-27 12:10:03,921 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 祝你好梦
+2026-01-27 12:10:04,028 - app.services.library - INFO - Refreshing library metadata for: 自己
+2026-01-27 12:10:04,028 - app.services.metadata_service - INFO - 获取元数据: 自己 - 宿羽阳
+2026-01-27 12:10:04,211 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '自己 宿羽阳'
+2026-01-27 12:10:04,211 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 自己
+2026-01-27 12:10:04,231 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '自己 宿羽阳'
+2026-01-27 12:10:04,361 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2613653002
+2026-01-27 12:10:04,361 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 自己
+2026-01-27 12:10:04,425 - app.services.library - INFO - Refreshing library metadata for: 不变的事
+2026-01-27 12:10:04,425 - app.services.metadata_service - INFO - 获取元数据: 不变的事 - 李剑青
+2026-01-27 12:10:04,617 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '不变的事 李剑青'
+2026-01-27 12:10:04,617 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 不变的事
+2026-01-27 12:10:04,621 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '不变的事 李剑青'
+2026-01-27 12:10:04,767 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 492144539
+2026-01-27 12:10:04,767 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 不变的事
+2026-01-27 12:10:04,883 - app.services.library - INFO - Refreshing library metadata for: 为你平定的天下
+2026-01-27 12:10:04,884 - app.services.metadata_service - INFO - 获取元数据: 为你平定的天下 - 李剑青
+2026-01-27 12:10:05,031 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '为你平定的天下 李剑青'
+2026-01-27 12:10:05,031 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 为你平定的天下
+2026-01-27 12:10:05,041 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '为你平定的天下 李剑青'
+2026-01-27 12:10:05,208 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 29457286
+2026-01-27 12:10:05,208 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 为你平定的天下
+2026-01-27 12:10:05,531 - app.services.library - INFO - Refreshing library metadata for: 乐人·live 李剑青《仍是异乡人》作品音乐会
+2026-01-27 12:10:05,532 - app.services.metadata_service - INFO - 获取元数据: 乐人·live 李剑青《仍是异乡人》作品音乐会 - 李剑青
+2026-01-27 12:10:05,712 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '乐人·live 李剑青《仍是异乡人》作品音乐会 李剑青'
+2026-01-27 12:10:05,712 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 乐人·live 李剑青《仍是异乡人》作品音乐会
+2026-01-27 12:10:05,800 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '乐人·live 李剑青《仍是异乡人》作品音乐会 李剑青'
+2026-01-27 12:10:05,930 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 486188223
+2026-01-27 12:10:05,930 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 乐人·live 李剑青《仍是异乡人》作品音乐会
+2026-01-27 12:10:06,020 - app.services.library - INFO - Refreshing library metadata for: 出城
+2026-01-27 12:10:06,020 - app.services.metadata_service - INFO - 获取元数据: 出城 - 李剑青
+2026-01-27 12:10:06,168 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '出城 李剑青'
+2026-01-27 12:10:06,168 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 出城
+2026-01-27 12:10:06,183 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '出城 李剑青'
+2026-01-27 12:10:06,312 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 479029087
+2026-01-27 12:10:06,312 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 出城
+2026-01-27 12:10:06,387 - app.services.library - INFO - Refreshing library metadata for: 匆匆 (瓦塔西老楠专属) (木吉他)
+2026-01-27 12:10:06,387 - app.services.metadata_service - INFO - 获取元数据: 匆匆 (瓦塔西老楠专属) (木吉他) - 李剑青
+2026-01-27 12:10:06,553 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '匆匆 (瓦塔西老楠专属) (木吉他) 李剑青'
+2026-01-27 12:10:06,554 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 匆匆 (瓦塔西老楠专属) (木吉他)
+2026-01-27 12:10:06,558 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '匆匆 (瓦塔西老楠专属) (木吉他) 李剑青'
+2026-01-27 12:10:06,719 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 29932455
+2026-01-27 12:10:06,720 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 匆匆 (瓦塔西老楠专属) (木吉他)
+2026-01-27 12:10:06,757 - app.services.library - INFO - Refreshing library metadata for: 匆匆
+2026-01-27 12:10:06,757 - app.services.metadata_service - INFO - 获取元数据: 匆匆 - 李剑青
+2026-01-27 12:10:06,907 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '匆匆 李剑青'
+2026-01-27 12:10:06,907 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 匆匆
+2026-01-27 12:10:06,947 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '匆匆 李剑青'
+2026-01-27 12:10:07,072 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 28138585
+2026-01-27 12:10:07,072 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 匆匆
+2026-01-27 12:10:07,192 - app.services.library - INFO - Refreshing library metadata for: 在家乡
+2026-01-27 12:10:07,193 - app.services.metadata_service - INFO - 获取元数据: 在家乡 - 李剑青
+2026-01-27 12:10:07,366 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '在家乡 李剑青'
+2026-01-27 12:10:07,366 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 在家乡
+2026-01-27 12:10:07,428 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '在家乡 李剑青'
+2026-01-27 12:10:07,564 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 492144538
+2026-01-27 12:10:07,564 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 在家乡
+2026-01-27 12:10:07,629 - app.services.library - INFO - Refreshing library metadata for: 女矿工排
+2026-01-27 12:10:07,629 - app.services.metadata_service - INFO - 获取元数据: 女矿工排 - 李剑青
+2026-01-27 12:10:07,789 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '女矿工排 李剑青'
+2026-01-27 12:10:07,789 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 女矿工排
+2026-01-27 12:10:07,814 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 2 results for '女矿工排 李剑青'
+2026-01-27 12:10:07,958 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1899931204
+2026-01-27 12:10:11,073 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_song: found 5 results for '女矿工排 李剑青'
+2026-01-27 12:10:11,265 - app.services.metadata_service - WARNING - 未能获取歌词: 女矿工排 - 李剑青
+2026-01-27 12:10:11,659 - app.services.library - INFO - Refreshing library metadata for: 姥姥
+2026-01-27 12:10:11,659 - app.services.metadata_service - INFO - 获取元数据: 姥姥 - 李剑青
+2026-01-27 12:10:11,831 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '姥姥 李剑青'
+2026-01-27 12:10:11,831 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 姥姥
+2026-01-27 12:10:11,836 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '姥姥 李剑青'
+2026-01-27 12:10:11,970 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 492144540
+2026-01-27 12:10:11,970 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 姥姥
+2026-01-27 12:10:12,043 - app.services.library - INFO - Refreshing library metadata for: 平凡故事
+2026-01-27 12:10:12,043 - app.services.metadata_service - INFO - 获取元数据: 平凡故事 - 李剑青
+2026-01-27 12:10:12,188 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '平凡故事 李剑青'
+2026-01-27 12:10:12,188 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 平凡故事
+2026-01-27 12:10:12,196 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '平凡故事 李剑青'
+2026-01-27 12:10:12,309 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 486188223
+2026-01-27 12:10:12,309 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 平凡故事
+2026-01-27 12:10:13,315 - app.services.library - INFO - Refreshing library metadata for: 找到你
+2026-01-27 12:10:13,315 - app.services.metadata_service - INFO - 获取元数据: 找到你 - 李剑青
+2026-01-27 12:10:13,498 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '找到你 李剑青'
+2026-01-27 12:10:13,498 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 找到你
+2026-01-27 12:10:13,545 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '找到你 李剑青'
+2026-01-27 12:10:13,673 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1312889876
+2026-01-27 12:10:13,673 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 找到你
+2026-01-27 12:10:13,849 - app.services.library - INFO - Refreshing library metadata for: 真心英雄
+2026-01-27 12:10:13,849 - app.services.metadata_service - INFO - 获取元数据: 真心英雄 - 李剑青
+2026-01-27 12:10:14,015 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '真心英雄 李剑青'
+2026-01-27 12:10:14,015 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 真心英雄
+2026-01-27 12:10:14,087 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '真心英雄 李剑青'
+2026-01-27 12:10:14,204 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 27901965
+2026-01-27 12:10:14,204 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 真心英雄
+2026-01-27 12:10:14,321 - app.services.library - INFO - Refreshing library metadata for: Test Song
+2026-01-27 12:10:14,321 - app.services.metadata_service - INFO - 获取元数据: Test Song - Test Artist
+2026-01-27 12:10:14,584 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for 'Test Song Test Artist'
+2026-01-27 12:10:14,584 - app.services.metadata_service - INFO - 从 netease 获取封面成功: Test Song
+2026-01-27 12:10:14,736 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for 'Test Song Test Artist'
+2026-01-27 12:10:14,880 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1395936609
+2026-01-27 12:10:14,880 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: Test Song
+2026-01-27 12:10:14,973 - app.services.library - INFO - Refreshing library metadata for: 暗恋是一个人的事
+2026-01-27 12:10:14,973 - app.services.metadata_service - INFO - 获取元数据: 暗恋是一个人的事 - 宿羽阳
+2026-01-27 12:10:15,098 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '暗恋是一个人的事 宿羽阳'
+2026-01-27 12:10:15,099 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 暗恋是一个人的事
+2026-01-27 12:10:15,132 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '暗恋是一个人的事 宿羽阳'
+2026-01-27 12:10:15,247 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1380075991
+2026-01-27 12:10:15,247 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 暗恋是一个人的事
+2026-01-27 12:10:15,307 - app.services.library - INFO - Refreshing library metadata for: 暗恋是一个人的事
+2026-01-27 12:10:15,307 - app.services.metadata_service - INFO - 获取元数据: 暗恋是一个人的事 - 宿羽阳
+2026-01-27 12:10:15,428 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '暗恋是一个人的事 宿羽阳'
+2026-01-27 12:10:15,428 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 暗恋是一个人的事
+2026-01-27 12:10:15,460 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '暗恋是一个人的事 宿羽阳'
+2026-01-27 12:10:15,576 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1380075991
+2026-01-27 12:10:15,576 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 暗恋是一个人的事
+2026-01-27 12:10:15,643 - app.services.library - INFO - Refreshing library metadata for: 十一种孤独
+2026-01-27 12:10:15,643 - app.services.metadata_service - INFO - 获取元数据: 十一种孤独 - 宿羽阳
+2026-01-27 12:10:15,786 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '十一种孤独 宿羽阳'
+2026-01-27 12:10:15,814 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '十一种孤独 宿羽阳'
+2026-01-27 12:10:15,814 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 十一种孤独
+2026-01-27 12:10:15,905 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 546722350
+2026-01-27 12:10:15,905 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 十一种孤独
+2026-01-27 12:10:15,936 - app.services.library - INFO - Refreshing library metadata for: 冬天时我喜欢靠近温暖的事
+2026-01-27 12:10:15,936 - app.services.metadata_service - INFO - 获取元数据: 冬天时我喜欢靠近温暖的事 - 宿羽阳
+2026-01-27 12:10:16,076 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '冬天时我喜欢靠近温暖的事 宿羽阳'
+2026-01-27 12:10:16,077 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 冬天时我喜欢靠近温暖的事
+2026-01-27 12:10:16,099 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '冬天时我喜欢靠近温暖的事 宿羽阳'
+2026-01-27 12:10:16,219 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 534385863
+2026-01-27 12:10:16,219 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 冬天时我喜欢靠近温暖的事
+2026-01-27 12:10:16,249 - app.services.library - INFO - Refreshing library metadata for: 愿她被世界温柔以待
+2026-01-27 12:10:16,249 - app.services.metadata_service - INFO - 获取元数据: 愿她被世界温柔以待 - 宿羽阳
+2026-01-27 12:10:16,418 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '愿她被世界温柔以待 宿羽阳'
+2026-01-27 12:10:16,418 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 愿她被世界温柔以待
+2026-01-27 12:10:16,418 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '愿她被世界温柔以待 宿羽阳'
+2026-01-27 12:10:16,562 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1854219857
+2026-01-27 12:10:16,562 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 愿她被世界温柔以待
+2026-01-27 12:10:16,619 - app.services.library - INFO - Refreshing library metadata for: 美丽人生
+2026-01-27 12:10:16,619 - app.services.metadata_service - INFO - 获取元数据: 美丽人生 - 宿羽阳
+2026-01-27 12:10:16,793 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '美丽人生 宿羽阳'
+2026-01-27 12:10:16,793 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 美丽人生
+2026-01-27 12:10:16,855 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '美丽人生 宿羽阳'
+2026-01-27 12:10:16,996 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2055836131
+2026-01-27 12:10:16,997 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 美丽人生
+2026-01-27 12:10:17,351 - app.services.library - INFO - Refreshing library metadata for: 给Lyon的歌
+2026-01-27 12:10:17,351 - app.services.metadata_service - INFO - 获取元数据: 给Lyon的歌 - 宿羽阳
+2026-01-27 12:10:17,497 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '给Lyon的歌 宿羽阳'
+2026-01-27 12:10:17,497 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 给Lyon的歌
+2026-01-27 12:10:17,543 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '给Lyon的歌 宿羽阳'
+2026-01-27 12:10:17,666 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 546722351
+2026-01-27 12:10:17,667 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 给Lyon的歌
+2026-01-27 12:10:17,739 - app.services.library - INFO - Refreshing library metadata for: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-27 12:10:17,739 - app.services.metadata_service - INFO - 获取元数据: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be) - 宿羽阳
+2026-01-27 12:10:17,897 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '请允许我成为你的夏季 (Summer For Thee, Grant I May Be) 宿羽阳'
+2026-01-27 12:10:17,897 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-27 12:10:17,921 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '请允许我成为你的夏季 (Summer For Thee, Grant I May Be) 宿羽阳'
+2026-01-27 12:10:18,042 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1458896058
+2026-01-27 12:10:18,042 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-27 12:10:18,119 - app.services.library - INFO - Refreshing library metadata for: 成人之美
+2026-01-27 12:10:18,119 - app.services.metadata_service - INFO - 获取元数据: 成人之美 - 宿羽阳
+2026-01-27 12:10:18,276 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '成人之美 宿羽阳'
+2026-01-27 12:10:18,276 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 成人之美
+2026-01-27 12:10:18,303 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '成人之美 宿羽阳'
+2026-01-27 12:10:18,422 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1358225619
+2026-01-27 12:10:18,422 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 成人之美
+2026-01-27 12:10:18,460 - app.services.library - INFO - Refreshing library metadata for: 赴约
+2026-01-27 12:10:18,461 - app.services.metadata_service - INFO - 获取元数据: 赴约 - 宿羽阳
+2026-01-27 12:10:18,603 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '赴约 宿羽阳'
+2026-01-27 12:10:18,604 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 赴约
+2026-01-27 12:10:18,634 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '赴约 宿羽阳'
+2026-01-27 12:10:18,762 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 518077051
+2026-01-27 12:10:18,762 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 赴约
+2026-01-27 12:10:18,796 - app.services.library - INFO - Refreshing library metadata for: 我不要原谅你
+2026-01-27 12:10:18,796 - app.services.metadata_service - INFO - 获取元数据: 我不要原谅你 - 宿羽阳
+2026-01-27 12:10:18,919 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '我不要原谅你 宿羽阳'
+2026-01-27 12:10:18,923 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '我不要原谅你 宿羽阳'
+2026-01-27 12:10:18,923 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 我不要原谅你
+2026-01-27 12:10:19,042 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 3336533365
+2026-01-27 12:10:19,043 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 我不要原谅你
+2026-01-27 12:10:19,103 - app.services.library - INFO - Refreshing library metadata for: 我爱你，这就是我的秘密
+2026-01-27 12:10:19,103 - app.services.metadata_service - INFO - 获取元数据: 我爱你，这就是我的秘密 - 宿羽阳
+2026-01-27 12:10:19,327 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '我爱你，这就是我的秘密 宿羽阳'
+2026-01-27 12:10:19,327 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '我爱你，这就是我的秘密 宿羽阳'
+2026-01-27 12:10:19,328 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 我爱你，这就是我的秘密
+2026-01-27 12:10:19,445 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1325711237
+2026-01-27 12:10:19,445 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 我爱你，这就是我的秘密
+2026-01-27 12:10:19,557 - app.services.library - INFO - Refreshing library metadata for: 祝你好梦
+2026-01-27 12:10:19,557 - app.services.metadata_service - INFO - 获取元数据: 祝你好梦 - 宿羽阳
+2026-01-27 12:10:19,689 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '祝你好梦 宿羽阳'
+2026-01-27 12:10:19,706 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '祝你好梦 宿羽阳'
+2026-01-27 12:10:19,706 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 祝你好梦
+2026-01-27 12:10:19,808 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2724075281
+2026-01-27 12:10:19,808 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 祝你好梦
+2026-01-27 12:10:19,880 - app.services.library - INFO - Refreshing library metadata for: 夏天最后的夜晚
+2026-01-27 12:10:19,880 - app.services.metadata_service - INFO - 获取元数据: 夏天最后的夜晚 - 宿羽阳
+2026-01-27 12:10:20,041 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '夏天最后的夜晚 宿羽阳'
+2026-01-27 12:10:20,041 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 夏天最后的夜晚
+2026-01-27 12:10:20,053 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '夏天最后的夜晚 宿羽阳'
+2026-01-27 12:10:20,175 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1879112530
+2026-01-27 12:10:20,175 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 夏天最后的夜晚
+2026-01-27 12:10:20,221 - app.services.library - INFO - Refreshing library metadata for: 导航
+2026-01-27 12:10:20,222 - app.services.metadata_service - INFO - 获取元数据: 导航 - 宿羽阳
+2026-01-27 12:10:20,387 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '导航 宿羽阳'
+2026-01-27 12:10:20,387 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 导航
+2026-01-27 12:10:20,396 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '导航 宿羽阳'
+2026-01-27 12:10:20,549 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1901954219
+2026-01-27 12:10:20,550 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 导航
+2026-01-27 12:10:20,660 - app.services.library - INFO - Refreshing library metadata for: 剜心一刀
+2026-01-27 12:10:20,660 - app.services.metadata_service - INFO - 获取元数据: 剜心一刀 - 宿羽阳
+2026-01-27 12:10:20,797 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '剜心一刀 宿羽阳'
+2026-01-27 12:10:20,797 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 剜心一刀
+2026-01-27 12:10:20,797 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '剜心一刀 宿羽阳'
+2026-01-27 12:10:20,921 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2735946421
+2026-01-27 12:10:20,921 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 剜心一刀
+2026-01-27 12:10:20,999 - app.services.library - INFO - Refreshing library metadata for: 重逢
+2026-01-27 12:10:20,999 - app.services.metadata_service - INFO - 获取元数据: 重逢 - 宿羽阳
+2026-01-27 12:10:21,167 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '重逢 宿羽阳'
+2026-01-27 12:10:21,167 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 重逢
+2026-01-27 12:10:21,240 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '重逢 宿羽阳'
+2026-01-27 12:10:21,363 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 486228042
+2026-01-27 12:10:21,363 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 重逢
+2026-01-27 12:10:21,418 - app.services.library - INFO - Refreshing library metadata for: 无人知晓的海
+2026-01-27 12:10:21,418 - app.services.metadata_service - INFO - 获取元数据: 无人知晓的海 - 宿羽阳
+2026-01-27 12:10:21,569 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '无人知晓的海 宿羽阳'
+2026-01-27 12:10:21,569 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 无人知晓的海
+2026-01-27 12:10:21,582 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '无人知晓的海 宿羽阳'
+2026-01-27 12:10:21,707 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2102107742
+2026-01-27 12:10:21,707 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 无人知晓的海
+2026-01-27 12:10:21,768 - app.services.library - INFO - Refreshing library metadata for: 西西弗斯
+2026-01-27 12:10:21,768 - app.services.metadata_service - INFO - 获取元数据: 西西弗斯 - 宿羽阳
+2026-01-27 12:10:21,912 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '西西弗斯 宿羽阳'
+2026-01-27 12:10:21,912 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 西西弗斯
+2026-01-27 12:10:21,931 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '西西弗斯 宿羽阳'
+2026-01-27 12:10:22,051 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1888426779
+2026-01-27 12:10:22,051 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 西西弗斯
+2026-01-27 12:10:22,098 - app.services.library - INFO - Refreshing library metadata for: 心想事成歌舞厅
+2026-01-27 12:10:22,098 - app.services.metadata_service - INFO - 获取元数据: 心想事成歌舞厅 - 宿羽阳
+2026-01-27 12:10:22,226 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '心想事成歌舞厅 宿羽阳'
+2026-01-27 12:10:22,227 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 心想事成歌舞厅
+2026-01-27 12:10:22,229 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '心想事成歌舞厅 宿羽阳'
+2026-01-27 12:10:22,350 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1915590863
+2026-01-27 12:10:22,351 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 心想事成歌舞厅
+2026-01-27 12:10:22,406 - app.services.library - INFO - Refreshing library metadata for: 蒙马特遗书
+2026-01-27 12:10:22,406 - app.services.metadata_service - INFO - 获取元数据: 蒙马特遗书 - 宿羽阳
+2026-01-27 12:10:22,554 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '蒙马特遗书 宿羽阳'
+2026-01-27 12:10:22,555 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 蒙马特遗书
+2026-01-27 12:10:22,565 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '蒙马特遗书 宿羽阳'
+2026-01-27 12:10:22,688 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1498103112
+2026-01-27 12:10:22,689 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 蒙马特遗书
+2026-01-27 12:10:22,757 - app.services.library - INFO - Refreshing library metadata for: 爱过
+2026-01-27 12:10:22,757 - app.services.metadata_service - INFO - 获取元数据: 爱过 - 宿羽阳
+2026-01-27 12:10:22,911 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '爱过 宿羽阳'
+2026-01-27 12:10:22,911 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 爱过
+2026-01-27 12:10:22,938 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '爱过 宿羽阳'
+2026-01-27 12:10:23,079 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 543987002
+2026-01-27 12:10:23,079 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 爱过
+2026-01-27 12:10:23,187 - app.services.library - INFO - Refreshing library metadata for: 潮汐锁定 (Tidal Locked)
+2026-01-27 12:10:23,188 - app.services.metadata_service - INFO - 获取元数据: 潮汐锁定 (Tidal Locked) - 宿羽阳
+2026-01-27 12:10:23,351 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '潮汐锁定 (Tidal Locked) 宿羽阳'
+2026-01-27 12:10:23,351 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 潮汐锁定 (Tidal Locked)
+2026-01-27 12:10:23,355 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '潮汐锁定 (Tidal Locked) 宿羽阳'
+2026-01-27 12:10:23,492 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1441065752
+2026-01-27 12:10:23,492 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 潮汐锁定 (Tidal Locked)
+2026-01-27 12:10:23,558 - app.services.library - INFO - Refreshing library metadata for: 再见旧时光
+2026-01-27 12:10:23,559 - app.services.metadata_service - INFO - 获取元数据: 再见旧时光 - 宿羽阳
+2026-01-27 12:10:23,730 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '再见旧时光 宿羽阳'
+2026-01-27 12:10:23,730 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 再见旧时光
+2026-01-27 12:10:23,734 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '再见旧时光 宿羽阳'
+2026-01-27 12:10:23,864 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1318377622
+2026-01-27 12:10:23,865 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 再见旧时光
+2026-01-27 12:10:23,920 - app.services.library - INFO - Refreshing library metadata for: 像少年啦飞驰
+2026-01-27 12:10:23,920 - app.services.metadata_service - INFO - 获取元数据: 像少年啦飞驰 - 宿羽阳
+2026-01-27 12:10:24,083 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '像少年啦飞驰 宿羽阳'
+2026-01-27 12:10:24,083 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 像少年啦飞驰
+2026-01-27 12:10:24,174 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '像少年啦飞驰 宿羽阳'
+2026-01-27 12:10:24,292 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 523860642
+2026-01-27 12:10:24,292 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 像少年啦飞驰
+2026-01-27 12:10:24,322 - app.services.library - INFO - Refreshing library metadata for: 你说你不知该怎么和妈妈说
+2026-01-27 12:10:24,322 - app.services.metadata_service - INFO - 获取元数据: 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 12:10:24,505 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '你说你不知该怎么和妈妈说 宿羽阳'
+2026-01-27 12:10:24,586 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '你说你不知该怎么和妈妈说 宿羽阳'
+2026-01-27 12:10:24,586 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 你说你不知该怎么和妈妈说
+2026-01-27 12:10:24,635 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 546723295
+2026-01-27 12:10:24,635 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 你说你不知该怎么和妈妈说
+2026-01-27 12:10:41,230 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:11:41,223 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:12:41,230 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:13:41,233 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:14:41,223 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:15:41,217 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:16:41,230 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:17:41,219 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:18:41,229 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:19:41,226 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:20:41,226 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:21:41,227 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 12:22:41,234 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:02:37,450 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 13:02:37,451 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 13:03:23,648 - app.services.library - INFO - Refreshing library metadata for: Test Song
+2026-01-27 13:03:23,649 - app.services.metadata_service - INFO - 获取元数据: Test Song - Test Artist
+2026-01-27 13:03:24,484 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for 'Test Song Test Artist'
+2026-01-27 13:03:24,484 - app.services.metadata_service - INFO - 从 netease 获取封面成功: Test Song
+2026-01-27 13:03:24,635 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for 'Test Song Test Artist'
+2026-01-27 13:03:24,828 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1395936609
+2026-01-27 13:03:24,829 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: Test Song
+2026-01-27 13:03:24,875 - app.services.library - INFO - Refreshing library metadata for: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-27 13:03:24,876 - app.services.metadata_service - INFO - 获取元数据: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be) - 宿羽阳
+2026-01-27 13:03:25,012 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '请允许我成为你的夏季 (Summer For Thee, Grant I May Be) 宿羽阳'
+2026-01-27 13:03:25,012 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-27 13:03:25,103 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '请允许我成为你的夏季 (Summer For Thee, Grant I May Be) 宿羽阳'
+2026-01-27 13:03:25,228 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1458896058
+2026-01-27 13:03:25,228 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 请允许我成为你的夏季 (Summer For Thee, Grant I May Be)
+2026-01-27 13:03:25,303 - app.services.library - INFO - Refreshing library metadata for: 潮汐锁定 (Tidal Locked)
+2026-01-27 13:03:25,303 - app.services.metadata_service - INFO - 获取元数据: 潮汐锁定 (Tidal Locked) - 宿羽阳
+2026-01-27 13:03:25,435 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '潮汐锁定 (Tidal Locked) 宿羽阳'
+2026-01-27 13:03:25,435 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 潮汐锁定 (Tidal Locked)
+2026-01-27 13:03:25,466 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '潮汐锁定 (Tidal Locked) 宿羽阳'
+2026-01-27 13:03:25,601 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1441065752
+2026-01-27 13:03:25,601 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 潮汐锁定 (Tidal Locked)
+2026-01-27 13:03:25,690 - app.services.library - INFO - Refreshing library metadata for: 爱人呢
+2026-01-27 13:03:25,690 - app.services.metadata_service - INFO - 获取元数据: 爱人呢 - 宿羽阳
+2026-01-27 13:03:25,836 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '爱人呢 宿羽阳'
+2026-01-27 13:03:25,836 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 爱人呢
+2026-01-27 13:03:25,861 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '爱人呢 宿羽阳'
+2026-01-27 13:03:25,990 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2089589698
+2026-01-27 13:03:25,991 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 爱人呢
+2026-01-27 13:03:26,081 - app.services.library - INFO - Refreshing library metadata for: 自己
+2026-01-27 13:03:26,081 - app.services.metadata_service - INFO - 获取元数据: 自己 - 宿羽阳
+2026-01-27 13:03:26,252 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '自己 宿羽阳'
+2026-01-27 13:03:26,252 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 自己
+2026-01-27 13:03:26,330 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '自己 宿羽阳'
+2026-01-27 13:03:26,465 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2613653002
+2026-01-27 13:03:26,465 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 自己
+2026-01-27 13:03:26,516 - app.services.library - INFO - Refreshing library metadata for: 十一种孤独 (Live)
+2026-01-27 13:03:26,516 - app.services.metadata_service - INFO - 获取元数据: 十一种孤独 (Live) - 宿羽阳
+2026-01-27 13:03:26,707 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '十一种孤独 (Live) 宿羽阳'
+2026-01-27 13:03:26,707 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 十一种孤独 (Live)
+2026-01-27 13:03:26,759 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '十一种孤独 (Live) 宿羽阳'
+2026-01-27 13:03:26,887 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2630942965
+2026-01-27 13:03:26,887 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 十一种孤独 (Live)
+2026-01-27 13:03:26,999 - app.services.library - INFO - Refreshing library metadata for: 旱鸭
+2026-01-27 13:03:26,999 - app.services.metadata_service - INFO - 获取元数据: 旱鸭 - 宿羽阳
+2026-01-27 13:03:27,174 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '旱鸭 宿羽阳'
+2026-01-27 13:03:27,174 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 旱鸭
+2026-01-27 13:03:27,175 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '旱鸭 宿羽阳'
+2026-01-27 13:03:27,320 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1325203205
+2026-01-27 13:03:27,321 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 旱鸭
+2026-01-27 13:03:27,384 - app.services.library - INFO - Refreshing library metadata for: 如果你不开心就来碗螺蛳粉
+2026-01-27 13:03:27,384 - app.services.metadata_service - INFO - 获取元数据: 如果你不开心就来碗螺蛳粉 - 宿羽阳
+2026-01-27 13:03:27,531 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '如果你不开心就来碗螺蛳粉 宿羽阳'
+2026-01-27 13:03:27,532 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 如果你不开心就来碗螺蛳粉
+2026-01-27 13:03:27,547 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '如果你不开心就来碗螺蛳粉 宿羽阳'
+2026-01-27 13:03:27,670 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1333160950
+2026-01-27 13:03:27,670 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 如果你不开心就来碗螺蛳粉
+2026-01-27 13:03:27,704 - app.services.library - INFO - Refreshing library metadata for: 无人岛屿
+2026-01-27 13:03:27,704 - app.services.metadata_service - INFO - 获取元数据: 无人岛屿 - 宿羽阳
+2026-01-27 13:03:27,859 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '无人岛屿 宿羽阳'
+2026-01-27 13:03:27,859 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 无人岛屿
+2026-01-27 13:03:27,872 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '无人岛屿 宿羽阳'
+2026-01-27 13:03:28,006 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1973027177
+2026-01-27 13:03:28,006 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 无人岛屿
+2026-01-27 13:03:28,059 - app.services.library - INFO - Refreshing library metadata for: 她在遥远星
+2026-01-27 13:03:28,059 - app.services.metadata_service - INFO - 获取元数据: 她在遥远星 - 宿羽阳
+2026-01-27 13:03:28,223 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '她在遥远星 宿羽阳'
+2026-01-27 13:03:28,223 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 她在遥远星
+2026-01-27 13:03:28,240 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '她在遥远星 宿羽阳'
+2026-01-27 13:03:28,370 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1948456349
+2026-01-27 13:03:28,370 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 她在遥远星
+2026-01-27 13:03:28,416 - app.services.library - INFO - Refreshing library metadata for: 别再为他掉眼泪
+2026-01-27 13:03:28,416 - app.services.metadata_service - INFO - 获取元数据: 别再为他掉眼泪 - 宿羽阳
+2026-01-27 13:03:28,580 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '别再为他掉眼泪 宿羽阳'
+2026-01-27 13:03:28,580 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 别再为他掉眼泪
+2026-01-27 13:03:28,594 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '别再为他掉眼泪 宿羽阳'
+2026-01-27 13:03:28,758 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1913841133
+2026-01-27 13:03:28,758 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 别再为他掉眼泪
+2026-01-27 13:03:28,808 - app.services.library - INFO - Refreshing library metadata for: 无用浪漫
+2026-01-27 13:03:28,808 - app.services.metadata_service - INFO - 获取元数据: 无用浪漫 - 宿羽阳
+2026-01-27 13:03:28,971 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '无用浪漫 宿羽阳'
+2026-01-27 13:03:28,972 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 无用浪漫
+2026-01-27 13:03:28,980 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '无用浪漫 宿羽阳'
+2026-01-27 13:03:29,125 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1973027248
+2026-01-27 13:03:29,125 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 无用浪漫
+2026-01-27 13:03:29,171 - app.services.library - INFO - Refreshing library metadata for: Purple Girl
+2026-01-27 13:03:29,171 - app.services.metadata_service - INFO - 获取元数据: Purple Girl - 宿羽阳
+2026-01-27 13:03:29,334 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for 'Purple Girl 宿羽阳'
+2026-01-27 13:03:29,335 - app.services.metadata_service - INFO - 从 netease 获取封面成功: Purple Girl
+2026-01-27 13:03:29,342 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for 'Purple Girl 宿羽阳'
+2026-01-27 13:03:29,480 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1973027211
+2026-01-27 13:03:29,481 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: Purple Girl
+2026-01-27 13:03:29,526 - app.services.library - INFO - Refreshing library metadata for: 你说你不知该怎么和妈妈说 (Live)
+2026-01-27 13:03:29,526 - app.services.metadata_service - INFO - 获取元数据: 你说你不知该怎么和妈妈说 (Live) - 宿羽阳
+2026-01-27 13:03:29,671 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '你说你不知该怎么和妈妈说 (Live) 宿羽阳'
+2026-01-27 13:03:29,672 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 你说你不知该怎么和妈妈说 (Live)
+2026-01-27 13:03:29,678 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 2 results for '你说你不知该怎么和妈妈说 (Live) 宿羽阳'
+2026-01-27 13:03:29,817 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2630945649
+2026-01-27 13:03:29,817 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 你说你不知该怎么和妈妈说 (Live)
+2026-01-27 13:03:29,881 - app.services.library - INFO - Refreshing library metadata for: 潮汐锁定 (Live)
+2026-01-27 13:03:29,881 - app.services.metadata_service - INFO - 获取元数据: 潮汐锁定 (Live) - 宿羽阳
+2026-01-27 13:03:30,080 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '潮汐锁定 (Live) 宿羽阳'
+2026-01-27 13:03:30,119 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '潮汐锁定 (Live) 宿羽阳'
+2026-01-27 13:03:30,119 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 潮汐锁定 (Live)
+2026-01-27 13:03:30,268 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2630945648
+2026-01-27 13:03:30,268 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 潮汐锁定 (Live)
+2026-01-27 13:03:30,309 - app.services.library - INFO - Refreshing library metadata for: 我偏要吻你破碎
+2026-01-27 13:03:30,309 - app.services.metadata_service - INFO - 获取元数据: 我偏要吻你破碎 - 宿羽阳
+2026-01-27 13:03:30,506 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '我偏要吻你破碎 宿羽阳'
+2026-01-27 13:03:30,506 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 我偏要吻你破碎
+2026-01-27 13:03:30,636 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '我偏要吻你破碎 宿羽阳'
+2026-01-27 13:03:30,765 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2752496285
+2026-01-27 13:03:30,765 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 我偏要吻你破碎
+2026-01-27 13:03:30,823 - app.services.library - INFO - Refreshing library metadata for: 折桨
+2026-01-27 13:03:30,823 - app.services.metadata_service - INFO - 获取元数据: 折桨 - 宿羽阳
+2026-01-27 13:03:30,993 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '折桨 宿羽阳'
+2026-01-27 13:03:30,994 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 折桨
+2026-01-27 13:03:31,056 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '折桨 宿羽阳'
+2026-01-27 13:03:31,215 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2735923320
+2026-01-27 13:03:31,216 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 折桨
+2026-01-27 13:03:31,247 - app.services.library - INFO - Refreshing library metadata for: 踏破风的少年
+2026-01-27 13:03:31,247 - app.services.metadata_service - INFO - 获取元数据: 踏破风的少年 - 宿羽阳
+2026-01-27 13:03:31,476 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '踏破风的少年 宿羽阳'
+2026-01-27 13:03:31,476 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 踏破风的少年
+2026-01-27 13:03:31,500 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '踏破风的少年 宿羽阳'
+2026-01-27 13:03:31,647 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2646909899
+2026-01-27 13:03:31,647 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 踏破风的少年
+2026-01-27 13:03:31,724 - app.services.library - INFO - Refreshing library metadata for: 奔向浪漫
+2026-01-27 13:03:31,724 - app.services.metadata_service - INFO - 获取元数据: 奔向浪漫 - 宿羽阳
+2026-01-27 13:03:31,911 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '奔向浪漫 宿羽阳'
+2026-01-27 13:03:31,911 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 奔向浪漫
+2026-01-27 13:03:31,932 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 4 results for '奔向浪漫 宿羽阳'
+2026-01-27 13:03:32,063 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 2080151433
+2026-01-27 13:03:32,063 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 奔向浪漫
+2026-01-27 13:03:32,196 - app.services.library - INFO - Refreshing library metadata for: 请允许我成为你的夏季
+2026-01-27 13:03:32,196 - app.services.metadata_service - INFO - 获取元数据: 请允许我成为你的夏季 - 宿羽阳
+2026-01-27 13:03:32,368 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '请允许我成为你的夏季 宿羽阳'
+2026-01-27 13:03:32,369 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 请允许我成为你的夏季
+2026-01-27 13:03:32,400 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '请允许我成为你的夏季 宿羽阳'
+2026-01-27 13:03:32,535 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1458896058
+2026-01-27 13:03:32,535 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 请允许我成为你的夏季
+2026-01-27 13:03:32,584 - app.services.library - INFO - Refreshing library metadata for: 潮汐锁定
+2026-01-27 13:03:32,585 - app.services.metadata_service - INFO - 获取元数据: 潮汐锁定 - 宿羽阳
+2026-01-27 13:03:32,708 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '潮汐锁定 宿羽阳'
+2026-01-27 13:03:32,708 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 潮汐锁定
+2026-01-27 13:03:32,735 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '潮汐锁定 宿羽阳'
+2026-01-27 13:03:32,868 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1441065752
+2026-01-27 13:03:32,868 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 潮汐锁定
+2026-01-27 13:03:32,918 - app.services.library - INFO - Refreshing library metadata for: 旱鸭 (Live)
+2026-01-27 13:03:32,918 - app.services.metadata_service - INFO - 获取元数据: 旱鸭 (Live) - 宿羽阳
+2026-01-27 13:03:33,104 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '旱鸭 (Live) 宿羽阳'
+2026-01-27 13:03:33,104 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '旱鸭 (Live) 宿羽阳'
+2026-01-27 13:03:33,106 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 旱鸭 (Live)
+2026-01-27 13:03:33,256 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1325203205
+2026-01-27 13:03:33,256 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 旱鸭 (Live)
+2026-01-27 13:03:33,324 - app.services.library - INFO - Refreshing library metadata for: 踏破风的少年｜2023TMEA腾讯音乐娱乐盛典
+2026-01-27 13:03:33,324 - app.services.metadata_service - INFO - 获取元数据: 踏破风的少年｜2023TMEA腾讯音乐娱乐盛典 - 宿羽阳
+2026-01-27 13:03:33,659 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '踏破风的少年｜2023TMEA腾讯音乐娱乐盛典 宿羽阳'
+2026-01-27 13:03:33,659 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 踏破风的少年｜2023TMEA腾讯音乐娱乐盛典
+2026-01-27 13:03:33,664 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '踏破风的少年｜2023TMEA腾讯音乐娱乐盛典 宿羽阳'
+2026-01-27 13:03:33,785 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1916476909
+2026-01-27 13:03:33,786 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 踏破风的少年｜2023TMEA腾讯音乐娱乐盛典
+2026-01-27 13:03:33,847 - app.services.library - INFO - Refreshing library metadata for: 踏破风的少年 (2023第四届TMEA腾讯音乐盛典现场)
+2026-01-27 13:03:33,847 - app.services.metadata_service - INFO - 获取元数据: 踏破风的少年 (2023第四届TMEA腾讯音乐盛典现场) - 宿羽阳
+2026-01-27 13:03:34,211 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '踏破风的少年 (2023第四届TMEA腾讯音乐盛典现场) 宿羽阳'
+2026-01-27 13:03:34,211 - app.services.metadata_service - INFO - 从 netease 获取封面成功: 踏破风的少年 (2023第四届TMEA腾讯音乐盛典现场)
+2026-01-27 13:03:34,245 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '踏破风的少年 (2023第四届TMEA腾讯音乐盛典现场) 宿羽阳'
+2026-01-27 13:03:34,367 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1916476909
+2026-01-27 13:03:34,367 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: 踏破风的少年 (2023第四届TMEA腾讯音乐盛典现场)
+2026-01-27 13:03:34,423 - app.services.library - INFO - Refreshing library metadata for: #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 13:03:34,423 - app.services.metadata_service - INFO - 获取元数据: #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手 - 宿羽阳
+2026-01-27 13:03:34,796 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 5 results for '#宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手 宿羽阳'
+2026-01-27 13:03:34,832 - app.services.music_providers.netease_provider - INFO - Netease search_song: found 1 results for '#宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手 宿羽阳'
+2026-01-27 13:03:34,833 - app.services.metadata_service - INFO - 从 netease 获取封面成功: #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 13:03:34,928 - app.services.music_providers.netease_provider - INFO - Netease get_song_metadata: success for song 1458896058
+2026-01-27 13:03:34,929 - app.services.metadata_service - INFO - 从 netease 获取歌词成功: #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 13:03:37,489 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:03:43,600 - app.routers.media - INFO - 收到下载请求: #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手 - 宿羽阳
+2026-01-27 13:04:37,473 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:05:37,474 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:06:37,468 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:07:37,471 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:08:37,471 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:09:37,482 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:10:37,465 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:11:37,474 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:12:37,482 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:13:37,482 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:14:37,469 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:15:37,472 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:16:37,473 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:17:37,468 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:18:37,469 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:19:37,479 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:20:37,472 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:21:37,477 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:22:37,486 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:22:42,548 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 13:22:42,549 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 13:23:41,477 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 13:23:41,478 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 13:24:41,532 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:25:41,510 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:26:41,511 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:27:41,502 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:28:41,506 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:29:41,509 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:30:41,508 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:31:41,495 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:32:41,498 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:33:41,501 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:34:41,504 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:35:41,506 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:36:41,498 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:37:38,631 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 13:37:38,632 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 13:38:38,675 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:39:38,658 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:40:38,644 - app.services.library - INFO - Found new local file: audio_cache/Test Artist - Test Song.flac
+2026-01-27 13:40:38,686 - app.services.library - INFO -   📝 已添加: Test Song (状态: PENDING_METADATA)
+2026-01-27 13:40:38,703 - scheduler - INFO - [monitor] Scanned: Found 1 new files.
+2026-01-27 13:40:38,703 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:41:38,648 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:42:38,655 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:43:38,649 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:44:38,652 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:45:38,656 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 13:45:51,484 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 13:45:51,485 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 13:46:38,663 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:37:03,058 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 14:37:03,059 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 14:38:03,090 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:39:03,077 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:40:03,089 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:41:03,075 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:42:03,088 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:43:03,090 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:44:03,087 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:45:03,084 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:46:03,082 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:47:03,082 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:48:03,081 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:49:03,087 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:50:03,075 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:51:03,086 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:52:03,090 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:53:03,084 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:54:03,078 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:55:03,083 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:56:03,082 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:57:03,076 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:58:03,089 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:59:03,084 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 14:59:14,729 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 14:59:14,730 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 15:00:14,765 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 15:01:14,755 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 15:01:30,882 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 15:01:33,918 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 15:01:34,266 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 15:01:34,267 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 15:01:34,267 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 15:01:34,267 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 15:01:34,267 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 15:01:37,086 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 15:01:37,088 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 15:01:39,890 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 15:01:40,204 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 15:01:40,204 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 15:01:40,205 - app.services.music_providers.aggregator - INFO - Filtered 66 dirty songs (Remix/Inst/DJ)
+2026-01-27 15:01:40,205 - app.services.music_providers.aggregator - INFO - Found 148 raw songs -> 82 valid -> 46 after deduplication
+2026-01-27 15:01:40,260 - app.services.library - INFO - Refreshed 宿羽阳: Added 46 new songs.
+2026-01-27 15:02:14,737 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 15:02:14,750 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 困 - 任素汐
+2026-01-27 15:02:14,774 - app.services.library - INFO -   📝 已添加: 困 (状态: DOWNLOADED)
+2026-01-27 15:02:14,775 - app.services.library - INFO - Found new local file: audio_cache/周杰伦 - 稻香.flac
+2026-01-27 15:02:14,776 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 稻香 - 周杰伦
+2026-01-27 15:02:14,796 - app.services.library - INFO -   📝 已添加: 稻香 (状态: DOWNLOADED)
+2026-01-27 15:02:14,797 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:02:14,798 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:02:14,799 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:03:14,743 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:03:14,744 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:03:14,745 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:04:14,734 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:04:14,735 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:04:14,736 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:05:14,737 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:05:14,738 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:05:14,739 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:06:14,733 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:06:14,734 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:06:14,735 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:07:14,735 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:07:14,736 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:07:14,736 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:08:14,741 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:08:14,741 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:08:14,742 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:09:14,733 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:09:14,734 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:09:14,735 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:10:14,734 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:10:14,734 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:10:14,735 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:11:14,735 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:11:14,735 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:11:14,736 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:12:14,744 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:12:14,745 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:12:14,746 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:13:14,745 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:13:14,746 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:13:14,747 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:14:14,733 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:14:14,734 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:14:14,735 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:15:14,744 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:15:14,745 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:15:14,746 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:16:14,737 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:16:14,737 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:16:14,738 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:17:14,738 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:17:14,739 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:17:14,740 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:18:14,740 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:18:14,741 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:18:14,742 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:19:14,747 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:19:14,748 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:19:14,749 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:20:14,740 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:20:14,741 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:20:14,742 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:21:14,742 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:21:14,743 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:21:14,744 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:22:14,737 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:22:14,738 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:22:14,739 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:23:14,741 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:23:14,742 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:23:14,743 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:24:14,741 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:24:14,742 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:24:14,743 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:25:14,745 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:25:14,745 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:25:14,746 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:30:12,889 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 15:30:12,890 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 15:30:30,583 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 15:30:33,600 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 15:30:33,918 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 15:30:33,918 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 15:30:33,918 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 15:30:33,918 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 15:30:33,918 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 15:30:49,156 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 15:30:49,157 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 15:30:51,990 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 15:30:52,277 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 15:30:52,277 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 15:30:52,278 - app.services.music_providers.aggregator - INFO - Filtered 66 dirty songs (Remix/Inst/DJ)
+2026-01-27 15:30:52,278 - app.services.music_providers.aggregator - INFO - Found 148 raw songs -> 82 valid -> 46 after deduplication
+2026-01-27 15:30:52,327 - app.services.library - INFO - Refreshed 宿羽阳: Added 46 new songs.
+2026-01-27 15:31:12,916 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 15:31:12,930 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 困 - 任素汐
+2026-01-27 15:31:12,958 - app.services.library - INFO -   📝 已添加: 困 (状态: DOWNLOADED)
+2026-01-27 15:31:12,959 - app.services.library - INFO - Found new local file: audio_cache/周杰伦 - 稻香.flac
+2026-01-27 15:31:12,960 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 稻香 - 周杰伦
+2026-01-27 15:31:12,984 - app.services.library - INFO -   📝 已添加: 稻香 (状态: DOWNLOADED)
+2026-01-27 15:31:12,985 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:31:12,986 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:31:12,988 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:32:12,896 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:32:12,897 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:32:12,898 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:33:12,895 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:33:12,896 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:33:12,897 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:34:12,902 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:34:12,903 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:34:12,904 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:35:12,902 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:35:12,903 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:35:12,904 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 15:36:12,906 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 15:36:12,906 - app.services.library - INFO -   ✅ 读取到完整元数据(含封面): 你说你不知该怎么和妈妈说 - 宿羽阳
+2026-01-27 15:36:12,907 - scheduler - ERROR - Error in library scan task (monitor): Multiple rows were found when one or none was required
+2026-01-27 16:27:58,176 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 16:27:58,177 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 16:28:28,323 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 16:28:31,246 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:28:31,541 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 16:28:31,542 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:28:31,542 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 16:28:31,542 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 16:28:31,542 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 16:28:35,573 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 16:28:38,397 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:28:38,398 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 16:28:41,125 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:28:41,378 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 16:28:41,379 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:28:41,379 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 16:28:41,379 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 16:28:41,379 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 16:28:41,453 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 16:28:41,453 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:28:41,453 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 16:28:41,453 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 16:28:41,453 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 16:28:58,200 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:28:58,219 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:29:58,190 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:29:58,192 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:30:58,184 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:30:58,185 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:31:58,182 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:31:58,183 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:32:58,188 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:32:58,190 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:33:58,194 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:33:58,196 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:34:58,189 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:34:58,190 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:35:58,186 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:35:58,188 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:45:22,889 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 16:45:22,890 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 16:45:36,014 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 16:45:38,965 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:45:39,269 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 16:45:39,269 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:45:39,270 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 16:45:39,270 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 16:45:39,270 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 16:45:43,631 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 16:45:46,375 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:45:46,377 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 16:45:48,965 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:45:49,198 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 16:45:49,198 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:45:49,198 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 16:45:49,198 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 16:45:49,199 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 16:45:49,268 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 16:45:49,268 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 16:45:49,268 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 16:45:49,268 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 16:45:49,269 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 16:46:05,877 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 16:46:05,880 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 16:46:08,644 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 16:46:08,940 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 16:46:08,941 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 16:46:22,908 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:46:22,928 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:47:22,893 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:47:22,895 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:48:22,895 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:48:22,897 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:49:22,902 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:49:22,904 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:50:22,899 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:50:22,901 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:51:22,894 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:51:22,896 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:52:22,902 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:52:22,904 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:52:34,361 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 16:52:34,362 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 16:52:44,487 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 16:52:44,489 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 16:52:47,362 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 16:52:47,682 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 16:52:47,682 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 16:52:47,682 - app.services.music_providers.aggregator - INFO - Found 148 raw songs -> 88 valid songs (returning raw list)
+2026-01-27 16:53:34,379 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:53:34,392 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:54:34,367 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:54:34,369 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:55:01,322 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 16:55:01,323 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 16:55:06,791 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 16:55:06,794 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 16:55:09,839 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 16:55:10,148 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 16:55:10,148 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 16:55:10,148 - app.services.music_providers.aggregator - INFO - Found 148 raw songs -> 88 valid songs (returning raw list)
+2026-01-27 16:56:01,340 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:56:01,354 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:57:01,335 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:57:01,337 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:57:31,775 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 16:57:31,775 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 16:57:37,275 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 16:57:37,277 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 16:57:40,077 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 16:57:40,341 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 16:57:40,341 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 16:57:40,341 - app.services.music_providers.aggregator - INFO - Found 148 raw songs -> 88 valid songs (returning raw list)
+2026-01-27 16:58:31,799 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:58:31,814 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 16:59:31,786 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 16:59:31,788 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 17:00:31,785 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 17:00:31,788 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 17:01:31,779 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 17:01:31,780 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 17:02:31,792 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 17:02:31,793 - scheduler - ERROR - Error in library scan task (monitor): Mapped instance expected for relationship comparison to object.   Classes, queries and other SQL elements are not accepted in this context; for comparison with a subquery, use Song.artist.has(**criteria).
+2026-01-27 17:02:56,847 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 17:02:56,848 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 17:03:02,161 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 17:03:02,171 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 17:03:05,314 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 17:03:05,607 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 17:03:05,607 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 17:03:05,607 - app.services.music_providers.aggregator - INFO - Found 148 raw songs -> 88 valid songs (returning raw list)
+2026-01-27 17:03:52,002 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 17:03:54,801 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:03:55,106 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 17:03:55,106 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:03:55,106 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 17:03:55,107 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 17:03:55,107 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 17:03:56,867 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 17:03:56,895 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 17:03:59,613 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 17:04:02,268 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:04:02,269 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:04:02,279 - app.services.library - INFO -   📝 已添加: 困 (Local Source)
+2026-01-27 17:04:02,279 - app.services.library - INFO - Found new local file: audio_cache/周杰伦 - 稻香.flac
+2026-01-27 17:04:02,294 - app.services.library - INFO -   📝 已添加: 稻香 (Local Source)
+2026-01-27 17:04:02,295 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 17:04:02,308 - app.services.library - INFO -   📝 已添加: 你说你不知该怎么和妈妈说 (Local Source)
+2026-01-27 17:04:02,309 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 17:04:02,317 - app.services.library - INFO -   📝 已添加: 剜心一刀(伴奏) (Local Source)
+2026-01-27 17:04:02,318 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 17:04:02,326 - app.services.library - INFO -   📝 已添加: 剜心一刀 (Local Source)
+2026-01-27 17:04:02,326 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 17:04:02,334 - app.services.library - INFO -   📝 已添加: 回望VOL.01 (Live) (Local Source)
+2026-01-27 17:04:02,335 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 我不要原谅你.flac
+2026-01-27 17:04:02,342 - app.services.library - INFO -   📝 已添加: 我不要原谅你 (Local Source)
+2026-01-27 17:04:02,343 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-27 17:04:02,350 - app.services.library - INFO -   📝 已添加: 我不要原谅你（伴奏） (Local Source)
+2026-01-27 17:04:02,352 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 我偏要吻你破碎.flac
+2026-01-27 17:04:02,360 - app.services.library - INFO -   📝 已添加: 我偏要吻你破碎 (Local Source)
+2026-01-27 17:04:02,361 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 折桨.flac
+2026-01-27 17:04:02,369 - app.services.library - INFO -   📝 已添加: 折桨 (Local Source)
+2026-01-27 17:04:02,370 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 暗恋是一个人的事.flac
+2026-01-27 17:04:02,378 - app.services.library - INFO -   📝 已添加: 暗恋是一个人的事 (Local Source)
+2026-01-27 17:04:02,378 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 潮汐锁定.flac
+2026-01-27 17:04:02,387 - app.services.library - INFO -   📝 已添加: 潮汐锁定 (Local Source)
+2026-01-27 17:04:02,388 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 祝你好梦.flac
+2026-01-27 17:04:02,399 - app.services.library - INFO -   📝 已添加: 祝你好梦 (Local Source)
+2026-01-27 17:04:02,400 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 自己.flac
+2026-01-27 17:04:02,410 - app.services.library - INFO -   📝 已添加: 自己 (Local Source)
+2026-01-27 17:04:02,410 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 不变的事.flac
+2026-01-27 17:04:02,425 - app.services.library - INFO -   📝 已添加: 不变的事 (Local Source)
+2026-01-27 17:04:02,426 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 为你平定的天下.flac
+2026-01-27 17:04:02,436 - app.services.library - INFO -   📝 已添加: 为你平定的天下 (Local Source)
+2026-01-27 17:04:02,437 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 乐人·live 李剑青《仍是异乡人》作品音乐会.flac
+2026-01-27 17:04:02,446 - app.services.library - INFO -   📝 已添加: 乐人·live 李剑青《仍是异乡人》作品音乐会 (Local Source)
+2026-01-27 17:04:02,447 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 出城.flac
+2026-01-27 17:04:02,456 - app.services.library - INFO -   📝 已添加: 出城 (Local Source)
+2026-01-27 17:04:02,457 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 匆匆 (瓦塔西老楠专属) (木吉他).flac
+2026-01-27 17:04:02,465 - app.services.library - INFO -   📝 已添加: 匆匆 (瓦塔西老楠专属) (木吉他) (Local Source)
+2026-01-27 17:04:02,466 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 匆匆.flac
+2026-01-27 17:04:02,476 - app.services.library - INFO -   📝 已添加: 匆匆 (Local Source)
+2026-01-27 17:04:02,476 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 在家乡.flac
+2026-01-27 17:04:02,485 - app.services.library - INFO -   📝 已添加: 在家乡 (Local Source)
+2026-01-27 17:04:02,486 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 女矿工排.mp3
+2026-01-27 17:04:02,494 - app.services.library - INFO -   📝 已添加: 女矿工排 (Local Source)
+2026-01-27 17:04:02,495 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 姥姥.flac
+2026-01-27 17:04:02,503 - app.services.library - INFO -   📝 已添加: 姥姥 (Local Source)
+2026-01-27 17:04:02,504 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 平凡故事.flac
+2026-01-27 17:04:02,514 - app.services.library - INFO -   📝 已添加: 平凡故事 (Local Source)
+2026-01-27 17:04:02,515 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 找到你.flac
+2026-01-27 17:04:02,524 - app.services.library - INFO -   📝 已添加: 找到你 (Local Source)
+2026-01-27 17:04:02,524 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 真心英雄.flac
+2026-01-27 17:04:02,532 - app.services.library - INFO -   📝 已添加: 真心英雄 (Local Source)
+2026-01-27 17:04:02,533 - scheduler - INFO - [monitor] Scanned: Found 26 new files.
+2026-01-27 17:04:02,534 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:04:02,593 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 17:04:02,594 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:04:02,594 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 17:04:02,594 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 17:04:02,594 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 17:04:02,624 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 17:04:02,624 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:04:02,624 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 17:04:02,625 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 17:04:02,625 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 17:04:17,021 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 17:04:18,741 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 17:04:56,866 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:05:56,877 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:06:56,868 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:07:56,872 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:08:56,867 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:09:56,877 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:10:56,877 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:11:56,872 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:12:56,864 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:13:56,862 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:14:56,867 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:15:56,866 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:16:56,869 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:17:56,871 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:18:56,864 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:19:56,799 - __main__ - INFO - 已调度文件完整性检查任务，每 24 小时执行一次
+2026-01-27 17:19:56,799 - __main__ - INFO - 已调度自动缓存任务，每 30 分钟执行一次
+2026-01-27 17:20:05,883 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 17:20:08,849 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:20:09,195 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 17:20:09,196 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:20:09,196 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 17:20:09,196 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 17:20:09,196 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 17:20:09,671 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 17:20:12,511 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:20:12,513 - app.services.music_providers.aggregator - INFO - Searching artist: 宿羽阳 across all sources
+2026-01-27 17:20:15,064 - app.services.music_providers.netease_provider - INFO - Netease search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:20:15,297 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 17:20:15,297 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:20:15,297 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 17:20:15,298 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 17:20:15,298 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 17:20:15,390 - app.services.music_providers.qqmusic_provider - INFO - QQMusic raw results count: 3
+2026-01-27 17:20:15,390 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳'
+2026-01-27 17:20:15,390 - app.services.music_providers.qqmusic_provider - INFO - QQMusic search_artist: found 1 results for '宿羽阳' (after fallback)
+2026-01-27 17:20:15,390 - app.services.music_providers.aggregator - INFO - Found 2 total results before deduplication
+2026-01-27 17:20:15,390 - app.services.music_providers.aggregator - INFO - Returning 1 results after deduplication
+2026-01-27 17:20:31,931 - app.services.library - INFO - Refreshing artist: 宿羽阳
+2026-01-27 17:20:31,933 - app.services.music_providers.aggregator - INFO - Getting songs for artist: 宿羽阳 from all sources
+2026-01-27 17:20:34,663 - app.services.music_providers.netease_provider - INFO - Netease get_artist_songs: found 69 songs for artist 12459252
+2026-01-27 17:20:34,960 - app.services.music_providers.qqmusic_provider - INFO - Filtered noise (dynamic post): #宿羽阳2020巡演 今天长沙,明天最后一站郑州。夏日短暂,#请允许我成为你的夏季 DOU+小助手
+2026-01-27 17:20:34,960 - app.services.music_providers.qqmusic_provider - INFO - QQMusic get_artist_songs: found 79 songs for artist 000GBnpV1IcEfl
+2026-01-27 17:20:34,961 - app.services.music_providers.aggregator - INFO - Found 148 raw songs -> 88 valid songs (returning raw list)
+2026-01-27 17:20:56,823 - app.services.library - INFO - Found new local file: audio_cache/任素汐 - 困.flac
+2026-01-27 17:20:56,854 - app.services.library - INFO -   📝 已添加: 困 (Local Source)
+2026-01-27 17:20:56,855 - app.services.library - INFO - Found new local file: audio_cache/周杰伦 - 稻香.flac
+2026-01-27 17:20:56,869 - app.services.library - INFO -   📝 已添加: 稻香 (Local Source)
+2026-01-27 17:20:56,870 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 你说你不知该怎么和妈妈说.flac
+2026-01-27 17:20:56,879 - app.services.library - INFO -   📝 已添加: 你说你不知该怎么和妈妈说 (Local Source)
+2026-01-27 17:20:56,880 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 剜心一刀(伴奏).flac
+2026-01-27 17:20:56,889 - app.services.library - INFO -   📝 已添加: 剜心一刀(伴奏) (Local Source)
+2026-01-27 17:20:56,890 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 剜心一刀.flac
+2026-01-27 17:20:56,897 - app.services.library - INFO -   📝 已添加: 剜心一刀 (Local Source)
+2026-01-27 17:20:56,898 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 回望VOL.01 (Live).flac
+2026-01-27 17:20:56,906 - app.services.library - INFO -   📝 已添加: 回望VOL.01 (Live) (Local Source)
+2026-01-27 17:20:56,907 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 我不要原谅你.flac
+2026-01-27 17:20:56,916 - app.services.library - INFO -   📝 已添加: 我不要原谅你 (Local Source)
+2026-01-27 17:20:56,917 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 我不要原谅你（伴奏）.flac
+2026-01-27 17:20:56,925 - app.services.library - INFO -   📝 已添加: 我不要原谅你（伴奏） (Local Source)
+2026-01-27 17:20:56,926 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 我偏要吻你破碎.flac
+2026-01-27 17:20:56,934 - app.services.library - INFO -   📝 已添加: 我偏要吻你破碎 (Local Source)
+2026-01-27 17:20:56,935 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 折桨.flac
+2026-01-27 17:20:56,943 - app.services.library - INFO -   📝 已添加: 折桨 (Local Source)
+2026-01-27 17:20:56,944 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 暗恋是一个人的事.flac
+2026-01-27 17:20:56,952 - app.services.library - INFO -   📝 已添加: 暗恋是一个人的事 (Local Source)
+2026-01-27 17:20:56,952 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 潮汐锁定.flac
+2026-01-27 17:20:56,960 - app.services.library - INFO -   📝 已添加: 潮汐锁定 (Local Source)
+2026-01-27 17:20:56,960 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 祝你好梦.flac
+2026-01-27 17:20:56,972 - app.services.library - INFO -   📝 已添加: 祝你好梦 (Local Source)
+2026-01-27 17:20:56,973 - app.services.library - INFO - Found new local file: audio_cache/宿羽阳 - 自己.flac
+2026-01-27 17:20:56,982 - app.services.library - INFO -   📝 已添加: 自己 (Local Source)
+2026-01-27 17:20:56,983 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 不变的事.flac
+2026-01-27 17:20:56,997 - app.services.library - INFO -   📝 已添加: 不变的事 (Local Source)
+2026-01-27 17:20:56,998 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 为你平定的天下.flac
+2026-01-27 17:20:57,007 - app.services.library - INFO -   📝 已添加: 为你平定的天下 (Local Source)
+2026-01-27 17:20:57,008 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 乐人·live 李剑青《仍是异乡人》作品音乐会.flac
+2026-01-27 17:20:57,016 - app.services.library - INFO -   📝 已添加: 乐人·live 李剑青《仍是异乡人》作品音乐会 (Local Source)
+2026-01-27 17:20:57,017 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 出城.flac
+2026-01-27 17:20:57,025 - app.services.library - INFO -   📝 已添加: 出城 (Local Source)
+2026-01-27 17:20:57,026 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 匆匆 (瓦塔西老楠专属) (木吉他).flac
+2026-01-27 17:20:57,034 - app.services.library - INFO -   📝 已添加: 匆匆 (瓦塔西老楠专属) (木吉他) (Local Source)
+2026-01-27 17:20:57,035 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 匆匆.flac
+2026-01-27 17:20:57,043 - app.services.library - INFO -   📝 已添加: 匆匆 (Local Source)
+2026-01-27 17:20:57,044 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 在家乡.flac
+2026-01-27 17:20:57,052 - app.services.library - INFO -   📝 已添加: 在家乡 (Local Source)
+2026-01-27 17:20:57,053 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 女矿工排.mp3
+2026-01-27 17:20:57,061 - app.services.library - INFO -   📝 已添加: 女矿工排 (Local Source)
+2026-01-27 17:20:57,062 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 姥姥.flac
+2026-01-27 17:20:57,070 - app.services.library - INFO -   📝 已添加: 姥姥 (Local Source)
+2026-01-27 17:20:57,071 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 平凡故事.flac
+2026-01-27 17:20:57,079 - app.services.library - INFO -   📝 已添加: 平凡故事 (Local Source)
+2026-01-27 17:20:57,080 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 找到你.flac
+2026-01-27 17:20:57,088 - app.services.library - INFO -   📝 已添加: 找到你 (Local Source)
+2026-01-27 17:20:57,089 - app.services.library - INFO - Found new local file: audio_cache/李剑青 - 真心英雄.flac
+2026-01-27 17:20:57,096 - app.services.library - INFO -   📝 已添加: 真心英雄 (Local Source)
+2026-01-27 17:20:57,098 - scheduler - INFO - [monitor] Scanned: Found 26 new files.
+2026-01-27 17:20:57,098 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'
+2026-01-27 17:21:56,828 - scheduler - ERROR - Error in library scan task (monitor): 'LibraryService' object has no attribute 'enrich_metadata'

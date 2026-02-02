@@ -1,5 +1,7 @@
-from fastapi import APIRouter, HTTPException, Request, UploadFile, File
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.database import get_async_session
 import logging
 import re
 import yaml
@@ -8,7 +10,8 @@ import os
 import time
 
 # Imports from core/app
-from core.config import config, load_config, CONFIG_FILE_PATH
+from core.config import load_config, CONFIG_FILE_PATH
+from core.config_manager import get_config_manager
 from app.schemas import LoginRequest, ChangePasswordRequest, UpdateProfileRequest
 
 router = APIRouter()
@@ -16,13 +19,13 @@ logger = logging.getLogger(__name__)
 
 @router.post("/api/login")
 async def login(req: LoginRequest, request: Request):
-    auth_cfg = config.get('auth', {})
+    auth_cfg = get_config_manager().get('auth', {})
     if not auth_cfg.get('enabled', False):
-         return {"message": "鉴权已禁用"}
+         return {"success": True, "message": "鉴权已禁用"}
          
     if req.username == auth_cfg.get('username') and req.password == auth_cfg.get('password'):
         request.session["user"] = req.username
-        return {"message": "登录成功"}
+        return {"success": True, "message": "登录成功"}
     
     raise HTTPException(status_code=401, detail="账号或密码错误")
 
@@ -33,7 +36,7 @@ async def logout(request: Request):
 
 @router.post("/api/update_profile")
 def update_profile(req: UpdateProfileRequest, request: Request):
-    auth_cfg = config.get('auth', {})
+    auth_cfg = get_config_manager().get('auth', {})
     if not auth_cfg.get('enabled', False):
          raise HTTPException(status_code=400, detail="Auth not enabled")
     
@@ -57,12 +60,13 @@ def update_profile(req: UpdateProfileRequest, request: Request):
         # To be safe and consistent with main.py logic:
         
         # 1. Update memory dict (which will be dumped)
-        config['auth']['username'] = req.username
+        config_manager = get_config_manager()
+        config_manager.data['auth']['username'] = req.username
         if req.avatar is not None:
-            config['auth']['avatar'] = req.avatar
+            config_manager.data['auth']['avatar'] = req.avatar
             
         with open(CONFIG_FILE_PATH, "w", encoding='utf-8') as f:
-            yaml.safe_dump(config, f, allow_unicode=True, default_flow_style=False)
+            yaml.safe_dump(config_manager.data, f, allow_unicode=True, default_flow_style=False)
             
         # Update Session User if changed
         if req.username != request.session.get("user"):
@@ -77,7 +81,7 @@ def update_profile(req: UpdateProfileRequest, request: Request):
 @router.post("/api/upload_avatar")
 async def upload_avatar(request: Request, file: UploadFile = File(...)):
     """Upload user avatar"""
-    auth_cfg = config.get('auth', {})
+    auth_cfg = get_config_manager().get('auth', {})
     if not auth_cfg.get('enabled', False):
          raise HTTPException(status_code=400, detail="Auth not enabled")
     
@@ -125,7 +129,7 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
 
 @router.post("/api/change_password")
 def change_password(req: ChangePasswordRequest, request: Request):
-    auth_cfg = config.get('auth', {})
+    auth_cfg = get_config_manager().get('auth', {})
     if not auth_cfg.get('enabled', False):
          raise HTTPException(status_code=400, detail="Auth not enabled")
     
@@ -157,7 +161,7 @@ def change_password(req: ChangePasswordRequest, request: Request):
             f.write(new_content)
             
         # 3. Reload global config
-        config.update(load_config())
+        get_config_manager().reload()
         
         # 4. Logout user
         request.session.clear()
@@ -170,7 +174,7 @@ def change_password(req: ChangePasswordRequest, request: Request):
 
 @router.get("/api/check_auth")
 def check_auth(request: Request):
-    auth_cfg = config.get('auth', {})
+    auth_cfg = get_config_manager().get('auth', {})
     
     user = request.session.get("user")
     is_enabled = auth_cfg.get('enabled', False)
@@ -193,12 +197,12 @@ def check_auth(request: Request):
 
 
 @router.get("/api/profile_stats")
-def profile_stats():
+async def profile_stats(db: AsyncSession = Depends(get_async_session)):
     """获取个人中心统计信息"""
-    import os
-    from core.database import SessionLocal, MediaRecord
     from sqlalchemy import func
-    
+    from app.models.song import Song
+    from app.models.artist import Artist
+
     stats = {
         "artist_count": 0,
         "song_count": 0,
@@ -206,28 +210,20 @@ def profile_stats():
     }
     
     try:
-        # 获取歌手数量
-        mon_cfg = config.get('monitor', {})
-        artist_names = set()
-        for source in ['netease', 'qqmusic']:
-            if source in mon_cfg and mon_cfg[source].get('users'):
-                for u in mon_cfg[source]['users']:
-                    if isinstance(u, dict) and u.get('name'):
-                        artist_names.add(u['name'])
-        stats["artist_count"] = len(artist_names)
+        # 1. 歌手数量 (从 Artist 表)
+        stmt_artist = select(func.count(Artist.id))
+        res_artist = await db.execute(stmt_artist)
+        stats["artist_count"] = res_artist.scalar() or 0
         
-        # 获取歌曲数量
-        db = SessionLocal()
-        try:
-            song_count = db.query(func.count(MediaRecord.id)).scalar() or 0
-            stats["song_count"] = song_count
-        finally:
-            db.close()
+        # 2. 歌曲数量 (从 Song 表)
+        stmt_song = select(func.count(Song.id))
+        res_song = await db.execute(stmt_song)
+        stats["song_count"] = res_song.scalar() or 0
         
-        # 计算缓存大小
-        cache_dir = "audio_cache"
+        # 3. 计算缓存大小
+        cache_dir = get_config_manager().get('storage', {}).get('cache_dir', 'audio_cache')
+        total_size = 0
         if os.path.exists(cache_dir):
-            total_size = 0
             for f in os.listdir(cache_dir):
                 fp = os.path.join(cache_dir, f)
                 if os.path.isfile(fp):

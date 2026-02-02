@@ -1,5 +1,13 @@
 import logging
 import aiohttp
+import time
+"""
+WeCom Notifier
+
+Handles WeChat Work message sending (Text, TextCard, News) and token management.
+
+Author: GOOGLE music-monitor development team
+"""
 from typing import Optional
 from domain.models import MediaInfo
 from notifiers.base import BaseNotifier
@@ -50,13 +58,19 @@ class WeComNotifier(BaseNotifier):
                     logger.error(f"WeCom text error: {res}")
 
     async def _get_token(self):
-        # TODO: Implement token caching logic
+        # 检查缓存是否有效 (Check cache)
+        if self._token and time.time() < self._token_expires_at:
+            return self._token
+
         url = f"https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={self.corp_id}&corpsecret={self.secret}"
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 data = await resp.json()
                 if data.get('errcode') == 0:
-                    return data.get('access_token')
+                    self._token = data.get('access_token')
+                    # 有效期内提前 5 分钟 (300秒) 刷新
+                    self._token_expires_at = time.time() + data.get('expires_in', 7200) - 300
+                    return self._token
                 logger.error(f"WeCom token error: {data}")
                 return None
 
