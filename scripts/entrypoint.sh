@@ -21,6 +21,12 @@ if [ "$PUID" != "0" ]; then
         useradd -u "$PUID" -g "$PGID" -m -s /bin/bash abc
     fi
 
+    # 初始化配置文件 (如果不存在)
+    if [ ! -f /config/config.yaml ] && [ -f /app/config.example.yaml ]; then
+        echo "Initializing config file..."
+        cp /app/config.example.yaml /config/config.yaml
+    fi
+
     # 更改目录权限
     echo "Updating permissions..."
     chown -R abc:abc /app /config /audio_cache /favorites
