@@ -131,13 +131,20 @@ class ScanService:
         artist_map = {a.name: a for a in all_artists}
         
         # --- 阶段 2: 扫描阶段 (Scanning) ---
+        # --- 阶段 2: 扫描阶段 (Scanning) ---
+        logger.info(f"🔍 准备扫描目录列表: {self.scan_directories}")
+        
         for dir_name in self.scan_directories:
+            abs_path = os.path.abspath(dir_name)
             exists = await anyio.to_thread.run_sync(os.path.exists, dir_name)
+            
             if not exists:
-                logger.debug(f"目录不存在,跳过: {dir_name}")
+                logger.warning(f"⚠️ 目录不存在, 跳过: {dir_name} (绝对路径: {abs_path})")
                 continue
             
+            logger.info(f"📂 正在扫描目录: {dir_name} (绝对路径: {abs_path})")
             files = await anyio.to_thread.run_sync(os.listdir, dir_name)
+            logger.info(f"   - 目录下文件总数: {len(files)}")
             audio_files = [f for f in files if f.endswith(self.supported_extensions)]
             total_files = len(audio_files)
             processed_files = 0

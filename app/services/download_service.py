@@ -143,14 +143,19 @@ class DownloadService:
         "tencent", "ximalaya"
     ]
     
-    def __init__(self, cache_dir: str = "audio_cache"):
+    def __init__(self, cache_dir: str = None):
+        if cache_dir is None:
+            from core.config_manager import get_config_manager
+            storage_cfg = get_config_manager().get("storage", {})
+            cache_dir = storage_cfg.get("cache_dir", "audio_cache")
+            
         self.cache_dir = cache_dir
         self.rate_limiter = RateLimiter(max_tokens=45, refill_period=300)
         self._tasks: Dict[str, DownloadTask] = {}
         self._execution_locks: Dict[str, asyncio.Event] = {}
         
         # 确保缓存目录存在
-        Path(cache_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.cache_dir).mkdir(parents=True, exist_ok=True)
     
     # ---------- 搜索相关 ----------
     
