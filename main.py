@@ -1,5 +1,42 @@
 """
 主应用入口文件 - FastAPI应用启动和配置
+"""
+import sys
+import os
+
+# --- CRITICAL BOOT DEBUGGING (V2) ---
+try:
+    print(f"🐍 BOOT DEBUG START | User: {os.getuid()} | Python: {sys.executable}")
+    import site
+    packages = site.getsitepackages()
+    print(f"🐍 site-packages: {packages}")
+    
+    found = False
+    for p in packages:
+        if os.path.exists(p):
+            try:
+                files = os.listdir(p)
+                if 'yaml' in files or 'PyYAML' in files:
+                    print(f"✅ FOUND 'yaml' in {p}")
+                    found = True
+                    # Check permissions
+                    yp = os.path.join(p, 'yaml')
+                    if os.path.exists(yp):
+                        st = os.stat(yp)
+                        print(f"   Permissions: {oct(st.st_mode)} UID:{st.st_uid}")
+                else:
+                    print(f"❌ 'yaml' missing in {p}")
+            except Exception as e:
+                print(f"⚠️ Error reading {p}: {e}")
+    
+    if not found:
+        print("🚨 CRITICAL: PyYAML not found in any site-packages!")
+        print("Build verification passed but runtime failed. Checking sys.path...")
+        print(sys.path)
+
+except Exception as e:
+    print(f"⚠️ Debug crash: {e}")
+# -----------------------------
 
 此文件负责：
 - 初始化FastAPI应用
