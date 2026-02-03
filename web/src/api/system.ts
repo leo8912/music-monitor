@@ -2,7 +2,7 @@
  * 系统配置相关 API
  */
 
-import { get, post } from './index'
+import { get, post, patch } from './index'
 import type { Settings, SystemStatus, DownloadHistory, DownloadStats, PaginatedResponse } from '@/types'
 
 // 获取系统状态
@@ -16,28 +16,13 @@ export const getSettings = (): Promise<Settings> => {
 }
 
 // 保存设置
-export const saveSettings = (data: Settings): Promise<{ status: string; message: string }> => {
-    return post('/api/settings', data)
-}
-
-// 获取日志
-export const getLogs = (): Promise<string[]> => {
-    return get('/api/logs')
-}
-
-// 触发同步检查
-export const triggerCheck = (source: string): Promise<{ status: string; message: string }> => {
-    return post(`/api/check/${source}`)
-}
-
-// 触发扫描
-export const triggerScan = (): Promise<{ status: string; new_files_found: number; metadata_enriched: number }> => {
-    return post('/api/system/scan')
+export const saveSettings = (data: Partial<Settings>): Promise<Settings> => {
+    return patch('/api/settings', data)
 }
 
 // 测试通知
-export const testNotify = (channel: string): Promise<{ status: string; message: string }> => {
-    return post(`/api/test_notify/${channel}`)
+export const testNotify = (type: string, config?: any): Promise<{ success: boolean; message: string }> => {
+    return post('/api/settings/test-notify', { type, config })
 }
 
 // 检查通知状态

@@ -38,6 +38,7 @@ class Song(Base):
     is_favorite = Column(Boolean, default=False)
     status = Column(String, default="PENDING") # PENDING / DOWNLOADED / ERROR
     local_path = Column(String, nullable=True) # If downloaded locally
+    last_enrich_at = Column(DateTime, nullable=True) # Last time enrichment was attempted
     
     # Relationships
     artist = relationship("Artist", back_populates="songs")
@@ -45,6 +46,35 @@ class Song(Base):
 
     def __repr__(self):
         return f"<Song(title={self.title})>"
+
+    @property
+    def localFiles(self):
+        """
+        Helper for API response: returns list of local file details
+        """
+        result = []
+        if not self.sources:
+            return result
+        for s in self.sources:
+            if s.source == 'local':
+                 data = s.data_json or {}
+                 result.append({
+                     "id": s.id,
+                     "source_id": s.source_id,
+                     "path": s.url,
+                     "quality": data.get('quality', 'PQ'),
+                     "format": data.get('format', 'UNK')
+                 })
+        return result
+
+    @property
+    def availableSources(self):
+        """
+        Helper for API response: returns list of unique sources
+        """
+        if not self.sources:
+            return [self.local_path] if self.local_path else []
+        return list(set([s.source for s in self.sources]))
 
 class SongSource(Base):
     """

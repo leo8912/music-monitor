@@ -32,11 +32,11 @@ class WeComNotifier(BaseNotifier):
     async def send_text(self, content: str, user_ids: list[str] = None):
         """Send a simple text message."""
         if not self.corp_id or not self.secret:
-             return
+             raise ValueError("WeCom config (corp_id or secret) is missing")
 
         token = await self._get_token()
         if not token:
-             return
+             raise ValueError("Failed to obtain WeCom access token")
 
         url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
         
@@ -56,6 +56,7 @@ class WeComNotifier(BaseNotifier):
                 res = await resp.json()
                 if res.get('errcode') != 0:
                     logger.error(f"WeCom text error: {res}")
+                    raise Exception(f"WeCom API Error: {res.get('errmsg')} (code: {res.get('errcode')})")
 
     async def _get_token(self):
         # 检查缓存是否有效 (Check cache)

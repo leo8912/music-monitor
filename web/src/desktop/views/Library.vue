@@ -13,7 +13,7 @@
             标签补全
           </n-button>
           
-          <n-button tertiary round class="sp-secondary-btn" @click="handleScan">
+          <n-button type="primary" round class="sp-primary-btn" @click="handleScan">
              <template #icon><n-icon :component="ScanCircleOutline" /></template>
             全盘扫描
           </n-button>
@@ -35,11 +35,15 @@
         <SongList 
           :history="libraryStore.songs"
           :loading="libraryStore.isLoading"
+          mode="library"
+          :sort-field="libraryStore.sortField"
+          :sort-order="libraryStore.sortOrder"
           @play="handlePlay"
           @toggleFavorite="libraryStore.toggleFavorite"
           @repair="handleOpenMatcher"
           @delete="handleDelete"
           @redownload="handleRedownload"
+          @sort="handleSortEvent"
         />
       </div>
       
@@ -136,6 +140,12 @@ const handleMatcherSuccess = () => {
     libraryStore.fetchLocalSongs(libraryStore.currentPage)
 }
 
+const handleSortEvent = ({ field, order }: { field: string, order: 'asc' | 'desc' }) => {
+    libraryStore.sortField = field
+    libraryStore.sortOrder = order
+    libraryStore.fetchLocalSongs(1)
+}
+
 const handleRefresh = async () => {
   await libraryStore.fetchLocalSongs(libraryStore.currentPage)
   message.success('本地列表已刷新')
@@ -161,7 +171,7 @@ const handleEnrich = async () => {
         message.loading('正在触发后台标签补全任务...')
         const res = await libraryApi.enrichLocalFiles()
         if (res.success) {
-             message.success(res.message || '补全任务已启动')
+             message.success('补全任务已启动')
              // 刷新列表以查看可能的早期结果
              setTimeout(() => libraryStore.fetchLocalSongs(1), 2000)
         } else {
@@ -202,11 +212,22 @@ onMounted(() => {
   font-weight: 700;
   border-color: #727272;
   color: #fff;
+  transition: all 0.2s ease;
 }
 
 .sp-secondary-btn:hover {
   border-color: #fff;
-  transform: scale(1.02);
+  transform: scale(1.04);
+}
+
+.sp-primary-btn {
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.sp-primary-btn:hover {
+  transform: scale(1.04);
+  filter: brightness(1.1);
 }
 
 .list-wrapper {

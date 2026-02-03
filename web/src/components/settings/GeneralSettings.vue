@@ -121,24 +121,24 @@ const handleResetDatabase = async () => {
 </script>
 
 <template>
-  <div class="general-settings" v-if="settings?.global && settings?.download">
-    <n-form label-placement="left" label-width="160" class="settings-form">
+  <div class="general-settings" v-if="settings">
+    <n-form label-placement="left" label-width="170" class="settings-form">
       <div class="settings-section">
           <div class="section-header">
               <span class="section-title">基础运行配置</span>
               <n-tag :bordered="false" type="info" size="small">核心</n-tag>
           </div>
           
-          <n-form-item label="外部访问 URL">
-            <n-input v-model:value="settings.global.external_url" placeholder="http://192.168.1.100:5173" />
+          <n-form-item label="外部访问 URL" v-if="settings.system">
+            <n-input v-model:value="settings.system.external_url" placeholder="http://192.168.1.100:5173" />
             <template #feedback>用于生成外部预览链接预览歌曲</template>
           </n-form-item>
           
-          <n-form-item label="默认监控间隔 (分)">
-            <n-input-number v-model:value="settings.global.check_interval_minutes" :min="1" :max="1440" />
+          <n-form-item label="默认监控间隔 (分)" v-if="settings.monitor">
+            <n-input-number v-model:value="settings.monitor.interval" :min="1" :max="1440" />
           </n-form-item>
           
-          <n-form-item label="首选音质 (Kbps)">
+          <n-form-item label="首选音质 (Kbps)" v-if="settings.download">
             <n-input-number v-model:value="settings.download.quality_preference" :min="128" :max="3000" :step="128" />
           </n-form-item>
 

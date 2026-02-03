@@ -1,0 +1,53 @@
+--- Starting Cover Fetch Test ---
+
+🔍 Searching for: Purple Girl (伴奏) 宿羽阳
+   Found: Purple Girl (伴奏) - 宿羽阳 (Album: 不醒之梦)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M0000048v4LK0hfUUA.jpg
+
+   ✅ Selected Target: Purple Girl (伴奏) (ID: 001KVntV1uxbkz)
+   ⬇️ Fetching details via get_song_metadata...
+   [Metadata] Album: 
+   [Metadata] Cover: 
+   [Metadata] Date: None
+   ✨ Detail cover is DIFFERENT from search cover!
+   Wait, Search Cover: https://y.gtimg.cn/music/photo_new/T002R300x300M0000048v4LK0hfUUA.jpg
+   Detail Cover: 
+------------------------------
+
+🔍 Searching for: 无用浪漫 (伴奏) 宿羽阳
+   Found: 暗恋是一个人的事 - 宿羽阳 (Album: 暗恋是一个人的事)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000002YfSqe2mN79m.jpg
+   Found: 踏破风的少年 - 潘韵淇 (Album: 踏破风的少年)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000002z9nUj1X3LzJ.jpg
+   Found: 十一种孤独 - 宿羽阳 (Album: 宿羽阳)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000004C1bbb2F4xGL.jpg
+   Found: 我偏要吻你破碎 - 宿羽阳 (Album: 我偏要吻你破碎)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000000yvBNY07wx28.jpg
+   Found: 折桨 - 宿羽阳 (Album: 折桨)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000004C3ajo2cFvsV.jpg
+   Found: 我不要原谅你 - 宿羽阳 (Album: 我不要原谅你)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000003Nqkvc3Ktug1.jpg
+   Found: 爱人呢 - 宿羽阳 (Album: 爱人呢)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000002cnk4V123Y2m.jpg
+   Found: 美丽人生 - 宿羽阳 (Album: 美丽人生)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000002srXXz4QWajk.jpg
+   Found: 奔向浪漫 - 宿羽阳 (Album: 这里人均恋爱中)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000003xqKAt0zoory.jpg
+   Found: 无人知晓的海 - 宿羽阳 (Album: 无人知晓的海)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M0000038AaZj1Pxlsh.jpg
+   ❌ Song not found in search results.
+------------------------------
+
+🔍 Searching for: 心想事成歌舞厅 (伴奏) 宿羽阳
+   Found: 心想事成歌舞厅 (伴奏) - 宿羽阳 (Album: 不醒之梦)
+   Cover URL: https://y.gtimg.cn/music/photo_new/T002R300x300M0000048v4LK0hfUUA.jpg
+
+   ✅ Selected Target: 心想事成歌舞厅 (伴奏) (ID: 000XRC9x45DMTj)
+   ⬇️ Fetching details via get_song_metadata...
+   [Metadata] Album: 
+   [Metadata] Cover: 
+   [Metadata] Date: None
+   ✨ Detail cover is DIFFERENT from search cover!
+   Wait, Search Cover: https://y.gtimg.cn/music/photo_new/T002R300x300M0000048v4LK0hfUUA.jpg
+   Detail Cover: 
+------------------------------

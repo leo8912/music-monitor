@@ -49,6 +49,8 @@ COPY core/ /app/core/
 COPY domain/ /app/domain/
 COPY notifiers/ /app/notifiers/
 COPY utils/ /app/utils/
+COPY alembic/ /app/alembic/
+COPY alembic.ini /app/
 
 
 # Create default config

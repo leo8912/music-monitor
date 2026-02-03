@@ -5,9 +5,11 @@ import { NIcon, NSpin, useMessage } from 'naive-ui'
 import { SearchOutline, PersonOutline, MusicalNotesOutline, AddOutline, CheckmarkOutline } from '@vicons/ionicons5'
 import axios from 'axios'
 import type { Artist } from '@/types'
+import { useLibraryStore } from '@/stores/library' // Import store
 
 const router = useRouter()
 const message = useMessage()
+const libraryStore = useLibraryStore() // Init store
 
 // State
 const query = ref('')
@@ -93,6 +95,10 @@ const addArtist = async (artist: any) => {
         
         // Notify parent to refresh list
         emit('added')
+        
+        // [Fix] Refresh global store state to ensuring Sidebar and Home are updated
+        await libraryStore.fetchArtists()
+        libraryStore.fetchSongs(1) // Background refresh songs as well
         
         // Clear search after a short delay to allow user to see success state
         setTimeout(() => {

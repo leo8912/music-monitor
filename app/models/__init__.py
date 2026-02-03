@@ -11,3 +11,4 @@ from app.models.artist import Artist
 from app.models.song import Song
 from app.models.download_history import DownloadHistory
 from app.models.wechat_session import WeChatSession
+from app.models.settings import SystemSettings

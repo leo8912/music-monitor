@@ -24,6 +24,9 @@ from app.services.music_providers.aggregator import MusicAggregator
 # Global lock for artist addition to prevent duplicate creation on concurrent requests
 _add_artist_lock = asyncio.Lock()
 
+# Store active refresh tasks to avoid redundant processing (Shared across services)
+active_refreshes = set()
+
 class SubscriptionService:
     @staticmethod
     async def get_monitored_artists(db: AsyncSession) -> List[Dict]:
@@ -58,6 +61,7 @@ class SubscriptionService:
         [Instant Add] 极速添加歌手到本地数据库。
         使用 asyncio.Lock 确保并发安全。
         """
+        logger.info(f"DEBUG: Entering add_artist for {name}")
         async with _add_artist_lock:
             name = name.strip()
             artist_id = str(artist_id).strip()
@@ -68,7 +72,7 @@ class SubscriptionService:
                 ArtistSource.source_id == artist_id
             )
             result = await db.execute(stmt)
-            existing_source = result.scalar_one_or_none()
+            existing_source = result.scalars().first()
             
             if existing_source:
                 logger.info(f"Artist source already exists: {name} ({source}:{artist_id})")
@@ -79,6 +83,7 @@ class SubscriptionService:
                         parent.avatar = avatar
                     db.add(parent)
                     await db.commit()
+                logger.info(f"DEBUG: Source exists, returning True for {name}")
                 return True
 
             # 2. 按名称查找逻辑艺人 (合并同名艺人)
@@ -109,6 +114,7 @@ class SubscriptionService:
             logger.info(f"Linked source {source}:{artist_id} to artist {artist.name}")
             
             await db.commit()
+            logger.info(f"DEBUG: Success, returning True for {name}")
             return True
 
     @staticmethod
@@ -121,11 +127,11 @@ class SubscriptionService:
         
         candidates = await aggregator.search_artist(artist_name, limit=10)
         
-        stmt = select(Artist).where(Artist.name == artist_name)
+        stmt = select(Artist).options(selectinload(Artist.sources)).where(Artist.name == artist_name)
         artist = (await db.execute(stmt)).scalars().first()
         
         if not artist:
-            logger.error(f"Smart Link: Artist {artist_name} not found in DB")
+            logger.warning(f"Smart Link: Artist {artist_name} not found in DB (likely deleted during background task)")
             return
 
         # 更新头像
@@ -170,7 +176,7 @@ class SubscriptionService:
                 ArtistSource.source == s_src
             )
             res = await db.execute(chk)
-            if res.scalar_one_or_none():
+            if res.scalars().first():
                 continue
                 
             src_avatar = ""

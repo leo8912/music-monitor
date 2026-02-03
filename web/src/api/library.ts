@@ -28,8 +28,15 @@ export const getSongs = (params: {
 export const getLocalSongs = (params: {
     page?: number
     page_size?: number
+    sortBy?: string
+    order?: 'asc' | 'desc'
 }): Promise<SongListResponse> => {
-    return get('/api/library/local-songs', params)
+    return get('/api/library/local-songs', {
+        page: params.page,
+        page_size: params.page_size,
+        sort_by: params.sortBy,
+        order: params.order
+    })
 }
 
 // 获取历史记录（带去重）
@@ -38,12 +45,16 @@ export const getHistory = (params: {
     page_size?: number
     author?: string
     downloadedOnly?: boolean
+    sortBy?: string
+    order?: 'asc' | 'desc'
 }): Promise<{ items: Song[]; total: number; page: number; page_size: number; total_pages: number }> => {
     return get('/api/history', {
         page: params.page,
         page_size: params.page_size,
         author: params.author,
-        downloaded_only: params.downloadedOnly
+        downloaded_only: params.downloadedOnly,
+        sort_by: params.sortBy,
+        order: params.order
     })
 }
 

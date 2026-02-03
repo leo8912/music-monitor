@@ -124,7 +124,7 @@ onMounted(() => {
           <div class="download-status-text" v-else>{{ playerStore.downloadMessage }}</div>
         </div>
         <button class="fav-btn clickable apple-transition" v-if="playerStore.currentSong">
-          <n-icon :component="playerStore.currentSong.isFavorite ? Heart : HeartOutline" />
+          <n-icon :component="playerStore.currentSong.is_favorite ? Heart : HeartOutline" />
         </button>
       </div>
 
@@ -134,7 +134,7 @@ onMounted(() => {
           <button class="icon-btn clickable" @click="playerStore.playPrev" :disabled="!playerStore.currentSong">
             <n-icon :component="PlaySkipBackSharp" />
           </button>
-          <button class="play-btn clickable" @click="togglePlay" :disabled="!playerStore.currentSong">
+          <button class="play-btn clickable hover-scale" @click="togglePlay" :disabled="!playerStore.currentSong">
             <n-icon :component="playerStore.isPlaying ? PauseSharp : PlaySharp" />
           </button>
           <button class="icon-btn clickable" @click="playerStore.playNext" :disabled="!playerStore.currentSong">
@@ -270,24 +270,17 @@ onMounted(() => {
 .quality-tag { 
     font-size: 10px; 
     height: 16px; 
-    line-height: 16px; 
-    padding: 0 6px; 
-    background-color: #000;
+    line-height: 14px; 
+    padding: 0 4px; 
+    background-color: transparent;
     color: #FFD700; 
-    font-weight: 900;
-    font-family: serif;
-    font-style: italic;
+    font-weight: 700;
     border: 1px solid #FFD700;
     border-radius: 2px;
-    letter-spacing: 0.5px;
     margin-left: 8px;
     display: inline-flex;
     align-items: center;
-    vertical-align: middle;
-    box-shadow: none;
-    height: 16px;
-    line-height: 14px;
-    font-size: 10px;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
 }
 .artist { font-size: 12px; color: var(--text-secondary); }
 
@@ -315,7 +308,24 @@ onMounted(() => {
 .lyrics-btn.active { opacity: 1; }
 .lyric-text-icon { font-size: 16px; font-weight: 800; border: 2px solid currentColor; border-radius: 4px; padding: 0 3px; line-height: 1.2; display: inline-block; transform: scale(0.8); }
 
-.play-btn { background: #fff; color: #000; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; }
+.play-btn { 
+  background: #fff; 
+  color: #000; 
+  width: 40px; /* Bigger play button */
+  height: 40px; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  border: none;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.play-btn:hover {
+  transform: scale(1.08); /* More dynamic hover */
+}
+.play-btn .n-icon {
+  font-size: 24px;
+}
 
 .progress-area { width: 100%; display: flex; align-items: center; gap: 10px; }
 .time { font-size: 11px; color: var(--text-secondary); min-width: 32px; }
@@ -325,9 +335,27 @@ onMounted(() => {
 .utility-controls { width: 30%; display: flex; justify-content: flex-end; align-items: center; z-index: 1; gap: 16px; }
 .volume-control { display: flex; align-items: center; gap: 12px; width: 120px; }
 
-:deep(.n-slider-rail) { height: 4px; border-radius: 2px; background-color: #4d4d4d !important; }
-:deep(.n-slider-rail__fill) { background-color: var(--sp-green) !important; }
-:deep(.n-slider-handle) { width: 12px; height: 12px; }
+:deep(.n-slider-rail) { 
+  height: 4px; 
+  border-radius: 2px; 
+  background-color: hsla(0,0%,100%,.3) !important; /* Spotify-style rail color */
+}
+:deep(.n-slider-rail__fill) { 
+  background-color: #fff !important; /* White progress on hover or default? Spotify uses green on hover, gray default. Let's stick to green for branding here. */
+}
+.progress-area:hover :deep(.n-slider-rail__fill) {
+    background-color: var(--sp-green) !important;
+}
+:deep(.n-slider-handle) { 
+  width: 12px; 
+  height: 12px; 
+  opacity: 0; /* Hide handle by default */
+  transition: opacity 0.2s;
+  background-color: #fff !important;
+}
+.progress-area:hover :deep(.n-slider-handle) {
+  opacity: 1; /* Show handle on hover */
+}
 
 .placeholder-cover {
   width: 100%; height: 100%;

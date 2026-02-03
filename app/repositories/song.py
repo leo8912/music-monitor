@@ -156,6 +156,11 @@ class SongRepository(BaseRepository[Song]):
             stmt = stmt.order_by(order_func(Song.created_at))
         elif sort_by == "title":
             stmt = stmt.order_by(order_func(Song.title))
+        elif sort_by == "artist":
+            # 关联 Artist 表并按名称排序
+            stmt = stmt.join(Artist).order_by(order_func(Artist.name))
+        elif sort_by == "album":
+            stmt = stmt.order_by(order_func(Song.album))
         else:
             # 默认排序
             stmt = stmt.order_by(Song.publish_time.desc().nullslast(), Song.created_at.desc())

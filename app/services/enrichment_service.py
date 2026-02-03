@@ -104,6 +104,13 @@ class EnrichmentService:
         2. 缺少专辑名或专辑名为垃圾值
         3. 缺少发布时间或发布时间无效
         """
+        # 检查重试退避 (Backoff)
+        if song.last_enrich_at:
+            # 如果 24 小时内刚尝试过补全，则跳过
+            delta = datetime.now() - song.last_enrich_at
+            if delta.total_seconds() < 24 * 3600:
+                return False
+
         # 检查封面
         if not song.cover:
             return True
@@ -178,6 +185,8 @@ class EnrichmentService:
             
             if not online_meta.success:
                 logger.warning(f"⚠️ 未找到在线元数据: {song.title}")
+                song.last_enrich_at = datetime.now()
+                await db.commit()
                 return False
             
             # 转换为 SongMetadata
@@ -197,9 +206,20 @@ class EnrichmentService:
             
             if not updates:
                 logger.info(f"⏭️ [{song.title}] 元数据已完整，无需更新")
+                song.last_enrich_at = datetime.now()
+                await db.commit()
                 return False
             
             logger.info(f"📝 将更新字段: {list(updates.keys())}")
+            
+            # [Fix] 强制本地化逻辑：
+            # 如果当前封面是远程链接（非 /uploads/ 开头），且 SmartMerger 因画质原因没有决定更新，
+            # 我们仍然强制将 online_meta.cover_url 加入 updates，以便后续流程下载并转为本地连接。
+            # 这样可以防止 _needs_enrichment 此后一直返回 True 造成死循环。
+            if song.cover and not song.cover.startswith('/uploads/'):
+                if "cover" not in updates and online_meta.cover_url:
+                    logger.info("⚠️ 发现远程封面，强制加入本地化更新队列")
+                    updates["cover"] = online_meta.cover_url
             
             # 4. 执行更新
             local_cover_path = None
@@ -241,6 +261,7 @@ class EnrichmentService:
                     if local_cover_url:
                         src.cover = local_cover_url
             
+            song.last_enrich_at = datetime.now()
             await db.commit()
             logger.info(f"✅ [{song.title}] 智能补全完成")
             return True
@@ -402,18 +423,28 @@ class EnrichmentService:
         logger.info(f"✅ FLAC 标签已更新: {os.path.basename(file_path)}")
     
     def _write_mp3_tags(self, file_path: str, album_name: str = None, cover_path: str = None):
-        """写入 MP3 标签"""
-        audio = MP3(file_path, ID3=ID3)
+        """写入 MP3 标签 (带容错)"""
+        try:
+            # 尝试作为 MP3 解析 (会检查 MPEG 帧)
+            audio = MP3(file_path, ID3=ID3)
+        except Exception:
+            # 如果音频帧损坏，尝试仅操作 ID3 标签
+            try:
+                audio = ID3(file_path)
+            except Exception:
+                # 如果完全没有标签，创建一个新的
+                audio = ID3()
         
-        if not audio.tags:
+        # 确保有 tags 属性 (对于 MP3 对象) 或本身就是 ID3 对象
+        if isinstance(audio, MP3) and not audio.tags:
             audio.add_tags()
-        
-        tag = audio.tags
         
         if cover_path and os.path.exists(cover_path):
             mime = 'image/png' if cover_path.endswith('.png') else 'image/jpeg'
             with open(cover_path, 'rb') as f:
-                tag.add(APIC(
+                # 无论 audio 是 MP3 还是 ID3，add 方法都可用
+                target = audio.tags if isinstance(audio, MP3) else audio
+                target.add(APIC(
                     encoding=3,  # UTF-8
                     mime=mime,
                     type=3,  # Front cover
@@ -421,5 +452,12 @@ class EnrichmentService:
                     data=f.read()
                 ))
         
-        audio.save()
+        if album_name:
+            target = audio.tags if isinstance(audio, MP3) else audio
+            target.add(TALB(encoding=3, text=album_name))
+            
+        if isinstance(audio, MP3):
+            audio.save()
+        else:
+            audio.save(file_path)
         logger.info(f"✅ MP3 标签已更新: {os.path.basename(file_path)}")

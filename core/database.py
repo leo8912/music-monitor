@@ -27,7 +27,9 @@ import os
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///music_monitor.db")
 
 # Import unified Base from app.models to include all models
-from app.models import Base
+# Import unified Base from app.models.base to avoid circular dependency
+# (do NOT import from app.models as it imports all models)
+from app.models.base import Base
 
 # Create async engine
 async_engine = create_async_engine(DATABASE_URL, echo=False)  # [Fix] Enable echo for debugging flicker issue
@@ -76,49 +78,40 @@ class MediaRecord(Base):
 import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import text
+from alembic.config import Config
+from alembic import command
 
-async def async_migrate_db():
-    """Async migration to add missing columns."""
-    async with async_engine.connect() as conn:
-        # Get column info using PRAGMA
-        result = await conn.execute(text("PRAGMA table_info(media_records)"))
-        columns = [row[1] for row in result.fetchall()]  # column name is in index 1
-        
-        if 'is_favorite' not in columns:
-            await conn.execute(text("ALTER TABLE media_records ADD COLUMN is_favorite BOOLEAN DEFAULT 0"))
-            await conn.commit()
-            print("Migrated: Added is_favorite column")
-            
-        if 'extra_sources' not in columns:
-            await conn.execute(text("ALTER TABLE media_records ADD COLUMN extra_sources TEXT"))
-            await conn.commit()
-            print("Migrated: Added extra_sources column")
-            
-        if 'trial_url' not in columns:
-            await conn.execute(text("ALTER TABLE media_records ADD COLUMN trial_url TEXT"))
-            await conn.commit()
-        if 'trial_url' not in columns:
-            await conn.execute(text("ALTER TABLE media_records ADD COLUMN trial_url TEXT"))
-            await conn.commit()
-            print("Migrated: Added trial_url column")
+async def async_run_migrations():
+    """Run Alembic migrations programmatically."""
+    def run_upgrade():
+        import os
+        # Ensure we are in the project root
+        project_root = os.path.dirname(os.path.dirname(__file__)) # d:/code/music-monitor
+        alembic_ini_path = os.path.join(project_root, "alembic.ini")
+        alembic_cfg = Config(alembic_ini_path)
+        # We need to set the sqlalchemy.url in the config if it's not set or needs override
+        # env.py already handles it dynamically from core.database.sync_database_url
+        command.upgrade(alembic_cfg, "head")
 
-        # Songs Table Migration
-        result_songs = await conn.execute(text("PRAGMA table_info(songs)"))
-        columns_songs = [row[1] for row in result_songs.fetchall()]
-        
-        if 'cover' not in columns_songs:
-            await conn.execute(text("ALTER TABLE songs ADD COLUMN cover VARCHAR"))
-            await conn.commit()
-            print("Migrated: Added cover column to songs table")
+    # Alembic is sync, so run in thread
+    await asyncio.to_thread(run_upgrade)
 
 async def async_init_db():
     async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    # Run migration after create_all (for existing DBs)
+        # Create all tables (including tracking existing ones)
+        # Note: With Alembic, we usually rely on migrations.
+        # But for 'create on fresh start', create_all is faster than running 100 migrations.
+        # However, to keep Alembic in sync, we should stamp the head if we use create_all.
+        # For now, let's try running migrations on top.
+        # await conn.run_sync(Base.metadata.create_all)
+        pass
+        
+    # Run Alembic Upgrade
     try:
-        await async_migrate_db()
+        await async_run_migrations()
+        print("Database migrations completed successfully.")
     except Exception as e:
-        print(f"Migration check failed: {e}")
+        print(f"Database migration failed: {e}")
 
 # Create sync engine for backward compatibility where needed
 sync_database_url = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")

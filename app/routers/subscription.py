@@ -7,14 +7,11 @@ from pydantic import BaseModel
 from loguru import logger
 
 from core.database import get_async_session
-from app.services.subscription import SubscriptionService
+from app.services.subscription import SubscriptionService, active_refreshes
 from app.models.artist import ArtistSource
 from app.schemas import ArtistConfig, SubscriptionResponse
 
 router = APIRouter(tags=["subscription"])
-
-# Store active refresh tasks to avoid redundant processing
-active_refreshes = set()
 
 async def run_refresh_task(artist_name: str, source: str = None, artist_id: str = None):
     """

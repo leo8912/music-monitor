@@ -146,7 +146,8 @@ class ScanService:
             logger.info(f"📂 正在扫描目录: {dir_name} (绝对路径: {abs_path})")
             files = await anyio.to_thread.run_sync(os.listdir, dir_name)
             logger.info(f"   - 目录下文件总数: {len(files)}")
-            audio_files = [f for f in files if f.endswith(self.supported_extensions)]
+            # Filter first, then process
+            audio_files = [f for f in files if f.lower().endswith(self.supported_extensions)]
             total_files = len(audio_files)
             processed_files = 0
             
@@ -165,15 +166,48 @@ class ScanService:
                 
                 file_path = os.path.join(dir_name, filename).replace("\\", "/")
                 
-                # 检查是否已处理过 (内存中检查)
-                if filename in existing_source_ids:
-                    # 如果需要更新音质，可以在这里加逻辑，但通常扫描不需要在这里频繁更新
-                    continue
+                # [Fix]: 不要简单根据 filename 跳过，需要结合路径判断
+                # 我们将在 _create_song_source 中处理具体的去重逻辑
+                # 但为了性能，如果我们确定该文件的路径已经完全入库，可以跳过
+                # (TODO: 需要一个 existing_paths 集合来做这种快速过滤，目前先不做严格过滤以确保修复)
                 
-                # 发现新文件
-                logger.info(f"📂 发现新本地文件: {file_path}")
+                # 发现潜在文件 (可能是已存在的)
+                # logger.debug(f"📂 处理文件: {file_path}")
                 metadata = await self._extract_metadata(file_path, filename)
                 
+                # [Fix] ensure metadata is a dict
+                if metadata is None:
+                     metadata = {}
+
+                # 如果提取失败（返回空或无效），尝试从文件名解析 (Artist - Title)
+                filename_no_ext = os.path.splitext(filename)[0]
+                
+                if not metadata.get('title'):
+                    if " - " in filename_no_ext:
+                        parts = filename_no_ext.split(" - ", 1)
+                        metadata['artist_name'] = parts[0].strip()
+                        metadata['title'] = parts[1].strip()
+                    else:
+                        metadata['title'] = filename_no_ext
+                
+                if not metadata.get('artist_name'):
+                     metadata['artist_name'] = "Unknown Artist"
+                     
+                # Fallback: Check if title still contains " - " and artist is Unknown
+                # (Handle case where title was set but artist wasn't)
+                if metadata.get('artist_name') == "Unknown Artist" and " - " in metadata.get('title', ''):
+                     parts = metadata['title'].split(" - ", 1)
+                     metadata['artist_name'] = parts[0].strip()
+                     metadata['title'] = parts[1].strip()
+                     
+                # Ensure other keys exist
+                for key in ['album', 'cover']:
+                    if key not in metadata:
+                        metadata[key] = None
+                
+                if 'publish_time' not in metadata:
+                    metadata['publish_time'] = None
+
                 # 获取歌手 (使用缓存)
                 artist_name = metadata['artist_name']
                 if artist_name in artist_map:
@@ -188,22 +222,17 @@ class ScanService:
                     db, song_repo, metadata, artist_obj
                 )
                 
-                # 创建本地源记录
+                # 创建本地源记录 (使用封装方法处理去重和 path 更新)
                 data_json = {
                     "quality": metadata.get('quality_info', 'PQ'),
                     "format": os.path.splitext(filename)[1].replace('.', '').upper(),
                     "cover": metadata.get('cover')
                 }
                 
-                new_source = SongSource(
-                    song_id=song_obj.id,
-                    source="local",
-                    source_id=filename,
-                    url=file_path,
-                    data_json=data_json,
-                    cover=data_json.get('cover')
+                await self._create_song_source(
+                    db, song_obj, filename, file_path, data_json
                 )
-                db.add(new_source)
+                
                 existing_source_ids.add(filename)
                 new_count += 1
                 
@@ -302,119 +331,170 @@ class ScanService:
     async def _extract_metadata(self, file_path: str, filename: str) -> Dict[str, any]:
         """
         从音频文件中提取元数据
-        
-        Args:
-            file_path: 文件路径
-            filename: 文件名
-            
-        Returns:
-            元数据字典 { title, artist_name, album, publish_time }
+        (包含针对损坏 MP3 的 ID3 降级处理)
         """
         from mutagen import File as MutagenFile
+        from datetime import datetime
+        import hashlib
         
         title = None
         artist_name = "Unknown"
         album = None
         publish_time = None
         cover_url = None
+        quality_info = "HQ" 
         
+        audio_file = None
+        
+        # 1. 尝试使用 mutagen.File 自动探测
         try:
             audio_file = MutagenFile(file_path, easy=False)
-            if audio_file is not None:
-                # 提取封面
-                try:
-                    cover_data = None
-                    # ID3 (MP3)
-                    if hasattr(audio_file, 'tags') and hasattr(audio_file.tags, 'getall'):
-                        apic_frames = audio_file.tags.getall('APIC')
-                        if apic_frames:
-                            cover_data = apic_frames[0].data
-                    
-                    # FLAC / Vorbis
-                    if not cover_data and hasattr(audio_file, 'pictures'):
-                        if audio_file.pictures:
-                            cover_data = audio_file.pictures[0].data
-                            
-                    # M4A (MP4)
-                    if not cover_data and hasattr(audio_file, 'tags') and 'covr' in audio_file.tags:
-                        covrs = audio_file.tags['covr']
-                        if covrs:
-                            cover_data = covrs[0] # bytes
-
-                    if cover_data:
-                        # Save to /uploads/covers/
-                        md5 = hashlib.md5(cover_data).hexdigest()
-                        
-                        # Determine Log/Config dir (Hack: assume relative or env)
-                        # We use relative path 'uploads' based on main.py logic matching
-                        # Better to read global config but for now relative 'uploads' works if CWD is consistent
-                        upload_root = "uploads"
-                        if os.path.exists("/config"): # Docker env
-                             upload_root = "/config/uploads"
-                        
-                        cover_dir = os.path.join(upload_root, "covers")
-                        os.makedirs(cover_dir, exist_ok=True)
-                        
-                        cover_filename = f"{md5}.jpg" # Assume jpg for simplicity or detect magic
-                        # Simple magic check
-                        if cover_data.startswith(b'\x89PNG'): cover_filename = f"{md5}.png"
-                        
-                        save_path = os.path.join(cover_dir, cover_filename)
-                        if not os.path.exists(save_path):
-                            with open(save_path, "wb") as f:
-                                f.write(cover_data)
-                        
-                        cover_url = f"/uploads/covers/{cover_filename}"
-                        
-                except Exception as e:
-                    logger.warning(f"封面提取失败 {filename}: {e}")
-
-                # 提取基本信息
-                # 提取基本信息
-                if 'title' in audio_file:
-                    title = audio_file['title'][0]
-                if 'artist' in audio_file:
-                    artist_name = audio_file['artist'][0]
-                if 'album' in audio_file:
-                    album = audio_file['album'][0]
-                
-                # 提取日期
-                date_str = None
-                if 'date' in audio_file:
-                    date_str = audio_file['date'][0]
-                elif 'TDRC' in audio_file:
-                    date_str = str(audio_file['TDRC'])
-                elif 'TYER' in audio_file:
-                    date_str = str(audio_file['TYER'])
-                
-                if date_str:
-                    try:
-                        # 提取前4位数字作为年份
-                        year_str = str(date_str)[:4]
-                        if year_str.isdigit():
-                            publish_time = datetime.strptime(year_str, "%Y")
-                    except:
-                        pass
-        except Exception as e:
-            logger.warning(f"❌ 读取标签失败 {filename}: {e}")
+        except Exception:
+            pass
         
+        # 2. [Fix] 如果自动探测失败，且是 MP3，尝试强制读取 ID3 标签
+        # 这可以解决 "can't sync to MPEG frame" 导致整个文件读取失败的问题
+        if not audio_file and filename.lower().endswith('.mp3'):
+             from mutagen.id3 import ID3
+             try:
+                 audio_file = ID3(file_path)
+             except Exception:
+                 pass
+
+        if audio_file:
+            # --- 封面提取 ---
+            try:
+                cover_data = None
+                if hasattr(audio_file, 'tags') and audio_file.tags:
+                    tags = audio_file.tags
+                    # ID3 (MP3) or MP3 object with tags
+                    if hasattr(tags, 'get') and (tags.get("APIC:") or tags.get("APIC")):
+                        apic = tags.get("APIC:") or tags.get("APIC")
+                        cover_data = apic.data
+                    # FLAC or Vorbis
+                    elif hasattr(audio_file, 'pictures') and audio_file.pictures:
+                        cover_data = audio_file.pictures[0].data
+                    # Fallback for ID3 dict iteration
+                    elif isinstance(tags, dict): 
+                         for key in tags.keys():
+                            if key.startswith('APIC'):
+                                cover_data = tags[key].data
+                                break
+                
+                # M4A / MP4
+                if not cover_data and hasattr(audio_file, 'tags') and 'covr' in audio_file.tags:
+                    covrs = audio_file.tags['covr']
+                    if covrs: cover_data = covrs[0]
+
+                if cover_data:
+                    # 计算封面 MD5
+                    md5 = hashlib.md5(cover_data).hexdigest()
+                    
+                    upload_root = "uploads"
+                    if os.path.exists("/config"): # Docker env
+                         upload_root = "/config/uploads"
+                    
+                    cover_dir = os.path.join(upload_root, "covers")
+                    os.makedirs(cover_dir, exist_ok=True)
+                    
+                    cover_filename = f"{md5}.jpg"
+                    if cover_data.startswith(b'\x89PNG'): cover_filename = f"{md5}.png"
+                    
+                    save_path = os.path.join(cover_dir, cover_filename)
+                    if not os.path.exists(save_path):
+                        with open(save_path, "wb") as f:
+                            f.write(cover_data)
+                    
+                    cover_url = f"/uploads/covers/{cover_filename}"
+                    
+            except Exception as e:
+                pass # Squelch cover errors
+
+            # --- 基本信息提取 ---
+            def get_tag(obj, keys):
+                for k in keys:
+                    # Case 1: Dict-like (EasyID3/dict)
+                    if hasattr(obj, 'get'):
+                        val = obj.get(k)
+                        if val:
+                            if isinstance(val, list): return val[0]
+                            return str(val)
+                    # Case 2: ID3 Object with tags attr
+                    if hasattr(obj, 'tags') and obj.tags and k in obj.tags:
+                        val = obj.tags[k]
+                        if hasattr(val, 'text'): return val.text[0]
+                        return str(val)
+                    # Case 3: obj IS tags (ID3 Object)
+                    if k in obj:
+                         val = obj[k]
+                         if hasattr(val, 'text'): return val.text[0]
+                         return str(val)
+                return None
+
+            # 尝试从 tags 或 audio_file 本身获取
+            target = audio_file
+            if hasattr(audio_file, 'tags') and audio_file.tags:
+                target = audio_file.tags
+
+            # Title
+            t = get_tag(target, ['title', 'TIT2'])
+            if t: title = t
+            
+            # Artist
+            a = get_tag(target, ['artist', 'TPE1'])
+            if a: artist_name = a
+            
+            # Album
+            al = get_tag(target, ['album', 'TALB'])
+            if al: album = al
+            
+            # Date
+            d = get_tag(target, ['date', 'TDRC', 'TYER'])
+            if d:
+                date_str = str(d)
+                try:
+                    year_str = str(date_str)[:4]
+                    if year_str.isdigit():
+                        publish_time = datetime.strptime(year_str, "%Y")
+                except:
+                    pass
+    
+    
         # 文件名回退策略
+        # [Fix] 如果标题缺失，或者歌手是 "Unknown" (且文件名包含 " - ")，则尝试解析文件名
         clean_name = os.path.splitext(filename)[0]
-        if not title:
+        should_parse_filename = not title
+        
+        if not should_parse_filename and (not artist_name or artist_name == "Unknown"):
+             if " - " in clean_name:
+                 should_parse_filename = True
+
+        if should_parse_filename:
             if " - " in clean_name:
                 parts = clean_name.split(" - ", 1)
                 artist_name = parts[0].strip()
                 title = parts[1].strip()
             else:
-                title = clean_name.strip()
+                # 只有当标题真的缺失时才用文件名作为标题
+                if not title:
+                    title = clean_name.strip()
         
+        # Quality Analysis
+        quality_info = "HQ"
+        if audio_file:
+             try:
+                # Assuming _analyze_quality is available in self
+                quality_info = self._analyze_quality(audio_file)
+             except:
+                quality_info = "HQ"
+            
         return {
             "title": title,
             "artist_name": artist_name,
             "album": album,
             "publish_time": publish_time,
-            "cover": cover_url,
-            "quality_info": self._analyze_quality(audio_file)
+            "cover_url": cover_url,
+            "quality": quality_info
         }
 
     def _analyze_quality(self, audio_file) -> str:
@@ -426,10 +506,11 @@ class ScanService:
         2. LOSSLESS (SQ): 无损编码格式 (FLAC/WAV/ALAC/APE) 且非 HR
         3. HIGH QUALITY (HQ): 有损格式 (MP3/AAC/OGG) 且比特率 >= 320kbps (宽松处理 >= 250k)
         4. STANDARD (PQ): 其他情况
+        5. ERROR (ERR): 文件损坏或无法读取
         """
         try:
             if not audio_file or not hasattr(audio_file, 'info'):
-                return "PQ"
+                return "ERR"
             
             info = audio_file.info
             
@@ -561,40 +642,63 @@ class ScanService:
         data_json: Dict = None
     ):
         """
-        创建歌曲源记录
+        创建歌曲源记录 (支持多路径同名文件)
         
         Args:
             db: 数据库会话
             song_obj: 歌曲对象
-            filename: 文件名
-            file_path: 文件路径
+            filename: 文件名 (用作基础 source_id)
+            file_path: 文件路径 (url)
             data_json: 额外数据
         """
-        # 更新歌曲的本地路径
+        # 更新歌曲的本地路径 (如果是首个本地源，或者原来的路径已失效)
         if not song_obj.local_path:
             song_obj.local_path = file_path
         
-        # 检查该特定的本地文件源是否已存在
-        stmt = select(SongSource).where(
+        # 1. 尝试查找完全匹配 (Song + Path)
+        stmt_path = select(SongSource).where(
+            SongSource.song_id == song_obj.id,
+            SongSource.source == "local",
+            SongSource.url == file_path
+        )
+        # Use first() to avoid crashing on duplicates (MultipleResultsFound)
+        existing_by_path = (await db.execute(stmt_path)).scalars().first()
+        
+        if existing_by_path:
+            # 路径完全匹配，只需更新 metadata
+            if data_json:
+                existing_by_path.data_json = data_json
+                existing_by_path.cover = data_json.get('cover')
+            return
+
+        # 2. 如果路径未匹配，说明这是该歌曲的一个新文件 (可能是 duplicate at different path)
+        # 我们需要生成一个唯一的 source_id
+        
+        # 2.1 检查是否可以直接用 filename 作为 source_id
+        stmt_filename = select(SongSource).where(
             SongSource.song_id == song_obj.id,
             SongSource.source == "local",
             SongSource.source_id == filename
         )
-        existing_source = (await db.execute(stmt)).scalar_one_or_none()
+        existing_by_filename = (await db.execute(stmt_filename)).scalars().first()
         
-        if existing_source:
-            # 如果存在，更新 data_json (为了修复旧数据)
-            if data_json:
-                existing_source.data_json = data_json
-                existing_source.url = file_path # 确保路径也是最新的
-        else:
-            # 创建本地源记录
-            new_source = SongSource(
-                song_id=song_obj.id,
-                source="local",
-                source_id=filename,
-                url=file_path,
-                data_json=data_json,
-                cover=data_json.get('cover') if data_json else None
-            )
-            db.add(new_source)
+        final_source_id = filename
+        
+        if existing_by_filename:
+            # 冲突！已有一个同名文件 (source_id=filename)，但路径不同 (前面 check_path 没过)
+            # 我们需要为当前文件生成一个新的 unique source_id
+            # 策略: filename + "_" + MD5(path)[:6]
+            path_hash = hashlib.md5(file_path.encode('utf-8')).hexdigest()[:6]
+            final_source_id = f"{filename}_{path_hash}"
+            logger.info(f"🔀 发现同名不同目录文件，生成唯一ID: {final_source_id}")
+            
+        # 创建新的源记录
+        new_source = SongSource(
+            song_id=song_obj.id,
+            source="local",
+            source_id=final_source_id, # 可能是 filename 或 filename_hash
+            url=file_path,
+            data_json=data_json,
+            cover=data_json.get('cover') if data_json else None
+        )
+        db.add(new_source)

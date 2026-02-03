@@ -1,0 +1,12 @@
+{
+  "key": "aggregator_metadata:get_song_metadata_from_best_source:潮汐锁定（伴奏） (Tidal Locked):宿羽阳",
+  "timestamp": 1770094293.1779816,
+  "value": {
+    "lyrics": "作词 : 京\n作曲 : 宿羽阳\n\n",
+    "cover_url": "http://p1.music.126.net/MjZGS6EKZuoonXUxkJ47IA==/109951168843414744.jpg",
+    "album": "潮汐锁定 (Tidal Locked)",
+    "publish_time": "1587052800000",
+    "source": "netease",
+    "song_id": "1441064843"
+  }
+}

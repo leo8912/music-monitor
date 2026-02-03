@@ -11,13 +11,18 @@ import asyncio
 from typing import List, Optional
 from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+import os
+from sqlalchemy import select, delete, desc, asc
 
 from core.database import get_async_session
 from app.services.library import LibraryService
 from app.services.scan_service import ScanService
 from app.services.enrichment_service import EnrichmentService
 from app.repositories.song import SongRepository
+from app.models.song import SongSource
 from app.pagination import PaginatedResponse, convert_skip_limit_to_page
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/library", tags=["library"])
 
@@ -123,6 +128,8 @@ async def get_local_songs(
     # 旧分页参数 - 向后兼容
     skip: Optional[int] = Query(None, ge=0, description="[已废弃] 使用 page 代替"),
     limit: Optional[int] = Query(None, ge=1, le=100, description="[已废弃] 使用 page_size 代替"),
+    sort_by: str = Query("created_at", description="排序字段: created_at, publish_time, artist, title, album"),
+    order: str = Query("desc", description="排序方向: desc, asc"),
     db: AsyncSession = Depends(get_async_session)
 ):
     """
@@ -155,7 +162,22 @@ async def get_local_songs(
             selectinload(Song.sources)
         )
         stmt = stmt.where(Song.local_path.isnot(None))
-        stmt = stmt.order_by(Song.created_at.desc())
+        
+        # 排序处理
+        order_func = desc if order.lower() == "desc" else asc
+        if sort_by == "created_at":
+            stmt = stmt.order_by(order_func(Song.created_at))
+        elif sort_by == "publish_time":
+            stmt = stmt.order_by(order_func(Song.publish_time).nullslast())
+        elif sort_by == "artist":
+            from app.models.artist import Artist
+            stmt = stmt.join(Artist).order_by(order_func(Artist.name))
+        elif sort_by == "title":
+            stmt = stmt.order_by(order_func(Song.title))
+        elif sort_by == "album":
+            stmt = stmt.order_by(order_func(Song.album))
+        else:
+             stmt = stmt.order_by(Song.created_at.desc())
         
         # 分页
         count_stmt = select(func.count()).select_from(stmt.subquery())
@@ -177,7 +199,9 @@ async def get_local_songs(
             local_cover = None
             
             # Define quality priority
-            q_priority = {"HR": 4, "SQ": 3, "HQ": 2, "PQ": 1, None: 0}
+            # q_priority = {"HR": 5, "SQ": 4, "HQ": 3, "PQ": 2, "ERR": 1, None: 0}
+            q_priority = {"HR": 5, "SQ": 4, "HQ": 3, "PQ": 2, "ERR": 1, None: 0}
+            local_files_list = []
             
             for src in s.sources:
                 if src.source == 'local':
@@ -194,6 +218,15 @@ async def get_local_songs(
                     src_cover = getattr(src, 'cover', None) or data.get('cover')
                     if src_cover and str(src_cover).startswith('/uploads/'):
                         local_cover = src_cover
+                        
+                    # Collect file details
+                    local_files_list.append({
+                        "id": src.id,
+                        "source_id": src.source_id,
+                        "path": src.url,
+                        "quality": new_q or 'PQ',
+                        "format": data.get('format', 'UNK')
+                    })
             
             # View object construction
             final_cover = local_cover if local_cover else s.cover
@@ -212,7 +245,10 @@ async def get_local_songs(
                 "is_favorite": s.is_favorite,
                 "status": status,
                 "quality": quality,
-                "availableSources": []
+                "status": status,
+                "quality": quality,
+                "availableSources": [],
+                "localFiles": local_files_list
             })
 
         return PaginatedResponse.create(
@@ -449,3 +485,54 @@ async def delete_artist_by_name(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"删除失败: {str(e)}")
+
+@router.delete("/source/{source_db_id}")
+async def delete_source(
+    source_db_id: int,
+    delete_file: bool = Query(True, description="Whether to delete the physical file"),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Delete a specific source (e.g., a specific local file).
+    If it's a local source, optionally delete the physical file.
+    """
+    try:
+        # 1. Fetch the source
+        stmt = select(SongSource).where(SongSource.id == source_db_id)
+        result = await db.execute(stmt)
+        source = result.scalar_one_or_none()
+        
+        if not source:
+            raise HTTPException(status_code=404, detail="Source not found")
+            
+        file_path_to_delete = None
+        if source.source == 'local' and delete_file and source.url:
+             file_path_to_delete = source.url
+             
+        # 2. Delete from DB
+        await db.delete(source)
+        await db.commit()
+        
+        # 3. Delete physical file if requested
+        deleted_file = False
+        if file_path_to_delete and os.path.exists(file_path_to_delete):
+            try:
+                os.remove(file_path_to_delete)
+                deleted_file = True
+                logger.info(f"🗑️ Deleted physical file: {file_path_to_delete}")
+            except Exception as e:
+                logger.error(f"❌ Failed to delete file {file_path_to_delete}: {e}")
+                # We don't rollback DB transaction because the user purpose is to remove it from library primarily
+                
+        return {
+            "success": True, 
+            "message": "Source deleted", 
+            "file_deleted": deleted_file
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Delete source failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

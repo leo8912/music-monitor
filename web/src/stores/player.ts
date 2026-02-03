@@ -62,9 +62,9 @@ export const usePlayerStore = defineStore('player', () => {
 
         try {
             // 如果有本地路径，直接播放
-            if (song.localPath) {
+            if (song.local_path) {
                 // [Fix] 同时支持正斜杠和反斜杠提取文件名
-                const parts = song.localPath.split(/[/\\]/)
+                const parts = song.local_path.split(/[/\\]/)
                 const filename = parts.pop()
                 if (filename) {
                     audioUrl.value = playerApi.getAudioUrl(filename)
@@ -77,14 +77,15 @@ export const usePlayerStore = defineStore('player', () => {
                     artist: song.artist,
                     album: song.album,
                     source: song.source,
-                    songId: song.sourceId
+                    songId: song.source_id,
+                    picUrl: song.cover || ''
                 })
 
                 if (result.localPath) {
                     const filename = result.localPath.split('/').pop() || result.localPath.split('\\').pop()
                     if (filename) {
                         audioUrl.value = playerApi.getAudioUrl(filename)
-                        song.localPath = result.localPath
+                        song.local_path = result.localPath
                     }
                 } else {
                     throw new Error('下载未返回有效路径')
@@ -97,8 +98,8 @@ export const usePlayerStore = defineStore('player', () => {
 
             // [New] Universal Quality Inference logic
             // Runs for both local-cached and newly-downloaded songs
-            if (!song.quality && song.localPath) {
-                const ext = song.localPath.split('.').pop()?.toLowerCase()
+            if (!song.quality && song.local_path) {
+                const ext = song.local_path.split('.').pop()?.toLowerCase()
                 if (ext === 'flac' || ext === 'wav' || ext === 'ape') song.quality = 'SQ'
                 else if (ext === 'mp3') song.quality = 'HQ'
             }
@@ -115,7 +116,7 @@ export const usePlayerStore = defineStore('player', () => {
                 artist: song.artist,
                 album: song.album,
                 source: song.source,
-                media_id: song.sourceId || song.id.toString(),
+                media_id: song.source_id || song.id.toString(),
                 cover: song.cover
             }).catch(e => console.warn('记录播放历史失败:', e))
 

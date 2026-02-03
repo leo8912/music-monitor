@@ -144,7 +144,16 @@ class LibraryService:
         
         委托给 ArtistRefreshService
         """
-        return await self.artist_refresh_service.refresh(db, artist_name)
+        count = await self.artist_refresh_service.refresh(db, artist_name)
+        
+        # [Fix] Trigger pending downloads immediately
+        try:
+            logger.info("Triggering pending download queue after refresh...")
+            await self.song_service.process_pending_queue(db)
+        except Exception as e:
+            logger.error(f"Failed to process pending queue: {e}")
+            
+        return count
     
     # ==================== 元数据匹配 ====================
     

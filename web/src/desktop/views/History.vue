@@ -24,8 +24,11 @@
           :history="libraryStore.historySongs" 
           :loading="isLoading"
           mode="history"
+          :sort-field="libraryStore.sortField"
+          :sort-order="libraryStore.sortOrder"
           @play="handlePlay" 
           @toggleFavorite="libraryStore.toggleFavorite"
+          @sort="({ field, order }) => { libraryStore.sortField = field; libraryStore.sortOrder = order; libraryStore.fetchHistory(1); }"
         />
 
         <div class="footer-pagination" v-if="libraryStore.totalHistorySongs > libraryStore.pageSize">

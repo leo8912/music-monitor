@@ -49,49 +49,86 @@ export interface SystemStatus {
 
 // 设置配置
 export interface Settings {
-    global: {
-        external_url: string
-        check_interval_minutes: number
-        theme: string
+    storage: {
+        library_dir: string
+        cache_dir: string
+        favorites_dir: string
+        max_cache_size: number
+        cleanup_threshold: number
     }
-    monitor: {
-        netease: {
-            enabled: boolean
-            interval: number
-            users: any[]
-        }
-        qqmusic: {
-            enabled: boolean
-            interval: number
-            users: any[]
-        }
+    database: {
+        url: string
+        echo: boolean
+        pool_size: number
+        max_overflow: number
+    }
+    logging: {
+        level: string
+        format: string
+        file: string
+        max_bytes: number
+        backup_count: number
+    }
+    system: {
+        external_url: string
+    }
+    auth: {
+        enabled: boolean
+        secret_key: string
+        algorithm: string
+        access_token_expire_minutes: number
+        refresh_token_expire_days: number
+        username?: string
+        password?: string
+    }
+    api: {
+        rate_limit: { requests_per_minute: number; burst_size: number }
+        timeout: number
     }
     download: {
+        max_concurrent_downloads: number
+        timeout: number
+        retry_attempts: number
         quality_preference: number
         sources: string[]
-        max_concurrent_downloads: number
+    }
+    monitor: {
+        enabled: boolean
+        interval: number
+    }
+    metadata: {
+        enable_lyrics: boolean
+        enable_cover: boolean
+        enable_album: boolean
+        lyrics_priority: string[]
+        cover_priority: string[]
+        album_priority: string[]
+    }
+    scheduler: {
+        check_interval_minutes: number
+        sync_interval_hours: number
+        cleanup_interval_hours: number
     }
     notify: {
-        wecom?: WecomConfig
-        telegram?: TelegramConfig
-    }
-    storage?: {
-        favorites_dir: string
-        cache_dir: string
+        enabled: boolean
+        wecom: WecomConfig
+        telegram: TelegramConfig
     }
 }
 
 // 企业微信配置
 export interface WecomConfig {
-    corpid: string
-    agentid: string
-    corpsecret: string
+    enabled: boolean
+    corp_id: string
+    agent_id: string
+    secret: string
     token?: string
     encoding_aes_key?: string
 }
 
 // Telegram 配置
 export interface TelegramConfig {
+    enabled: boolean
     bot_token: string
     chat_id: string
 }

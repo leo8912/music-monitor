@@ -50,42 +50,46 @@ from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 from pydantic import BaseModel
 
-# Configure logging
-LOG_DIR = "/config/logs" if os.path.exists("/config") else "logs"
-os.makedirs(LOG_DIR, exist_ok=True)
-LOG_FILE = os.path.join(LOG_DIR, "application.log")
 
-from logging.handlers import TimedRotatingFileHandler
+def setup_logging():
+    # Configure logging
+    LOG_DIR = "/config/logs" if os.path.exists("/config") else "logs"
+    os.makedirs(LOG_DIR, exist_ok=True)
+    LOG_FILE = os.path.join(LOG_DIR, "application.log")
 
-# Basic Config (Console)
-file_handler = TimedRotatingFileHandler(
-    LOG_FILE, 
-    when='midnight', 
-    interval=1, 
-    backupCount=10, 
-    encoding='utf-8'
-)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
+    from logging.handlers import TimedRotatingFileHandler
 
-logging.basicConfig(
-    level=logging.INFO, 
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        file_handler
-    ]
-)
+    # Basic Config (Console)
+    file_handler = TimedRotatingFileHandler(
+        LOG_FILE, 
+        when='midnight', 
+        interval=1, 
+        backupCount=10, 
+        encoding='utf-8'
+    )
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
 
-for logger_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
-    logging.getLogger(logger_name).addHandler(file_handler)
+    logging.basicConfig(
+        level=logging.INFO, 
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            file_handler
+        ],
+        force=True
+    )
 
-logging.getLogger("apscheduler").setLevel(logging.WARNING)
-logging.getLogger("apscheduler.executors.default").setLevel(logging.ERROR)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("qqmusic_api").setLevel(logging.WARNING)
-logging.getLogger("watchfiles").setLevel(logging.WARNING)
+    for logger_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
+        logging.getLogger(logger_name).addHandler(file_handler)
 
+    logging.getLogger("apscheduler").setLevel(logging.WARNING)
+    logging.getLogger("apscheduler.executors.default").setLevel(logging.ERROR)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("qqmusic_api").setLevel(logging.WARNING)
+    logging.getLogger("watchfiles").setLevel(logging.WARNING)
+    
+setup_logging()
 logger = logging.getLogger(__name__)
 
 from core.config import CONFIG_FILE_PATH
@@ -105,115 +109,131 @@ from starlette.concurrency import run_in_threadpool
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    migrate_and_save_config()
-    config_instance = get_config_manager()
-    config_instance.reload()
-    init_db()
-    
-    mon_cfg = config_instance.get('monitor', {})
-    # Start Scheduler
-    scheduler.start()
-    
-    # Phase 9: Register Library Scan Jobs
-    from app.services.library import LibraryService
-    from core.database import AsyncSessionLocal
-    
-    async def run_library_scan_task(task_type: str = "monitor"):
-        """
-        Scheduled task for library scanning and enrichment.
-        task_type: 'monitor' (frequent, fast) or 'backup' (slow, full)
-        """
-        import logging
-        logger = logging.getLogger("scheduler")
+    try:
+        migrate_and_save_config()
+        config_instance = get_config_manager()
+        config_instance.reload()
         
-        try:
-            # We need a synchronous session factory for async context if using run_in_executor
-            # But we are in async scheduler, so we can use AsyncSession if we had an async factory
-            # Or use sync SessionLocal and wrap it?
-            # Actually core/database.py shows SessionLocal is sync? Let's check.
-            # Wait, app uses AsyncSession (get_async_session). 
-            # I should verify if SessionLocal is async or sync.
-            # In media_service imports: from core.database import SessionLocal 
-            # and usages: db = SessionLocal(), db.close(). This looks sync.
-            # But services expect AsyncSession in some methods?
-            # LibraryService methods: async def scan_local_files(self, db: AsyncSession)
-            # So I MUST provide an AsyncSession.
+        init_db()
+        
+        # Restore logging config (Alembic might have clobbered it)
+        setup_logging()
+        logger.info("Logging configuration restored after DB migration.")
+
+        mon_cfg = config_instance.get('monitor', {})
+        # Start Scheduler
+        scheduler.start()
+        
+        # Phase 9: Register Library Scan Jobs
+        from app.services.library import LibraryService
+        from core.database import AsyncSessionLocal
+        
+        async def run_library_scan_task(task_type: str = "monitor"):
+            """
+            Scheduled task for library scanning and enrichment.
+            task_type: 'monitor' (frequent, fast) or 'backup' (slow, full)
+            """
+            import logging
+            logger = logging.getLogger("scheduler")
             
-            from core.database import AsyncSessionLocal 
-            
-            async with AsyncSessionLocal() as db:
-                service = LibraryService()
+            try:
+                # We need a synchronous session factory for async context if using run_in_executor
+                # But we are in async scheduler, so we can use AsyncSession if we had an async factory
+                # Or use sync SessionLocal and wrap it?
+                # Actually core/database.py shows SessionLocal is sync? Let's check.
+                # Wait, app uses AsyncSession (get_async_session). 
+                # I should verify if SessionLocal is async or sync.
+                # In media_service imports: from core.database import SessionLocal 
+                # and usages: db = SessionLocal(), db.close(). This looks sync.
+                # But services expect AsyncSession in some methods?
+                # LibraryService methods: async def scan_local_files(self, db: AsyncSession)
+                # So I MUST provide an AsyncSession.
                 
-                # Scan - 使用 ScanService
-                scan_res = await service.scan_service.scan_local_files(db)
+                from core.database import AsyncSessionLocal 
                 
-                added = 0
-                removed = 0
-                
-                if isinstance(scan_res, dict):
-                    added = scan_res.get("new_files_found", 0)
-                    removed = scan_res.get("removed_files_count", 0)
-                elif isinstance(scan_res, int):
-                    added = scan_res
-                
-                if added > 0 or removed > 0:
-                    logger.info(f"[{task_type}] Scan: Found {added} new, removed {removed} records.")
-                
-                # Enrich - 使用 EnrichmentService (limit depends on type)
-                should_enrich = False
-                if isinstance(scan_res, dict) and scan_res.get("new_files_found", 0) > 0:
-                    should_enrich = True
-                elif isinstance(scan_res, int) and scan_res > 0:
-                    should_enrich = True
+                async with AsyncSessionLocal() as db:
+                    service = LibraryService()
                     
-                if should_enrich:
-                    logger.info("Triggering auto-enrichment for new files...")
-                    try:
-                        # 使用新的 auto_enrich_library 方法 (无需传 db, 内部管理)
-                        await service.enrichment_service.auto_enrich_library()
-                    except Exception as e:
-                        logger.error(f"Auto enrichment failed: {e}")
-                     
-        except Exception as e:
-            logger.error(f"Error in library scan task ({task_type}): {e}", exc_info=True)
+                    # Scan - 使用 ScanService
+                    scan_res = await service.scan_service.scan_local_files(db)
+                    
+                    added = 0
+                    removed = 0
+                    
+                    if isinstance(scan_res, dict):
+                        added = scan_res.get("new_files_found", 0)
+                        removed = scan_res.get("removed_files_count", 0)
+                    elif isinstance(scan_res, int):
+                        added = scan_res
+                    
+                    if added > 0 or removed > 0:
+                        logger.info(f"[{task_type}] Scan: Found {added} new, removed {removed} records.")
+                    
+                    # Enrich - 使用 EnrichmentService (limit depends on type)
+                    should_enrich = False
+                    if isinstance(scan_res, dict) and scan_res.get("new_files_found", 0) > 0:
+                        should_enrich = True
+                    elif isinstance(scan_res, int) and scan_res > 0:
+                        should_enrich = True
+                        
+                    if should_enrich:
+                        logger.info("Triggering auto-enrichment for new files...")
+                        try:
+                            # 使用新的 auto_enrich_library 方法 (无需传 db, 内部管理)
+                            await service.enrichment_service.auto_enrich_library()
+                        except Exception as e:
+                            logger.error(f"Auto enrichment failed: {e}")
+                         
+            except Exception as e:
+                logger.error(f"Error in library scan task ({task_type}): {e}", exc_info=True)
 
-    # Job 1: Pseudo-Monitoring (Every 60s)
-    scheduler.add_job(run_library_scan_task, 'interval', seconds=60, args=['monitor'], id='job_library_monitor')
-    
-    # Job 2: Backup Scan (Every 30m)
-    scheduler.add_job(run_library_scan_task, 'interval', minutes=30, args=['backup'], id='job_library_backup')
-    
-    # 已移除: PLUGINS 监控任务 (使用 music_providers 替代)
-            
-    from app.services.media_service import check_file_integrity
-    scheduler.add_job(
-        check_file_integrity,
-        'interval',
-        hours=24,
-        id="job_file_integrity",
-        replace_existing=True
-    )
-    logger.info("已调度文件完整性检查任务，每 24 小时执行一次")
+        # Job 1: Pseudo-Monitoring (Every 60s)
+        scheduler.add_job(run_library_scan_task, 'interval', seconds=60, args=['monitor'], id='job_library_monitor')
+        
+        # Job 2: Backup Scan (Every 30m)
+        scheduler.add_job(run_library_scan_task, 'interval', minutes=30, args=['backup'], id='job_library_backup')
+        
+        # 已移除: PLUGINS 监控任务 (使用 music_providers 替代)
+                
+        from app.services.media_service import check_file_integrity
+        scheduler.add_job(
+            check_file_integrity,
+            'interval',
+            hours=24,
+            id="job_file_integrity",
+            replace_existing=True
+        )
+        logger.info("已调度文件完整性检查任务，每 24 小时执行一次")
 
-    # 已移除: cleanup_cache 任务
-    
-    from app.services.media_service import auto_cache_recent_songs
-    scheduler.add_job(
-        auto_cache_recent_songs,
-        'interval',
-        minutes=30,
-        id="job_auto_cache",
-        replace_existing=True
-    )
-    logger.info(f"已调度自动缓存任务，每 30 分钟执行一次")
-    
-    NotificationService.initialize()
+        # 已移除: cleanup_cache 任务
+        
+        from app.services.media_service import auto_cache_recent_songs
+        scheduler.add_job(
+            auto_cache_recent_songs,
+            'interval',
+            minutes=30,
+            id="job_auto_cache",
+            replace_existing=True
+        )
+        logger.info(f"已调度自动缓存任务，每 30 分钟执行一次")
+        
+        NotificationService.initialize()
 
-    yield
-    # 关闭所有WebSocket连接
-    from core.websocket import manager
-    await manager.disconnect_all()
-    scheduler.shutdown(wait=False)
+        yield
+        # 关闭所有WebSocket连接
+        from core.websocket import manager
+        await manager.disconnect_all()
+        scheduler.shutdown(wait=False)
+    except Exception as e:
+        import traceback
+        import sys
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", file=sys.stderr)
+        print("CRITICAL STARTUP ERROR IN LIFESPAN", file=sys.stderr)
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", file=sys.stderr)
+        traceback.print_exc()
+        logger.critical(f"Startup failed: {e}", exc_info=True)
+        # Re-raise to stop the app
+        raise e
 
 app = FastAPI(lifespan=lifespan)
  
@@ -290,10 +310,11 @@ app.include_router(download_history_router)
 app.include_router(metadata_router)  # 歌词/封面等元数据 API
 
 # New Routers
-from app.routers import discovery, library, subscription
+from app.routers import discovery, library, subscription, settings
 app.include_router(discovery.router)
 app.include_router(library.router)
 app.include_router(subscription.router)
+app.include_router(settings.router)
 
 # --- Middleware & Static Files Setup ---
 
@@ -355,4 +376,5 @@ if os.path.exists("web/dist"):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, timeout_keep_alive=1)
+    # log_config=None 防止 Uvicorn 覆盖我们的 logging 配置
+    uvicorn.run(app, host="0.0.0.0", port=8000, timeout_keep_alive=1, log_config=None)

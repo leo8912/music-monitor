@@ -4,8 +4,8 @@
  * 专注于列表的视觉张力、排版和交互响应。
  */
 
-import { computed, h } from 'vue'
-import { NButton, NIcon, NEmpty, NDropdown } from 'naive-ui'
+import { computed, h, ref, nextTick } from 'vue'
+import { NButton, NIcon, NEmpty, NDropdown, NPopover, NInput, useMessage, NSpin } from 'naive-ui'
 import { 
     PlayCircleOutline, 
     HeartOutline, 
@@ -14,21 +14,70 @@ import {
     TrashOutline, 
     FlashOutline, 
     CloudDownloadOutline,
+    FolderOpenOutline,
     ChevronUp,
-    ChevronDown
+    SearchOutline,
+    ChevronDown,
+    CloudOutline,
+    PlaySharp
 } from '@vicons/ionicons5'
 import Skeleton from '@/components/common/Skeleton.vue'
+import { usePlayerStore } from '@/stores/player'
 
 const props = defineProps({
-  history: { type: Array as () => any[], default: () => [] },
-  loading: { type: Boolean, default: false },
-  selectedArtistName: { type: String, default: null },
-  mode: { type: String, default: 'library' },
-  sortField: { type: String, default: 'publish_time' },
-  sortOrder: { type: String, default: 'desc' }
+    history: { type: Array as () => any[], default: () => [] },
+    loading: { type: Boolean, default: false },
+    mode: { type: String as () => 'library' | 'history' | 'discovery' | 'artist', default: 'library' },
+    sortField: { type: String, default: 'publish_time' }, // Changed sortBy to sortField for consistency with Home.vue
+    sortOrder: { type: String as () => 'asc' | 'desc', default: 'desc' }
 })
 
-const emit = defineEmits(['play', 'repair', 'toggleFavorite', 'delete', 'redownload', 'sort'])
+const emit = defineEmits(['play', 'toggleFavorite', 'repair', 'delete', 'redownload', 'sort'])
+
+const message = useMessage()
+const playerStore = usePlayerStore()
+
+// Computed properties for mode-based UI
+const showIndex = computed(() => props.mode !== 'discovery')
+const showArtist = computed(() => props.mode !== 'artist')
+const showPath = computed(() => props.mode === 'library')
+const dateLabel = computed(() => {
+    if (props.mode === 'history') return '播放时间'
+    if (props.mode === 'library') return '添加日期'
+    return '发布日期'
+})
+
+// Correctly identify which field to use for the date column
+const getDateValue = (song: any) => {
+    let rawDate = ''
+    if (props.mode === 'history') rawDate = song.played_at || '-'
+    else if (props.mode === 'library') rawDate = song.created_at || '-'
+    else rawDate = song.publish_time || '-'
+
+    if (!rawDate || rawDate === '-') return '-'
+    // Format YYYY-MM-DD strictly
+    try {
+        const dateStr = String(rawDate).split(' ')[0].split('T')[0]
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
+        const date = new Date(rawDate)
+        if (!isNaN(date.getTime())) return date.toISOString().split('T')[0]
+        return dateStr
+    } catch {
+        return String(rawDate).substring(0, 10)
+    }
+}
+
+// Search Logic
+const searchQuery = ref('')
+const filteredHistory = computed(() => {
+    if (!searchQuery.value) return props.history
+    const lower = searchQuery.value.toLowerCase()
+    return props.history.filter(song => 
+        (song.title && song.title.toLowerCase().includes(lower)) ||
+        (song.artist && song.artist.name && song.artist.name.toLowerCase().includes(lower)) ||
+        (song.album && song.album.toLowerCase().includes(lower))
+    )
+})
 
 const handlePlay = (song: any) => {
   emit('play', song)
@@ -44,53 +93,111 @@ const getSourceName = (source: string) => {
     return map[source] || source
 }
 
+// Context Menu Logic
+const showDropdown = ref(false)
+const x = ref(0)
+const y = ref(0)
+const currentSong = ref<any>(null)
+
+const handleContextMenu = (e: MouseEvent, song: any) => {
+    e.preventDefault()
+    showDropdown.value = false
+    nextTick().then(() => {
+        showDropdown.value = true
+        x.value = e.clientX
+        y.value = e.clientY
+        currentSong.value = song
+    })
+}
+
+const onClickoutside = () => {
+    showDropdown.value = false
+}
+
 // Action Menu Options
 const renderIcon = (icon: any) => {
   return () => h(NIcon, null, { default: () => h(icon) })
 }
 
-const createRowOptions = (song: any) => [
-    {
-        label: '重新刮削 (整理信息)',
-        key: 'enrich',
-        icon: renderIcon(FlashOutline)
-    },
-    {
-        label: '重新下载',
-        key: 'redownload',
-        icon: renderIcon(CloudDownloadOutline)
-    },
-    {
-        label: '删除歌曲',
-        key: 'delete',
-        icon: renderIcon(TrashOutline)
-    }
-]
+const dropdownOptions = computed(() => {
+    if (!currentSong.value) return []
+    return [
+        {
+            label: '播放',
+            key: 'play',
+            icon: renderIcon(PlayCircleOutline)
+        },
+        {
+            label: '喜欢 / 取消喜欢',
+            key: 'toggleFavorite',
+            icon: renderIcon(currentSong.value.liked ? Heart : HeartOutline)
+        },
+        {
+            type: 'divider',
+            key: 'd1'
+        },
+        {
+            label: '重新刮削信息',
+            key: 'enrich',
+            icon: renderIcon(FlashOutline)
+        },
+        {
+            label: '重新下载',
+            key: 'redownload',
+            icon: renderIcon(CloudDownloadOutline)
+        },
+        {
+            type: 'divider',
+            key: 'd2'
+        },
+        {
+            label: '删除',
+            key: 'delete',
+            icon: renderIcon(TrashOutline)
+        }
+    ]
+})
 
-const handleSelect = (key: string, song: any) => {
+const handleSelect = (key: string) => {
+    showDropdown.value = false
+    const song = currentSong.value
+    if (!song) return
+    
+    if (key === 'play') emit('play', song)
+    if (key === 'toggleFavorite') emit('toggleFavorite', song)
     if (key === 'delete') emit('delete', song)
-    if (key === 'enrich') emit('repair', song) // Reuse repair/enrich logic
+    if (key === 'enrich') emit('repair', song)
     if (key === 'redownload') emit('redownload', song)
 }
 
+// 排序处理
 const handleSort = (field: string) => {
-    emit('sort', field)
+    let newOrder: 'asc' | 'desc' = 'desc'
+    if (props.sortField === field) {
+        newOrder = props.sortOrder === 'asc' ? 'desc' : 'asc'
+    } else {
+        // 默认按降序排
+        newOrder = 'desc'
+    }
+    emit('sort', { field, order: newOrder })
+}
+
+const getSortIcon = (field: string) => {
+    if (props.sortField !== field) return undefined
+    return props.sortOrder === 'desc' ? ChevronDown : ChevronUp
 }
 
 const getQualityLabel = (quality: any) => {
     if (!quality) return ''
-    // If it's already a string label like SQ/HQ/HR
     if (String(quality).match(/^(SQ|HQ|HR|PQ)$/i)) return String(quality).toUpperCase()
     
-    // If it's a bitrate number
     const q = parseInt(String(quality))
     if (!isNaN(q)) {
         if (q >= 2000) return 'HR'
-        if (q >= 900) return 'SQ' // relaxed threshold for FLAC roughly
+        if (q >= 900) return 'SQ'
         if (q >= 320) return 'HQ'
         return 'PQ'
     }
-    // If it's a string like 'PQ', return it
     return String(quality)
 }
 
@@ -99,370 +206,655 @@ const getQualityClass = (quality: any) => {
     if (label === 'HR' || label === 'HI-RES') return 'quality-gold-hires' 
     if (label === 'SQ' || label === 'FLAC') return 'quality-gold-sq'
     if (label === 'HQ') return 'quality-green'
+    if (label === 'ERR' || label === 'PQ') return 'quality-red'
     return 'quality-gray'
 }
 
 const formatDate = (dateStr: string | null | undefined) => {
     if (!dateStr) return '-'
-    // Assuming ISO string or similar, take first 10 chars for YYYY-MM-DD
     return String(dateStr).substring(0, 10)
+}
+
+const formatShortPath = (path: string | null | undefined) => {
+    if (!path) return ''
+    
+    // Normalize slashes to forward slash for display
+    const normalizedPath = path.replace(/\\/g, '/')
+    
+    // Do NOT remove extension
+    
+    const keywords = ['favorites', 'audio_cache', 'library', 'media', 'music', 'shares', 'download']
+    const lowerPath = normalizedPath.toLowerCase()
+    
+    for (const kw of keywords) {
+        const index = lowerPath.lastIndexOf(kw)
+        if (index !== -1) {
+            // Return from the keyword to the end
+            return normalizedPath.substring(index)
+        }
+    }
+    
+    // Fallback: take the last directory + filename
+    const parts = normalizedPath.split('/').filter(p => p)
+    if (parts.length >= 2) {
+        return parts.slice(-2).join('/')
+    }
+    return normalizedPath.split('/').pop() || normalizedPath
+}
+
+const formatArtist = (artist: any) => {
+  if (!artist) return '未知歌手'
+  if (typeof artist === 'string') return artist
+  if (Array.isArray(artist)) return artist.map(a => a.name).join(', ')
+  if (artist.name) return artist.name
+  return '未知歌手'
+}
+
+const formatPath = (path: string | null | undefined) => {
+  // Alias to formatShortPath for backward compatibility if needed, 
+  // or just use formatShortPath in template.
+  return formatShortPath(path)
+}
+
+const getPlatformLabel = (source: string) => {
+    switch (source.toLowerCase()) {
+        case 'netease': return '网易'
+        case 'qqmusic': return 'QQ'
+        case 'local': return '本地'
+        default: return source
+    }
 }
 </script>
 
 <template>
   <div class="song-list-container">
-    <div v-if="loading" class="song-list">
-        <!-- 骨架屏表头 -->
-        <div class="song-header">
-            <div class="index">#</div>
-            <div class="title-head">标题</div>
-            <div class="artist-head">歌手</div>
-            <div class="album-head">专辑</div>
-            <div class="date-head">发布时间</div>
-            <div class="actions-head"></div>
-        </div>
-        <!-- 骨架屏行循环 -->
-        <div v-for="i in 10" :key="`skel-row-${i}`" class="song-item surface-card">
-            <div class="index"><Skeleton width="16px" height="16px" shape="text" /></div>
-            <div class="song-info-main">
-                <div class="song-cover skeleton-box">
-                    <Skeleton width="100%" height="100%" />
-                </div>
-                <div class="song-meta" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                    <Skeleton width="60%" height="16px" />
-                </div>
-            </div>
-            <div class="song-artist"><Skeleton width="60%" height="14px" /></div>
-            <div class="song-album"><Skeleton width="80%" height="14px" /></div>
-            <div class="song-date"><Skeleton width="50%" height="12px" /></div>
-            <div class="song-actions"></div>
+    
+    <!-- Tools / Filter Bar -->
+    <div class="list-tools">
+        <div class="search-box">
+             <n-input 
+                v-model:value="searchQuery" 
+                placeholder="在资料库中筛选..." 
+                clearable
+                round
+                size="small"
+            >
+                <template #prefix>
+                    <n-icon :component="SearchOutline" />
+                </template>
+            </n-input>
         </div>
     </div>
-    <div v-else-if="history.length > 0" class="song-list">
-      <!-- 表头 -->
-      <div class="song-header">
-        <div class="index">#</div>
-        <div class="title-head sortable" @click="handleSort('title')">
-            标题
-            <n-icon v-if="sortField === 'title'" :component="sortOrder === 'asc' ? ChevronUp : ChevronDown" class="sort-icon" />
-        </div>
-        <div class="artist-head">歌手</div>
-        <div class="album-head">专辑</div>
-        <div class="quality-head">音质</div>
-        <div class="date-head sortable" @click="handleSort(mode === 'library' ? 'created_at' : (mode === 'history' ? 'found_at' : 'publish_time'))">
-            {{ mode === 'library' ? '添加时间' : (mode === 'history' ? '播放时间' : '发布时间') }}
-            <n-icon v-if="(mode === 'library' && sortField === 'created_at') || (mode === 'history' && sortField === 'found_at') || (mode !== 'library' && mode !== 'history' && sortField === 'publish_time')" 
-                    :component="sortOrder === 'asc' ? ChevronUp : ChevronDown" 
-                    class="sort-icon" />
-        </div>
-        <div class="actions-head"></div>
-      </div>
 
-      <div 
-        v-for="(song, index) in history" 
-        :key="song.id || index"
-        class="song-item surface-card clickable"
-        @click="handlePlay(song)"
-      >
-        <div class="index">{{ index + 1 }}</div>
-        
-        <div class="song-info-main">
-          <img 
-            :src="song.cover || '/default-cover.png'" 
-            class="song-cover" 
-            loading="lazy"
-            @error="(e) => (e.target as HTMLImageElement).src = '/default-cover.png'"
-          >
-          <div class="song-meta">
-            <div class="song-title truncate">{{ song.title }}</div>
-            <div class="song-sources">
-                <template v-if="song.availableSources && song.availableSources.length > 0">
-                     <span v-for="src in song.availableSources" :key="src" class="source-tag" :class="src">
-                        {{ getSourceName(src) }}
-                     </span>
-                </template>
-                <template v-else>
-                     <span class="source-tag" :class="song.source">{{ getSourceName(song.source) }}</span>
-                </template>
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="song-list loading">
+        <div class="song-header">
+            <div class="col-index">#</div>
+            <div class="col-title">标题</div>
+            <!-- 歌手列：支持排序 -->
+            <div class="col col-artist sortable" @click="handleSort('artist')">
+                歌手
+                <n-icon v-if="sortField === 'artist'" :component="getSortIcon('artist')" class="sort-icon" />
+            </div>
+            <!-- 专辑列 -->
+            <div class="col col-album">专辑</div>
+            <!-- 时间列：支持排序 -->
+            <div class="col col-time sortable" @click="handleSort('created_at')">
+                添加时间
+                <n-icon v-if="sortField === 'created_at'" :component="getSortIcon('created_at')" class="sort-icon" />
+            </div>
+            <div class="col-duration"><n-icon :component="FolderOpenOutline" /></div>
+        </div>
+        <div v-for="i in 10" :key="`skel-${i}`" class="song-row">
+            <Skeleton width="100%" height="40px" />
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="filteredHistory.length === 0" class="empty-state">
+        <n-empty description="没有找到歌曲" size="large">
+            <template #icon>
+                <n-icon :component="FolderOpenOutline" />
+            </template>
+        </n-empty>
+    </div>
+
+    <!-- Actual List -->
+    <div v-else class="song-list">
+        <!-- Table Header -->
+        <div class="song-list-header">
+          <div v-if="showIndex" class="col-index">#</div>
+          <div class="col-title" :style="{ marginLeft: !showIndex ? '16px' : '0' }">标题</div>
+          <div v-if="showArtist" class="col-artist">艺人</div>
+          <div class="col-album">专辑</div>
+          <div class="col-date sortable" @click="handleSort('publish_time')">
+            {{ dateLabel }}
+            <n-icon v-if="sortField === 'publish_time' || sortField === 'created_at'" 
+                    :component="sortOrder === 'desc' ? ChevronDown : ChevronUp" 
+                    class="sort-icon" />
+          </div>
+          <div v-if="showPath" class="col-path">文件位置</div>
+          <div class="col-more"></div>
+        </div>
+
+        <!-- Table Row -->
+        <div 
+          v-for="(song, index) in filteredHistory" 
+          :key="song.id || index" 
+          class="song-row"
+          :class="{ 'is-active': playerStore.currentSong?.id === song.id }"
+          @click="handlePlay(song)"
+          @contextmenu="handleContextMenu($event, song)"
+        >
+          <!-- Index / Play Icon -->
+          <div v-if="showIndex" class="col-index">
+            <span class="index-num">{{ index + 1 }}</span>
+            <n-icon :component="PlaySharp" class="play-icon" />
+          </div>
+
+          <!-- Title & Cover -->
+          <div class="col-title" :style="{ paddingLeft: !showIndex ? '16px' : '0' }">
+            <div class="title-with-cover">
+              <div class="cover-container" :class="{ 'discovery-cover': mode === 'discovery' }">
+                <img :src="song.cover || '/default-cover.png'" class="song-cover" loading="lazy">
+                <div v-if="song.status === 'PENDING'" class="loading-overlay">
+                    <n-spin size="small" stroke="var(--sp-green)" />
+                </div>
+              </div>
+              <div class="title-info">
+                <div class="song-name truncate" :class="{ 'text-green': playerStore.currentSong?.id === song.id }">
+                  {{ song.title }}
+                </div>
+                <!-- Platform Info -->
+                <div class="title-meta">
+                   <div v-if="song.available_sources && song.available_sources.length > 0" class="source-tags">
+                        <span v-for="s in song.available_sources" :key="s" 
+                              class="platform-tag" 
+                              :class="s">
+                            {{ getPlatformLabel(s) }}
+                        </span>
+                   </div>
+                   <div v-else-if="song.source" class="source-tags">
+                        <span class="platform-tag" :class="song.source">
+                            {{ getPlatformLabel(song.source) }}
+                        </span>
+                   </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="song-artist truncate">{{ song.artist }}</div>
-        <div class="song-album truncate">{{ song.album }}</div>
-        
-        <!-- Quality Badge Column -->
-        <div class="song-quality">
-            <span v-if="song.quality" 
-                  class="quality-badge" 
-                  :class="getQualityClass(song.quality)">
-                {{ getQualityLabel(song.quality) }}
-            </span>
-        </div>
+          <!-- Artist -->
+          <div v-if="showArtist" class="col-artist truncate hover-white">
+            {{ formatArtist(song.artist) }}
+          </div>
 
-        <!-- Date handling is below -->
-        
+          <!-- Album -->
+          <div class="col-album truncate hover-white">
+            {{ song.album || '-' }}
+          </div>
 
-        <div class="song-date">
-             <template v-if="mode === 'library'">
-                 {{ song.createdAt ? song.createdAt.substring(0, 10) : (song.publishTime ? song.publishTime.substring(0, 10) : '-') }}
-             </template>
-             <template v-else-if="mode === 'history'">
-                 {{ song.foundAt ? song.foundAt.substring(0, 10) : (song.createdAt ? song.createdAt.substring(0, 10) : '-') }}
-             </template>
-             <template v-else>
-                 {{ song.publishTime ? song.publishTime.substring(0, 10) : '-' }}
-             </template>
-        </div>
+          <!-- Release Date -->
+          <div class="col-date truncate">
+            {{ getDateValue(song) }}
+          </div>
 
-        <div class="song-actions">
-          <button class="action-btn fav" @click.stop="emit('toggleFavorite', song)">
-            <n-icon :component="song.isFavorite ? Heart : HeartOutline" />
-          </button>
-          
-          <n-dropdown 
-             trigger="click" 
-             :options="createRowOptions(song)" 
-             @select="(key) => handleSelect(key, song)"
-             @click.stop
-          >
-             <button class="action-btn" @click.stop>
-                <n-icon :component="EllipsisHorizontal" />
-             </button>
-          </n-dropdown>
+          <!-- File Path (Compact) -->
+          <div v-if="showPath" class="col-path">
+            <div class="path-pill truncate" :title="song.local_path">
+                <n-icon :component="FolderOpenOutline" class="path-icon" />
+                <span class="path-text">{{ formatShortPath(song.local_path) }}</span>
+            </div>
+          </div>
+
+          <!-- Like Button -->
+          <div class="col-like" @click.stop="emit('toggleFavorite', song)">
+              <n-icon size="18" :class="['like-icon', { 'liked': song.is_favorite }]">
+                  <Heart v-if="song.is_favorite" />
+                  <HeartOutline v-else />
+              </n-icon>
+          </div>
         </div>
-      </div>
     </div>
 
-    <div v-else class="empty-state">
-      <n-empty description="此列表中尚无歌曲" />
-    </div>
+    <!-- Context Menu -->
+    <n-dropdown
+        placement="bottom-start"
+        trigger="manual"
+        :x="x"
+        :y="y"
+        :options="dropdownOptions"
+        :show="showDropdown"
+        :on-clickoutside="onClickoutside"
+        @select="handleSelect"
+    />
+
   </div>
 </template>
 
 <style scoped>
 .song-list-container {
-  width: 100%;
-}
-
-/* 调整 Grid 列宽: Index, Title, Artist, Album, Date, Actions */
-.song-header, .song-item {
-  display: grid;
-  /* Columns: Index | Title | Artist | Album | Quality | Date | Actions */
-  /* Old: 40px 4fr 2fr 2fr 100px 80px */
-  /* New: Added Quality column (60px) */
-  /* Index | Title | Artist | Album | Quality | Date | Actions */
-  /* 40px | 3fr | 2fr | 2fr | 50px | 90px | 40px */
-  grid-template-columns: 32px 3fr 2fr 2fr 50px 90px 40px;
-  gap: 4px;
-  align-items: center;
-}
-
-.song-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  margin-bottom: 8px;
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.sortable {
-    cursor: pointer;
     display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: color 0.2s;
+    flex-direction: column;
+    height: 100%;
+    color: #b3b3b3;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    user-select: none;
 }
 
-.sortable:hover {
-    color: #fff;
-}
-
-.sort-icon {
-    font-size: 14px;
-    color: var(--sp-green);
-}
-
-.song-item {
-  padding: 10px 16px; /* Slightly more compact */
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 4px;
-}
-
-.song-item:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-.index {
-  color: var(--text-secondary);
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  font-size: 14px;
-}
-
-.song-info-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.song-cover {
-  width: 42px; /* Slightly smaller cover for tighter list */
-  height: 42px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  object-fit: cover;
-  background-color: var(--sp-card-hover);
-}
-
-.song-meta {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  justify-content: center;
-}
-
-.song-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-}
-
-.song-artist {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.song-sources {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.source-tag {
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.1);
-    color: var(--text-tertiary);
-    line-height: 1.4;
-}
-
-/* Source Colors for Tags */
-.source-tag.qqmusic { color: #20d25c; background: rgba(32, 210, 92, 0.1); }
-.source-tag.netease { color: #ec4141; background: rgba(236, 65, 65, 0.1); }
-.source-tag.local { color: #409eff; background: rgba(64, 158, 255, 0.1); }
-.source-tag.downloaded { color: #409eff; background: rgba(64, 158, 255, 0.1); }
-
-.song-album {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.quality-head {
-  display: flex;
-  justify-content: center;
-}
-
-.song-quality {
+.list-tools {
+    padding: 0 16px 16px 16px;
     display: flex;
     justify-content: flex-start;
 }
 
-.quality-badge {
-    font-size: 10px;
-    padding: 1px 4px;
-    border-radius: 3px;
+.search-box {
+    width: 240px;
+}
+
+/* Table Header */
+.song-list-header {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 32px;
+    color: #4d4d4d; /* More subtle header */
+    font-size: 11px;
     font-weight: 700;
-    line-height: 1.2;
-    border: 1px solid currentColor;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 8px;
 }
 
-.quality-badge.quality-gold-hires {
-    background-color: #000;
-    color: #d4af37;
-    border: 1px solid #d4af37;
-    border-radius: 2px;
-    font-weight: 900;
-    font-family: serif;
-    font-style: italic;
-    padding: 0 4px;
-    line-height: 12px;
-    font-size: 9px;
-    letter-spacing: 0.5px;
-    box-shadow: none;
+.song-list-header > div {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+/* 表头微调：左对齐并设置左边距以匹配红字标注位置 */
+.song-list-header > .col-title, 
+.song-list-header > .col-artist, 
+.song-list-header > .col-album {
+    justify-content: flex-start !important;
+    padding-left: 10px; /* 向左偏移的视觉补偿 */
+}
+/* 文件路径表头：按要求左对齐 */
+.song-list-header > .col-path {
+    justify-content: flex-start !important;
+    padding-left: 20px;
 }
 
-.quality-badge.quality-gold-sq {
-    color: #d4af37;
-    border: 1px solid #d4af37;
-    background: transparent;
-    border-radius: 2px;
-    font-weight: 700;
-    padding: 0 3px;
+/* 标题列在表头保持居中对齐 */
+.song-list-header > .col-title {
+    justify-content: center;
+    padding-left: 0;
 }
 
-.quality-badge.quality-green {
-    color: #20d25c;
-    border: 1px solid #20d25c;
-    background: transparent;
-    border-radius: 2px;
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background: #121212; /* Keep strictly dark */
+    z-index: 10;
 }
 
-.quality-badge.quality-gray {
+.sortable {
+    cursor: pointer;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.sortable:hover {
+    color: #fff;
+}
+.sort-icon {
+    font-size: 14px;
+}
+
+/* Columns Grid - Standard Mode (Standard Standard widths when Path is hidden) */
+.col-index { width: 40px; text-align: center; justify-content: center; display: flex; align-items: center; color: #5e5e5e; font-size: 13px;}
+.col-title { flex: 1; min-width: 200px; display: flex; align-items: center; overflow: hidden; margin-right: 12px; }
+.col-artist { flex: 0 0 20%; min-width: 120px; overflow: hidden; display: flex; align-items: center; margin-right: 12px; }
+.col-album { flex: 0 0 20%; min-width: 120px; overflow: hidden; display: flex !important; align-items: center; margin-right: 12px; }
+.col-date { width: 120px; display: flex; justify-content: flex-end; align-items: center; color: #b3b3b3; font-size: 13px; padding-right: 16px; white-space: nowrap;}
+.col-path { flex: 0 0 25%; display: flex; align-items: center; overflow: hidden; padding-left: 20px; } 
+
+/* 资料库模式下的列宽重写 (When File Path is visible, compress others) */
+.song-list-container:has(.col-path) .col-title { flex: 0 0 25%; }
+.song-list-container:has(.col-path) .col-artist { flex: 0 0 15%; }
+.song-list-container:has(.col-path) .col-album { flex: 0 0 15%; }
+.song-list-container:has(.col-path) .col-date { width: 100px; padding-right: 8px;}
+.col-like { width: 40px; display: flex; justify-content: center; align-items: center; }
+.col-more { width: 40px; } /* For dropdown ellipsis */
+
+.path-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.path-text {
+    font-size: 0.75rem;
+    color: #a0a0a0; /* Lighter gray for better visibility on dark background */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.like-icon {
+    cursor: pointer;
     color: #888;
-    border: 1px solid #555;
-    background: transparent;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.like-icon:hover {
+    color: #fff;
+    transform: scale(1.2);
+}
+
+.like-icon.liked {
+    color: #ff4d4f;
+}
+/* Title Column Styles */
+.title-with-cover {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.cover-container {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.song-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.title-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    gap: 2px;
+}
+
+.song-name {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.title-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.source-tags {
+    display: flex;
+    gap: 4px;
+}
+
+.platform-tag {
+    font-size: 9px;
+    padding: 0px 6px;
+    border-radius: 12px; /* Capsule shape */
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    line-height: 1.6;
+    background: transparent; /* Subtle background */
+    border: 0.5px solid rgba(255,255,255,0.12); /* Ultra-thin border */
+    color: #777;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* More refined colors for tags - Very low saturation */
+.platform-tag.netease { color: rgba(242, 93, 142, 0.7); border-color: rgba(242, 93, 142, 0.15); }
+.platform-tag.qqmusic { color: rgba(255, 204, 51, 0.7); border-color: rgba(255, 204, 51, 0.15); }
+.platform-tag.local { color: rgba(29, 185, 84, 0.7); border-color: rgba(29, 185, 84, 0.15); }
+
+.platform-tag:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}
+
+.song-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 1px;
+}
+
+.quality-tag {
+    font-size: 9px;
+    padding: 0px 4px;
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 2px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 0.05em;
 }
 
-.quality-badge.quality-blue {
-    color: #3498db;
-    background: rgba(52, 152, 219, 0.1);
-    border-color: rgba(52, 152, 219, 0.4);
+.quality-tag.error {
+    color: #ff4d4f;
+    border-color: #ff4d4f;
 }
 
-.song-date {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    font-variant-numeric: tabular-nums;
+.discovery-cover {
+    width: 48px !important;
+    height: 48px !important;
 }
 
-.song-item:hover .song-actions {
-  opacity: 1;
+.song-row:hover .cover-container {
+    transform: scale(1.05);
 }
 
-.action-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 18px;
-  padding: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
+.song-row:hover .song-name {
+    color: #fff;
 }
 
-.action-btn:hover {
-  color: #fff;
-  transform: scale(1.1);
+.text-green {
+    color: var(--sp-green) !important;
 }
 
-.action-btn.fav {
-  color: var(--sp-green);
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.hover-white:hover {
+    color: #fff;
+}
+
+/* Rows */
+.song-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px; /* Increased padding for more breathing room */
+    min-height: 64px; /* Increased min-height */
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.song-row:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.song-row.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.song-row:hover .index-num { display: none; }
+.song-row:hover .play-icon { display: flex; color: #fff; }
+.play-icon { display: none; font-size: 18px; }
+
+/* Title Column Styles */
+.title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    justify-content: flex-start;
+}
+.row-cover {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.title-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+.song-name {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+.playing { color: #1db954; }
+
+.quality-badges {
+    display: flex;
+    gap: 4px;
+}
+
+.quality-tag {
+    font-size: 10px;
+    padding: 0px 4px;
+    border-radius: 2px;
+    border: 1px solid currentColor;
+    line-height: 1.3;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+/* 移除突兀的红色，PQ 标签使用更中性的灰色/暗色 */
+.quality-red { 
+    color: #666; 
+    border-color: #333; 
+    background: rgba(255,255,255,0.03);
+}
+
+.quality-gold-hires {
+    color: #FFD700;
+    border-color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.quality-gold-sq {
+    color: #FFA500;
+    border-color: #FFA500;
+    background: rgba(255, 165, 0, 0.1);
+}
+
+.quality-green {
+    color: var(--sp-green);
+    border-color: var(--sp-green);
+    background: rgba(29, 185, 84, 0.05);
+}
+
+.path-icon {
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.song-row:hover .path-icon {
+    opacity: 1;
+}
+
+.path-icon.local {
+    color: #1db954; /* 经典的 Spotify 绿 */
+}
+
+.path-icon.cloud {
+    color: #666;
+}
+
+/* Quality Colors */
+.quality-gold-hires { color: #FFD700; border-color: #FFD700; }
+.quality-gold-sq { color: #FFA500; border-color: #FFA500; }
+.quality-green { color: #1db954; border-color: #1db954; }
+.quality-gray { color: #666; border-color: #666; }
+
+/* Source Dots */
+.source-badges { display: inline-flex; gap: 2px; }
+.source-dot {
+    width: 6px; 
+    height: 6px; 
+    border-radius: 50%; 
+    background-color: #555;
+    opacity: 0.7;
+}
+.source-dot.netease { background-color: #c20c0c; }
+.source-dot.qqmusic { background-color: #2cad6f; }
+.source-dot.local { background-color: #f1c40f; }
+
+/* Text Styles */
+.artist-name, .album-name {
+    color: var(--text-secondary);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    transition: color 0.2s;
+}
+.song-row:hover .artist-name, .song-row:hover .album-name {
+    color: #fff;
+}
+.col-date { color: #b3b3b3; font-size: 0.85rem; }
+
+/* Path column */
+.path-col .path-content {
+    font-size: 0.75rem;
+    padding: 2px 4px; /* 缩窄留白，从 8px 降至 4px */
+    background: rgba(255,255,255,0.05); 
+    border-radius: 12px;
+    color: #888;
+    transition: all 0.2s ease;
+    max-width: 100%;
+}
+.song-row:hover .path-content {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+.path-col .path-text { color: inherit; }
+.path-col .path-text.text-gray { background: transparent; }
+
+/* Empty State */
 .empty-state {
-  padding: 100px 0;
-  display: flex;
-  justify-content: center;
-  color: var(--text-tertiary);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 40px;
 }
 </style>

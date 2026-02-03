@@ -63,3 +63,8 @@ class SongResponse(BaseModel):
     quality: Optional[str] = "HQ" # SQ, HQ, Hi-Res
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
+    localFiles: Optional[list] = [] # List of local file details
+    availableSources: Optional[list] = [] # List of available sources (qqmusic, netease, local)
+
+    class Config:
+        from_attributes = True # for V2 compatibility

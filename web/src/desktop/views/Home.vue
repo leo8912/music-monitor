@@ -37,6 +37,7 @@ const handlePlay = (song: any) => {
 
 // 初始化
 onMounted(async () => {
+    console.log('DEBUG: sortField type:', typeof libraryStore.sortField, libraryStore.sortField)
     await libraryStore.fetchArtists()
     await libraryStore.fetchSongs()
 })
@@ -49,16 +50,11 @@ const handleRefresh = async () => {
 }
 
 // 处理排序
-const handleSort = async (field: string) => {
-    if (libraryStore.sortField === field) {
-        // 切换方向
-        libraryStore.sortOrder = libraryStore.sortOrder === 'desc' ? 'asc' : 'desc'
-    } else {
-        libraryStore.sortField = field
-        libraryStore.sortOrder = 'desc' // 切换字段时默认降序
-    }
+const handleSort = async (payload: { field: string, order: 'asc' | 'desc' }) => {
+    libraryStore.sortField = payload.field
+    libraryStore.sortOrder = payload.order
     await libraryStore.fetchSongs(1) // 排序后回到第一页
-    message.success(`已按${field === 'title' ? '标题' : '发布时间'}${libraryStore.sortOrder === 'desc' ? '降序' : '升序'}排列`)
+    message.success(`已按${payload.field === 'title' ? '标题' : '发布时间'}${libraryStore.sortOrder === 'desc' ? '降序' : '升序'}排列`)
 }
 </script>
 
@@ -117,6 +113,7 @@ const handleSort = async (field: string) => {
         <SongList 
             :history="libraryStore.songs"
             :loading="libraryStore.isLoading"
+            mode="discovery"
             :sort-field="libraryStore.sortField"
             :sort-order="libraryStore.sortOrder"
             @play="handlePlay"

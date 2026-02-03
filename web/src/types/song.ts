@@ -12,17 +12,18 @@ export interface Song {
     artist: string
     album: string
     source: MusicSource
-    sourceId: string
+    source_id: string
     cover?: string
     duration?: number
-    localPath?: string
-    isFavorite: boolean
+    local_path?: string
+    is_favorite: boolean
     status: SongStatus
-    publishTime?: string
-    createdAt?: string
-    foundAt?: string
-    availableSources?: string[]
+    publish_time?: string
+    created_at?: string
+    found_at?: string
+    available_sources?: string[]
     quality?: string // SQ, HQ, Hi-Res
+    local_files?: any[]
 }
 
 // 歌曲状态

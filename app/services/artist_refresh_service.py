@@ -316,10 +316,13 @@ class ArtistRefreshService:
             reverse=True
         )
         
-        # 获取现有歌曲及其所有的源（通过 selectinload 预加载，避免 N+1 问题）
+        # 获取现有歌曲及其所有的源（通过 selectinload 预加载，避免 N+1 问题和 MissingGreenlet 错误）
         res = await db.execute(
             select(Song)
-            .options(selectinload(Song.sources))
+            .options(
+                selectinload(Song.sources),
+                selectinload(Song.artist)
+            )
             .where(Song.artist_id == artist.id)
         )
         all_db_songs = res.scalars().all()
@@ -360,7 +363,8 @@ class ArtistRefreshService:
                     title=best_meta.title,
                     album=best_meta.album,
                     created_at=datetime.now(),
-                    status="PENDING"
+                    status="PENDING",
+                    sources=[] # 显式初始化，防止 MissingGreenlet
                 )
                 db.add(existing_song)
                 await db.flush()
@@ -369,11 +373,11 @@ class ArtistRefreshService:
             
             # 智能合并元数据
             await self._smart_merge_metadata(
-                db, existing_song, group, db_song_map, norm_key
+                db, existing_song, group, db_song_map, norm_key, artist.name
             )
             
-            # 获取此歌曲的所有源
-            existing_sources = getattr(existing_song, 'sources', [])
+            # 获取此歌曲的所有源 - 此处由于已 prefetch 或显式初始化，不会报错
+            existing_sources = existing_song.sources
             if not existing_sources:
                 # 如果没有加载关系，则手动查一下（或确保之前 prefetch 了）
                 # 这里为了简单，先用 map
@@ -385,6 +389,17 @@ class ArtistRefreshService:
             for s in group:
                 s_id_str = str(s.id)
                 if (s.source, s_id_str) not in src_map:
+                    # [Fix] Double check against DB to prevent IntegrityError
+                    # Even if src_map assumes it's missing (e.g. valid cached song but sources missing in session)
+                    chk = select(SongSource).where(
+                        SongSource.song_id == existing_song.id,
+                        SongSource.source == s.source,
+                        SongSource.source_id == s_id_str
+                    )
+                    if (await db.execute(chk)).scalars().first():
+                        src_map.add((s.source, s_id_str))
+                        continue
+
                     src_ent = SongSource(
                         song_id=existing_song.id,
                         source=s.source,
@@ -417,7 +432,8 @@ class ArtistRefreshService:
         existing_song: Song,
         group: List,
         db_song_map: Dict,
-        norm_key: str
+        norm_key: str,
+        artist_name: str
     ):
         """智能合并元数据"""
         candidate_covers = []
@@ -457,7 +473,7 @@ class ArtistRefreshService:
                 try:
                     enriched = await self.aggregator.get_song_metadata_from_best_source(
                         existing_song.title, 
-                        existing_song.artist.name
+                        artist_name
                     )
                     if enriched:
                         if enriched.get('cover_url'):
@@ -705,8 +721,12 @@ class ArtistRefreshService:
         """
         logger.info("🏥 启动全库元数据治愈...")
         
-        # 获取所有歌曲
-        res = await db.execute(select(Song).where(Song.artist_id == artist.id))
+        # 获取所有歌曲（预加载源，防止治愈过程中的 MissingGreenlet 错误）
+        res = await db.execute(
+            select(Song)
+            .options(selectinload(Song.sources))
+            .where(Song.artist_id == artist.id)
+        )
         all_db_songs = res.scalars().all()
         
         # 建立标题映射（用于伴奏回退）

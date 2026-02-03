@@ -72,3 +72,7 @@ export const put = <T>(url: string, data?: object): Promise<T> => {
 export const del = <T>(url: string): Promise<T> => {
     return instance.delete(url)
 }
+
+export const patch = <T>(url: string, data?: object): Promise<T> => {
+    return instance.patch(url, data)
+}

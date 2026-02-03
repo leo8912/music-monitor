@@ -112,14 +112,14 @@ class DeduplicationService:
         # 3. 排序逻辑：
         # 优先按发布日期 (从新到旧)，如果发布日期一致或缺失，按创建时间 (最新入库在前)
         def sort_key(s):
-            pt = s.get('publishTime')
+            pt = s.get('publish_time')
             # 尝试处理各种格式的发布时间
             if not pt or pt == "" or pt == "今天":
                 pt_val = "0000-00-00" 
             else:
                 pt_val = str(pt)
                 
-            ct = s.get('createdAt')
+            ct = s.get('created_at')
             if isinstance(ct, datetime):
                 ct_val = ct.isoformat()
             else:
@@ -196,14 +196,17 @@ class DeduplicationService:
             "local_path": getattr(best_obj, 'local_path', None),
             "is_favorite": getattr(best_obj, 'is_favorite', False),
             "status": getattr(best_obj, 'status', 'PENDING'),
-            "publishTime": getattr(best_obj, 'publish_time', None),
-            "createdAt": getattr(best_obj, 'created_at', None),
-            "availableSources": []
+            "publish_time": getattr(best_obj, 'publish_time', None),
+            "created_at": getattr(best_obj, 'created_at', None),
+            "availableSources": [],
+            "localFiles": [],
+            "quality": "HQ" # Default to HQ
         }
         
         # 合并来源和发布时间
         sources_set = set()
-        best_publish_time = final_dict['publishTime']
+        best_publish_time = final_dict['publish_time']
+        local_files_list = []
         
         for item in group:
             # 添加所有来源
@@ -213,25 +216,70 @@ class DeduplicationService:
                 # 如果主 source_id 还没填，拿第一个看到的 source_id
                 if not final_dict['source_id']:
                     final_dict['source_id'] = src_obj.source_id
+                    
+                # [New]: Collect local file details
+                if src_obj.source == 'local':
+                    data = src_obj.data_json or {}
+                    local_files_list.append({
+                        "id": src_obj.id,  # DB Primary Key
+                        "source_id": src_obj.source_id,
+                        "path": src_obj.url,
+                        "quality": data.get('quality', 'PQ'),
+                        "format": data.get('format', 'UNK')
+                    })
             
             # 如果是本地下载状态，添加一个标识（供前端显示绿点等）
-            if getattr(item, 'status', '') == 'DOWNLOADED' or getattr(item, 'local_path', None):
+            lp = getattr(item, 'local_path', None)
+            if lp and not final_dict.get('local_path'):
+                final_dict['local_path'] = lp
+                
+            if getattr(item, 'status', '') == 'DOWNLOADED' or lp:
                 sources_set.add('downloaded')
 
-            # 补全封面
-            if not final_dict['cover']:
-                final_dict['cover'] = getattr(item, 'cover', None)
-                
-            # 发布时间补全 (QQ 优先逻辑)
-            pt = getattr(item, 'publish_time', None)
-            if pt:
-                item_source_names = [s.source for s in item_sources]
-                if 'qqmusic' in item_source_names:
-                    best_publish_time = pt # QQ 覆盖
-                elif not best_publish_time:
-                    best_publish_time = pt
+        final_dict['localFiles'] = local_files_list
         
-        final_dict['publishTime'] = best_publish_time
+        # Calculate best quality from local files
+        best_quality = "HQ"
+        if local_files_list:
+            # Map quality to score for comparison
+            quality_score = {
+                "HR": 50, "HI-RES": 50,
+                "SQ": 40, "FLAC": 40,
+                "HQ": 30,
+                "PQ": 10,
+                "ERR": 0,
+                "UNK": 10
+            }
+            max_score = -1
+            
+            for f in local_files_list:
+                # Normalize quality string (handling cases)
+                q_str = str(f.get('quality', 'PQ')).upper()
+                score = quality_score.get(q_str, 10) # Default to PQ level if unknown
+                
+                # Update if better
+                if score > max_score:
+                    max_score = score
+                    best_quality = q_str
+            
+            final_dict['quality'] = best_quality
+        elif hasattr(best_obj, 'quality'):
+             final_dict['quality'] = best_obj.quality
+
+        # 补全封面
+        if not final_dict['cover']:
+            final_dict['cover'] = getattr(item, 'cover', None)
+            
+        # 发布时间补全 (QQ 优先逻辑)
+        pt = getattr(item, 'publish_time', None)
+        if pt:
+            item_source_names = [s.source for s in item_sources]
+            if 'qqmusic' in item_source_names:
+                best_publish_time = pt # QQ 覆盖
+            elif not best_publish_time:
+                best_publish_time = pt
+        
+        final_dict['publish_time'] = best_publish_time
         
         # 提取音质信息
         best_quality = None

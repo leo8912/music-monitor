@@ -3,7 +3,7 @@
   --font-sans: "Circular Sp", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "SF Mono", monospace;
 
-  /* Spotify Colors */
+  /* Spotify Colors - Pure Deep Blacks */
   --sp-green: #1DB954;
   --sp-green-hover: #1ED760;
   --sp-black: #000000;
@@ -14,14 +14,15 @@
 
   --text-primary: #FFFFFF;
   --text-secondary: #B3B3B3;
-  --text-tertiary: #A7A7A7;
+  --text-tertiary: #727272; /* More subtle tertiary */
 
   /* Layout */
   --sidebar-width: 240px;
   --player-height: 90px;
-  --main-padding: 32px;
+  --main-padding: 24px; /* Slightly tighter padding */
   --radius-lg: 8px;
   --radius-md: 4px;
+  --radius-full: 500px;
 }
 
 /* Global Reset */
@@ -40,9 +41,9 @@ body {
   height: 100vh;
 }
 
-/* Scrollbar Customization - Spotify Style */
+/* Scrollbar Customization - Spotify Style (Narrow & Clean) */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 8px; /* Narrower */
 }
 
 ::-webkit-scrollbar-track {
@@ -50,14 +51,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
-  border: 4px solid transparent;
-  background-clip: content-box;
+  background: rgba(255, 255, 255, 0.1); /* More subtle */
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Legacy Effect Stripping */
@@ -140,14 +139,15 @@ body {
   left: var(--sidebar-width);
   right: 8px;
   bottom: calc(var(--player-height) + 8px);
-  background: linear-gradient(to bottom, #202020 0%, #121212 100%);
+  background: linear-gradient(to bottom, #1a1a1a 0%, #121212 100%); /* Softer gradient */
   border-radius: var(--radius-lg);
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--main-padding);
   z-index: 1;
   isolation: isolate;
-  /* Create new stacking context */
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
 }
 
 /* Mobile Responsive Overrides */

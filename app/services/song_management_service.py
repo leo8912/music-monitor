@@ -22,6 +22,8 @@ import json
 import logging
 import anyio
 
+from app.services.subscription import active_refreshes
+from app.services.subscription import active_refreshes
 from app.models.song import Song, SongSource
 from app.models.artist import Artist, ArtistSource
 from app.repositories.song import SongRepository
@@ -118,7 +120,11 @@ class SongManagementService:
         self,
         db: AsyncSession,
         song_id: int,
-        # ...
+        source: str,
+        source_id: str,
+        quality: int = 999,
+        title: str = None,
+        artist: str = None
     ) -> bool:
         """
         重新下载指定的歌曲。
@@ -155,6 +161,21 @@ class SongManagementService:
         # 1. 下载
         download_service = DownloadService()
         
+        # [Fix] 如果来源是 local，我们需要先搜索一个在线来源
+        if source == 'local':
+            logger.info(f"Source is local, searching for online source for {song.title} - {song.artist.name if song.artist else 'Unknown'}")
+            search_title = title or song.title
+            search_artist = artist or (song.artist.name if song.artist else "Unknown")
+            best_match = await download_service.find_best_match(search_title, search_artist)
+            
+            if best_match:
+                source = best_match.source
+                source_id = best_match.id
+                logger.info(f"Found best match: {source}:{source_id}")
+            else:
+                logger.error("No online match found for local song")
+                return False
+
         # 获取音频URL
         audio_info = await download_service.get_audio_url(source, source_id, quality)
         if not audio_info or not audio_info.get("url"):
@@ -415,28 +436,84 @@ class SongManagementService:
         items = DeduplicationService.deduplicate_songs([song])
         return {"success": True, "song": items[0] if items else None}
     
+    async def process_pending_queue(self, db: AsyncSession, limit: int = 50):
+        """
+        处理处于 PENDING 状态的歌曲：仅获取元数据，不下载音频
+        """
+        # 1. 获取 PENDING 歌曲
+        stmt = select(Song).options(
+            selectinload(Song.sources),
+            selectinload(Song.artist)
+        ).where(Song.status == 'PENDING').limit(limit)
+        
+        songs = (await db.execute(stmt)).scalars().all()
+        logger.info(f"Processing {len(songs)} pending songs for metadata enrichment...")
+        
+        count = 0
+        scraper = ScraperService(self.aggregator, self.metadata_service)
+        
+        for song in songs:
+            try:
+                # 找到可用的源
+                valid_source = None
+                for src in song.sources:
+                    if src.source in ['qqmusic', 'netease', 'kuwo', 'kugou']:
+                        valid_source = src
+                        break
+                
+                if not valid_source:
+                    logger.warning(f"Skipping {song.title}: No valid online source")
+                    continue
+                
+                logger.debug(f"Fetching metadata for: {song.title} [{valid_source.source}]")
+                
+                # 仅刮削元数据 (scrape_and_apply 会更新 DB，如果无本地文件跳过写标签)
+                success = await scraper.scrape_and_apply(
+                    db, 
+                    song, 
+                    valid_source.source, 
+                    valid_source.source_id
+                )
+                
+                if success:
+                    # 更新状态为 NEW (或者保持 PENDING? 用户痛点是卡 PENDING 且无封面)
+                    # 如果有了元数据且无本地文件，状态其实可以改为 'IDLE' 或类似由于现有状态枚举
+                    # 暂时改为 'DEFAULT' 或保持 PENDING 但有了封面 UI 应该能显示
+                    # 为了避免被再次选中处理，也许应该改个状态？
+                    # 但目前 Song 模型状态主要是 DOWNLOADED/PENDING/FAILED
+                    # 如果改为 'METADATA_READY' 可能会更好，但不知前端是否支持
+                    # 妥协：暂时保留 PENDING 或改为 'SUCCESS' (虽然没下载) -> 不，SUCCESS 误导
+                    # 检查 SongManagementService 通常逻辑，这里仅仅补全了元数据
+                    # 为了防止无限循环处理 (where status=PENDING)，必须更改状态！
+                    song.status = "METADATA_FETCHED" 
+                    count += 1
+                    
+            except Exception as e:
+                logger.error(f"Failed to enrich pending song {song.title}: {e}")
+        
+        await db.commit()
+        logger.info(f"Metadata enrichment complete. Updated {count}/{len(songs)} songs.")
+        return count
+
     @handle_service_errors(fallback_value=False)
     async def reset_database(self, db: AsyncSession) -> bool:
-        """
-        重置数据库（清空所有歌曲和歌手）
-        
-        Args:
-            db: 数据库会话
-            
-        Returns:
-            是否重置成功
-        """
+        """重置数据库：清空所有歌曲和歌手数据（增加竞态保护）"""
         try:
-            # 删除所有歌曲
+            # 1. 检查是否有正在进行的刷新任务
+            if active_refreshes:
+                logger.warning(f"⚠️ [Reset Denied] 正在刷新歌手: {list(active_refreshes)}，请稍后再试")
+                return False
+
+            # 2. 清空顺所有相关表 (显式删除以防外键级联失效)
+            await db.execute(delete(SongSource))
+            await db.execute(delete(ArtistSource))
             await db.execute(delete(Song))
-            
-            # 删除所有歌手
             await db.execute(delete(Artist))
             
             await db.commit()
-            logger.info("Database reset complete")
+            logger.info("✅ Database reset complete")
             return True
         except Exception as e:
-            logger.error(f"Database reset failed: {e}")
+            logger.error(f"❌ Database reset failed: {e}")
             await db.rollback()
             return False

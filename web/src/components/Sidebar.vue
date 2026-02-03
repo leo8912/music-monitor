@@ -103,13 +103,13 @@ const isActive = (path: string) => route.path === path
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
+  gap: 20px; /* Increased gap for better clarity */
+  padding: 10px 16px; /* Slightly tighter vertical padding */
   border-radius: 4px;
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 700; /* Bold sidebar text */
   font-size: 14px;
-  transition: color 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
@@ -126,11 +126,11 @@ const isActive = (path: string) => route.path === path
   content: "";
   position: absolute;
   left: 0;
-  top: 12px;
-  bottom: 12px;
-  width: 4px;
+  top: 8px; /* Precise alignment */
+  bottom: 8px;
+  width: 3px; /* Slightly thinner, more elegant */
   background-color: var(--sp-green);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .nav-divider {

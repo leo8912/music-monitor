@@ -8,7 +8,7 @@
         </button>
       </div>
       
-      <div class="lyrics-content">
+      <div class="lyrics-content" ref="lyricsContainer">
         <div v-if="playerStore.lyrics.length === 0" class="no-lyrics">
           <p>暂无歌词 / 纯音乐</p>
         </div>
@@ -18,9 +18,12 @@
             :key="index"
             class="lyric-line"
             :class="{ active: index === playerStore.currentLyricIndex }"
+            :ref="(el) => { if (index === playerStore.currentLyricIndex) activeLyricRef = el }"
           >
             {{ line.text }}
           </div>
+          <!-- Spacer for bottom padding -->
+          <div class="lyrics-spacer"></div>
         </div>
       </div>
     </div>
@@ -28,11 +31,39 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, nextTick } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import { NIcon } from 'naive-ui'
 import { CloseOutline } from '@vicons/ionicons5'
 
 const playerStore = usePlayerStore()
+const lyricsContainer = ref<HTMLElement | null>(null)
+const activeLyricRef = ref<any>(null)
+
+// Auto-scroll logic
+watch(() => playerStore.currentLyricIndex, (newIdx) => {
+    if (newIdx >= 0) {
+        nextTick(() => {
+            if (activeLyricRef.value) {
+                activeLyricRef.value.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                })
+            }
+        })
+    }
+})
+
+// Scroll when panel opens
+watch(() => playerStore.showLyricsPanel, (show) => {
+    if (show) {
+        nextTick(() => {
+            if (activeLyricRef.value) {
+                activeLyricRef.value.scrollIntoView({ behavior: 'auto', block: 'center' })
+            }
+        })
+    }
+})
 </script>
 
 <style scoped>
@@ -101,23 +132,29 @@ const playerStore = usePlayerStore()
 .lyrics-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  padding: 40px 0; /* Add top/bottom padding for better center effect */
 }
 
 .lyric-line {
-  color: var(--text-secondary);
-  font-size: 16px;
-  line-height: 1.6;
-  transition: all 0.3s;
-  padding: 8px 12px;
-  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.4); /* Dim inactive lyrics */
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 12px 0;
+  cursor: default;
 }
 
 .lyric-line.active {
-  color: var(--sp-green);
-  font-weight: 600;
-  background: rgba(29, 185, 84, 0.1);
-  transform: scale(1.02);
+  color: #FFFFFF;
+  font-size: 28px; /* Prominent active line */
+  transform: scale(1.05);
+  transform-origin: left;
+}
+
+.lyrics-spacer {
+    height: 300px;
 }
 
 /* 滑入滑出动画 */

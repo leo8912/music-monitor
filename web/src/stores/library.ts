@@ -75,21 +75,22 @@ export const useLibraryStore = defineStore('library', () => {
             // @ts-ignore
             const items = result.items || result.songs || []
             songs.value = items.map((s: any) => ({
-                id: s.id, // Library songs use 'id' directly
+                id: s.id,
                 title: s.title,
-                artist: s.artist, // Library API returns string name
+                artist: s.artist,
                 album: s.album || '',
                 source: s.source || 'local',
-                sourceId: s.source_id || s.media_id || s.id, // Handle variance
-                cover: s.cover || s.pic_url,
-                localPath: s.local_path || s.local_audio_path,
-                isFavorite: s.is_favorite || false,
-                status: s.status || 'DOWNLOADED', // Default
-                publishTime: s.publishTime || s.publish_time,
-                createdAt: s.createdAt || s.created_at,
-                foundAt: s.foundAt || s.found_at,
-                availableSources: s.availableSources || s.available_sources || [],
-                quality: s.quality
+                source_id: s.source_id || s.media_id || s.id,
+                cover: s.cover || s.cover_url || s.pic_url,
+                local_path: s.local_path || s.local_audio_path || s.localPath,
+                is_favorite: s.is_favorite || false,
+                status: s.status || 'DOWNLOADED',
+                publish_time: s.publish_time || s.publishTime,
+                created_at: s.created_at || s.createdAt,
+                found_at: s.found_at || s.foundAt,
+                available_sources: s.available_sources || s.availableSources || [],
+                quality: s.quality,
+                local_files: s.local_files || s.localFiles || []
             }))
 
             totalSongs.value = result.total
@@ -115,7 +116,9 @@ export const useLibraryStore = defineStore('library', () => {
         try {
             const result = await libraryApi.getLocalSongs({
                 page: page,
-                page_size: pageSize.value
+                page_size: pageSize.value,
+                sortBy: sortField.value,
+                order: sortOrder.value
             })
 
             // @ts-ignore
@@ -126,15 +129,16 @@ export const useLibraryStore = defineStore('library', () => {
                 artist: s.artist,
                 album: s.album || '',
                 source: s.source || 'local',
-                sourceId: s.source_id,
+                source_id: s.source_id,
                 cover: s.cover || s.pic_url,
-                localPath: s.local_path,
-                isFavorite: s.is_favorite || false,
+                local_path: s.local_path,
+                is_favorite: s.is_favorite || false,
                 status: s.status,
-                publishTime: s.publishTime || s.publish_time,
-                createdAt: s.createdAt || s.created_at,
-                availableSources: s.availableSources || [],
-                quality: s.quality
+                publish_time: s.publish_time || s.publishTime,
+                created_at: s.created_at || s.createdAt,
+                available_sources: s.available_sources || s.availableSources || [],
+                quality: s.quality,
+                local_files: s.local_files || s.localFiles || []
             }))
             totalSongs.value = result.total
         } catch (error) {
@@ -150,7 +154,9 @@ export const useLibraryStore = defineStore('library', () => {
         try {
             const result = await libraryApi.getHistory({
                 page: page,
-                page_size: pageSize.value
+                page_size: pageSize.value,
+                sortBy: sortField.value,
+                order: sortOrder.value
             })
 
             // @ts-ignore
@@ -161,15 +167,15 @@ export const useLibraryStore = defineStore('library', () => {
                 artist: s.artist,
                 album: s.album || '',
                 source: s.source || 'local',
-                sourceId: s.source_id || s.media_id,
-                cover: s.cover || s.pic_url,
-                localPath: s.local_path || s.local_audio_path,
-                isFavorite: s.is_favorite || false,
+                source_id: s.source_id || s.media_id,
+                cover: s.cover || s.cover_url || s.pic_url,
+                local_path: s.local_path || s.local_audio_path || s.localPath,
+                is_favorite: s.is_favorite || false,
                 status: s.status || 'DOWNLOADED',
-                publishTime: s.publishTime || s.publish_time,
-                createdAt: s.createdAt || s.created_at,
-                foundAt: s.foundAt || s.found_at,
-                availableSources: s.availableSources || [],
+                publish_time: s.publish_time || s.publishTime,
+                created_at: s.created_at || s.createdAt,
+                found_at: s.found_at || s.foundAt,
+                available_sources: s.available_sources || s.availableSources || [],
                 quality: s.quality
             }))
             totalHistorySongs.value = result.total
@@ -249,7 +255,7 @@ export const useLibraryStore = defineStore('library', () => {
     const toggleFavorite = async (song: Song) => {
         try {
             const result = await libraryApi.toggleFavorite(song.id)
-            song.isFavorite = result.is_favorite
+            song.is_favorite = result.is_favorite
             return true
         } catch (error) {
             console.error('切换收藏失败:', error)
@@ -301,16 +307,17 @@ export const useLibraryStore = defineStore('library', () => {
                 artist: updatedData.artist,
                 album: updatedData.album || '',
                 source: updatedData.source || 'local',
-                sourceId: updatedData.source_id || updatedData.media_id || updatedData.id,
+                source_id: updatedData.source_id || updatedData.media_id || updatedData.id,
                 cover: updatedData.cover || updatedData.pic_url,
-                localPath: updatedData.local_path || updatedData.local_audio_path,
-                isFavorite: updatedData.is_favorite || false,
+                local_path: updatedData.local_path || updatedData.local_audio_path,
+                is_favorite: updatedData.is_favorite || false,
                 status: updatedData.status || 'DOWNLOADED',
-                publishTime: updatedData.publish_time,
-                createdAt: updatedData.created_at,
-                foundAt: updatedData.found_at,
-                availableSources: updatedData.available_sources || [],
-                quality: updatedData.quality
+                publish_time: updatedData.publish_time,
+                created_at: updatedData.created_at,
+                found_at: updatedData.found_at,
+                available_sources: updatedData.available_sources || [],
+                quality: updatedData.quality,
+                local_files: updatedData.local_files || updatedData.localFiles || []
             }
             songs.value[index] = mappedSong
             return mappedSong

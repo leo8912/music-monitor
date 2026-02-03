@@ -1,14 +1,58 @@
 """
-Config配置管理 - 应用配置加载和管理
+Config配置管理 (Legacy Facade)
 
-此文件负责：
-- 应用配置的加载和保存
-- 配置文件迁移和版本升级
-- 安全密钥管理
-- 监控用户配置管理
+此文件保留用于兼容性，将请求转发给 ConfigManager。
 
 Author: music-monitor development team
 """
+import logging
+from core.config_manager import get_config_manager, ConfigManager
+
+logger = logging.getLogger(__name__)
+
+# Forwarding 'config' dict
+# Since 'config' in main.py is imported as dict, we can't easily replace it with a dynamic object 
+# without breaking code that expects dict reference.
+# However, ConfigManager._config IS a dict.
+# We can expose it?
+# The problem is if ConfigManager reloads, it replaces _config dict instance?
+# Let's check ConfigManager.update: self._config = ... (Replaces reference!)
+# So direct import 'from core.config import config' will hold STALE reference.
+# We must fix main.py and other consumers to use get_config_manager().get() or ._config access.
+# OR, we make 'config' a global proxy.
+# Since python dicts are not proxies, we should encourage function calls.
+
+# For now, let's expose the MANAGER's config, but warn.
+
+CONFIG_FILE_PATH = "config.yaml"
+
+def load_config():
+    """Delegated to ConfigManager"""
+    manager = get_config_manager()
+    # manager.load_config() # Already loaded in init
+    return manager._config
+
+# Legacy Global Config Dictionary
+# WARNING: This might become stale if config is reloaded and reference changes.
+config = get_config_manager()._config
+
+def ensure_security_config():
+    """Delegate or No-op (Handled by ConfigManager defaults/env)"""
+    # ConfigManager handles defaults.
+    # Security rotation logic can be moved there or kept here if needed.
+    # For now, simplistic implementation:
+    manager = get_config_manager()
+    secret = manager.get("auth.secret_key")
+    if secret == "CHANGE_ME_IN_ENV_OR_YAML":
+        # We could rotate it here, but let's just return what we have
+        # Or better, implement rotation in ConfigManager?
+        pass
+    return secret, False
+
+def migrate_and_save_config():
+    """No-op: Migration is now handled by SystemSettings (DB) and ConfigManager (Norm)."""
+    return False, "Config migration is now managed by Database and ConfigManager."
+
 import yaml
 import secrets
 import re

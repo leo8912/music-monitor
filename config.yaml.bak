@@ -1,117 +1,55 @@
-api:
-  rate_limit:
-    burst_size: 10 # 突发请求限制: 允许短时间内超过速率限制的请求数量
-    requests_per_minute: 60 # 每分钟请求限制: API每分钟允许的最大请求数
-  timeout: 30 # API超时时间(秒): 接口请求的超时设定
-
-auth:
-  access_token_expire_minutes: 30 # 访问令牌过期时间(分钟): 用户登录凭证的有效时长
-  algorithm: HS256 # 加密算法: 用于JWT令牌签名的算法
-  avatar: '/uploads/avatars/35fdc915b375421cbb1250f90a7b692c.jpg' # 默认头像URL: 用户未设置头像时的默认显示
-  enabled: true # 启用身份验证: 是否开启登录功能 (建议开启)
-  password: "password" # 默认管理员密码: 首次部署时的初始密码
-  refresh_token_expire_days: 7 # 刷新令牌过期时间(天):在此期间内无需重新登录
-  secret_key: "HV1i1DPxwNyWn10XD0lkbHiqa7fsIo6cnW3lrIEF5JM" # 密钥: 用于加密的安全密钥 (⚠️务必修改此值以确保安全)
-  username: "music" # 默认管理员用户名: 登录账号
+# ==========================================
+# Music Monitor 配置文件 (自动规整)
+# ==========================================
+# ⚠️ 注意: 
+# 绝大多数业务配置 (下载、监控、音质等) 已迁移至网页端 "设置" 页面管理。
+# 此文件仅用于定义基础设施 (数据库、路径) 和 初始导入。
+# 
+# 如果您在此处修改 "notify"，重启后会自动导入数据库。
+# ==========================================
 
 database:
-  echo: false # SQL日志打印: 是否在控制台打印执行的SQL语句 (调试用)
-  max_overflow: 10 # 连接池最大溢出数: 允许超过连接池大小的额外连接数
-  pool_size: 5 # 连接池大小: 保持的数据库连接数量
-  url: "sqlite+aiosqlite:///./music_monitor.db" # 数据库连接字符串: Docker环境默认路径
-
-download:
-  max_concurrent_downloads: 3 # 最大并发下载数: 同时下载的任务数量
-  quality_preference: 999 # 音质偏好: 999=FLAC(无损), 320=HQ(高品质), 128=PQ(标准)
-  retry_attempts: 3 # 下载重试次数: 失败后的最大重试尝试
-  sources: # 下载源优先级: 按顺序尝试下载
-  - netease # 网易云音乐
-  - qqmusic # QQ音乐
-  - kugou # 酷狗音乐
-  - kuwo # 酷我音乐
-  timeout: 30 # 下载超时时间(秒): 单个下载任务的超时限制
-
-global:
-  check_interval_minutes: 60 # 全局检查间隔(分钟): 默认的定时任务执行频率
-  external_url: "http://localhost:5173/" # 外部访问URL: 用于生成分享链接或回调地址
-  log_level: INFO # 日志级别: DEBUG, INFO, WARNING, ERROR
-  show_log_panel: true # 显示日志面板: 是否在前端显示实时日志
-  theme: light # 默认主题: light(浅色), dark(深色)
-
+  echo: false
+  max_overflow: 10
+  pool_size: 5
+  url: sqlite+aiosqlite:///./music_monitor.db
 logging:
-  backup_count: 5 # 日志备份数量: 保留的历史日志文件个数
-  file: logs/application.log # 日志文件路径: 存放日志的位置
-  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s' # 日志格式
-  level: INFO # 文件记录日志级别
-  max_bytes: 10485760 # 单个日志文件最大字节数 (10MB)
-
-metadata:
-  album_priority: # 专辑信息获取优先级
-  - plugin # 插件优先
-  cover_priority: # 封面获取优先级
-  - plugin # 插件优先
-  enable_album: true # 启用专辑元数据: 是否获取专辑信息
-  enable_cover: true # 启用封面元数据: 是否下载封面图片
-  enable_lyrics: true # 启用歌词元数据: 是否下载歌词
-  lyrics_priority: # 歌词获取优先级
-  - plugin # 插件
-  - kugou # 酷狗
-  - qqmusic # QQ音乐
-
-monitor:
-  netease:
-    enabled: true # 启用网易云监控
-    interval: 60 # 监控间隔(分钟)
-    users: # 监控用户列表
-    - avatar: https://y.gtimg.cn/music/photo_new/T001R300x300M000000GBnpV1IcEfl.jpg
-      id: '12459252'
-      name: 宿羽阳
-  qqmusic:
-    enabled: true # 启用QQ音乐监控
-    interval: 60 # 监控间隔(分钟)
-    users: # 监控用户列表
-    - avatar: https://y.gtimg.cn/music/photo_new/T001R300x300M000000GBnpV1IcEfl.jpg
-      id: 000GBnpV1IcEfl
-      name: 宿羽阳
-    - avatar: https://y.gtimg.cn/music/photo_new/T001R300x300M000001GAeOa0SeDvI.jpg
-      id: 001GAeOa0SeDvI
-      name: 任素汐
-
-notify: # 通知配置 (替代旧版 notifications)
-  telegram:
-    bot_token: '' # Telegram Bot Token
-    chat_id: '' # 接收通知的 Chat ID
-    enabled: false # 是否启用 Telegram 通知
-  wecom:
-    agentid: '1000003' # 企业微信应用 AgentId
-    corpid: 'ww6582ddf3c02fd7fc' # 企业 ID
-    corpsecret: 'ydDzU7MFP5DajogWWeokkGPk-CCBgAAUHQzAOENhlgU' # 应用 Secret
-    enabled: true # 是否启用企业微信通知
-    encoding_aes_key: '5DPQJNC16VWPO8ds7U69rE2E9CA9sdgu7uO4LDpWSC3' # 消息加密 Key
-    token: 'adOEH9t8JERvROoCbx2PH' # 消息校验 Token
-
-scheduler:
-  check_interval_minutes: 60 # 常规检查任务间隔(分钟)
-  cleanup_interval_hours: 24 # 清理任务间隔(小时)
-  sync_interval_hours: 24 # 同步任务间隔(小时)
-
+  backup_count: 5
+  file: logs/application.log
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  level: INFO
+  max_bytes: 10485760
 storage:
-  auto_cache_enabled: true # 启用自动缓存管理: 是否自动清理过期缓存
-  max_cache_size: 10737418240 # 最大缓存大小(字节): 默认10GB
-  cleanup_threshold: 0.8 # 清理阈值: 达到限制的80%时开始清理
-  retention_days: 180 # 缓存保留天数: 超过此天数的文件将被清理
-  
-  # --- 核心目录配置 ---
-  # 1. 资料库 (Library): 静态仓库
-  # 只有您拥有的、确认保留的高质量文件放这里。系统只扫描，绝不删除，也不参与自动移动。
-  library_dir: /code/music-monitor/library 
-  
-  # 2. 缓存目录 (Cache): 临时中转站
-  # 在线试听、自动下载的新歌默认存放在这里。会根据保留策略自动清理。
-  # 点击"红心"收藏后，文件会从这里移走到 favorites_dir。
-  cache_dir: /code/music-monitor/audio_cache
-  
-  # 3. 收藏目录 (Favorites): 精选集
-  # 只有您点击了"红心"的文件会存放在这里。
-  # 取消"红心"后，文件会移回 cache_dir。
-  favorites_dir: /code/music-monitor/favorites
+  auto_cache_enabled: true
+  cache_dir: D:/code/music-monitor/audio_cache
+  cleanup_threshold: 0.8
+  favorites_dir: D:/code/music-monitor/favorites
+  library_dir: D:/code/music-monitor/library
+  max_cache_size: 10737418240
+  retention_days: 180
+auth:
+  access_token_expire_minutes: 30
+  algorithm: HS256
+  avatar: /uploads/avatars/35fdc915b375421cbb1250f90a7b692c.jpg
+  enabled: true
+  password: password
+  refresh_token_expire_days: 7
+  secret_key: HV1i1DPxwNyWn10XD0lkbHiqa7fsIo6cnW3lrIEF5JM
+  username: music
+api:
+  rate_limit:
+    burst_size: 10
+    requests_per_minute: 60
+  timeout: 30
+notify:
+  telegram:
+    bot_token: ''
+    chat_id: ''
+    enabled: false
+  wecom:
+    agentid: '1000003'
+    corpid: ww6582ddf3c02fd7fc
+    corpsecret: ydDzU7MFP5DajogWWeokkGPk-CCBgAAUHQzAOENhlgU
+    enabled: true
+    encoding_aes_key: 5DPQJNC16VWPO8ds7U69rE2E9CA9sdgu7uO4LDpWSC3
+    token: adOEH9t8JERvROoCbx2PH
