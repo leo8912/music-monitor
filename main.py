@@ -120,6 +120,9 @@ async def lifespan(app: FastAPI):
         setup_logging()
         logger.info("Logging configuration restored after DB migration.")
 
+        # Reload config again now that DB is ready (to load SystemSettings and Normalize YAML)
+        config_instance.reload()
+
         mon_cfg = config_instance.get('monitor', {})
         # Start Scheduler
         scheduler.start()

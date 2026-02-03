@@ -39,3 +39,4 @@ web/dist/
 Thumbs.db
 verify_login.py
 config(3).yaml
+config.yaml.bak

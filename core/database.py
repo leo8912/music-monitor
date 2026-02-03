@@ -97,6 +97,7 @@ async def async_run_migrations():
     await asyncio.to_thread(run_upgrade)
 
 async def async_init_db():
+    print(f"DEBUG: Initializing Database with URL: {DATABASE_URL}")
     async with async_engine.begin() as conn:
         # Create all tables (including tracking existing ones)
         # Note: With Alembic, we usually rely on migrations.
