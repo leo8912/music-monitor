@@ -1,5 +1,5 @@
 
-path = "d:/code/music-monitor/main.py"
+path = "main.py"
 with open(path, encoding='utf-8') as f:
     lines = f.readlines()
 

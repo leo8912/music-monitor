@@ -21,7 +21,7 @@ from datetime import datetime
 import json
 import logging
 
-from core.database import MediaRecord
+from app.models.media_record import MediaRecord
 from app.repositories.base import BaseRepository
 
 logger = logging.getLogger(__name__)

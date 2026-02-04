@@ -22,6 +22,7 @@ from app.repositories.artist import ArtistRepository
 from app.models.song import Song
 from app.models.download_history import DownloadHistory
 from app.schemas import SongResponse
+from core.config_manager import get_config_manager
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -100,39 +101,86 @@ class MediaService:
         return result
 
     async def get_audio_path(self, filename: str, db: AsyncSession = None) -> tuple[str, Optional[Song]]:
-        """获取音频文件路径"""
+        """
+        获取音频文件路径 (增强版: 支持跨平台路径修复)
+        
+        策略:
+        1. 尝试直接从数据库查找 (local_path)
+        2. 如果数据库路径不存在 (e.g. Windows路径在Docker中), 尝试在当前配置的目录中查找同名文件
+        3. 尝试相对路径拼接
+        """
         song_repo = SongRepository(db)
         
-        base_filename = os.path.basename(filename)
-        # Check by local_path (exact match logic for security/correctness)
-        # SongRepository.get_by_path checks Song.local_path
-        
-        # Logic to resolve relative path "audio_cache/..."
-        # ... (Existing logic seems okay as long as Repos work)
-        
+        # 1. 尝试从数据库查找
+        # 即使这里查出的 song.local_path 是 D:/... 代码也会后续处理
+        # 我们先尝试标准化 filename 查找
         normalized_filename = filename.replace("\\", "/")
-        if normalized_filename.startswith("audio_cache/"):
-            filename = normalized_filename.replace("audio_cache/", "")
-        elif normalized_filename.startswith("favorites/"):
-            filename = normalized_filename.replace("favorites/", "")
+        simple_filename = os.path.basename(normalized_filename) # song.mp3
         
-        # 构造数据库中存储的可能路径 (支持两种斜杠匹配)
-        cache_path_v1 = f"audio_cache/{filename}"
-        cache_path_v2 = f"audio_cache\\{filename}"
-        favorite_path_v1 = f"favorites/{filename}"
-        favorite_path_v2 = f"favorites\\{filename}"
+        # 构造可能的数据库存储路径 (用于查询)
+        possible_db_paths = [
+            filename,
+            normalized_filename,
+            f"audio_cache/{simple_filename}",
+            f"favorites/{simple_filename}",
+            f"library/{simple_filename}"
+        ]
         
-        # Try all possible path formats to be safe
-        for p in [cache_path_v1, cache_path_v2, favorite_path_v1, favorite_path_v2]:
+        song = None
+        for p in possible_db_paths:
             song = await song_repo.get_by_path(p)
-            if song and song.local_path and os.path.exists(song.local_path):
+            if song:
+                break
+        
+        # 如果数据库还没找到，尝试模糊匹配 (危险? 暂不)
+        
+        final_path = None
+        
+        # A. 如果数据库有记录
+        if song and song.local_path:
+            # A1. 直接检查数据库记录的路径
+            if os.path.exists(song.local_path):
                 return song.local_path, song
             
-        # Fallback check file existence
-        for p in [cache_path_v1, cache_path_v2, favorite_path_v1, favorite_path_v2]:
-            if os.path.exists(p):
-                return p, None
+            # A2. 路径不存在? 可能是环境迁移 (Win -> Docker)
+            # 尝试在当前配置的目录中查找同名文件
+            storage_cfg = get_config_manager().get("storage", {})
+            dirs_to_check = [
+                storage_cfg.get("cache_dir", "audio_cache"),
+                storage_cfg.get("favorites_dir", "favorites"),
+                storage_cfg.get("library_dir")
+            ]
             
+            # 提取文件名 (e.g. "Song.mp3")
+            db_basename = os.path.basename(song.local_path)
+            
+            for d in dirs_to_check:
+                if not d: continue
+                candidate = os.path.join(d, db_basename)
+                if os.path.exists(candidate):
+                    logger.info(f"Using auto-healed path for {db_basename}: {candidate}")
+                    return candidate, song
+
+        # B. 如果数据库没记录，或者数据库记录也没救了
+        # 尝试直接在文件系统查找 filename
+        storage_cfg = get_config_manager().get("storage", {})
+        dirs_to_check = [
+            storage_cfg.get("cache_dir", "audio_cache"),
+            storage_cfg.get("favorites_dir", "favorites"),
+            storage_cfg.get("library_dir"),
+            ".", # 当前目录
+            "audio_cache", # 默认
+            "favorites"
+        ]
+        
+        target_name = os.path.basename(filename)
+        
+        for d in dirs_to_check:
+            if not d: continue
+            candidate = os.path.join(d, target_name)
+            if os.path.exists(candidate):
+                return candidate, song
+
         raise FileNotFoundError(f"Audio file not found: {filename}")
 
     async def download_audio(

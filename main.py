@@ -34,7 +34,8 @@ from datetime import datetime
 import collections
 from urllib.parse import quote
 
-from core.database import init_db, SessionLocal, MediaRecord
+from core.database import init_db, SessionLocal
+from app.models.media_record import MediaRecord
 from app.services.notification import NotificationService
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 

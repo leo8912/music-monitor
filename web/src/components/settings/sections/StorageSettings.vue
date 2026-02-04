@@ -74,7 +74,7 @@ const handleSave = async () => {
             <SettingInput
                 :model-value="libraryPathValue"
                 label="本地音乐库"
-                placeholder="例如 D:/Music"
+                placeholder="例如 /library 或 /music"
                 description="如果您已经有下载好的音乐库，在此填入路径。系统下载前会优先检查此目录是否存在歌曲。"
                 @update:model-value="updateStorage('library_path', $event)"
             />

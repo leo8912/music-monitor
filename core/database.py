@@ -35,44 +35,6 @@ from app.models.base import Base
 async_engine = create_async_engine(DATABASE_URL, echo=False)  # [Fix] Enable echo for debugging flicker issue
 AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
-class MediaRecord(Base):
-    """
-    Stores the history of found media to prevent duplicate notifications.
-    """
-    __tablename__ = 'media_records'
-
-    id = Column(Integer, primary_key=True)
-    unique_key = Column(String, unique=True, index=True, nullable=False) # e.g., "netease:album:123456"
-    
-    source = Column(String, nullable=False)
-    media_type = Column(String, nullable=False)
-    media_id = Column(String, nullable=False)
-    
-    title = Column(String)
-    author = Column(String)
-    cover = Column(String, nullable=True) # Added for frontend display
-    url = Column(String, nullable=True) # Added for playback
-    album = Column(String, nullable=True) # Added for better dedup
-    publish_time = Column(DateTime)
-    
-    # Audio & Lyrics extensions
-    local_audio_path = Column(String, nullable=True) # Path relative to workspace or absolute
-    audio_quality = Column(Integer, nullable=True)   # kbps, e.g. 320, 999
-    lyrics = Column(Text, nullable=True)             # LRC content
-    lyrics_source = Column(String, nullable=True)
-    lyrics_updated_at = Column(DateTime, nullable=True)
-    
-    # Trial URL for audio previews
-    trial_url = Column(String, nullable=True)  # URL for audio preview/trial
-    
-    found_at = Column(DateTime, default=datetime.now)
-    is_pushed = Column(Boolean, default=False)
-    push_time = Column(DateTime, nullable=True)
-    is_favorite = Column(Boolean, default=False) # Added for user favorites
-    extra_sources = Column(Text, nullable=True)  # JSON list of other sources e.g. ["qqmusic", "kugou"]
-
-    def __repr__(self):
-        return f"<MediaRecord(key={self.unique_key}, title={self.title})>"
 
 # Database initialization for async
 import asyncio
@@ -107,7 +69,7 @@ async def async_init_db():
     
     async with async_engine.begin() as conn:
         # Create all tables (including tracking existing ones)
-        pass
+        await conn.run_sync(Base.metadata.create_all)
         
     # Run Alembic Upgrade
     try:

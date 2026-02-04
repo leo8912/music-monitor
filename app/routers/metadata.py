@@ -28,8 +28,13 @@ async def get_lyrics(
     song_id: str = None
 ):
     """获取歌词"""
-    # 强制写入文件进行调试
-    with open("d:/code/music-monitor/logs/lyrics_debug.log", "a", encoding="utf-8") as f:
+    # 强制写入文件进行调试 (使用相对路径，兼容Docker)
+    import os
+    log_file = "logs/lyrics_debug.log"
+    # Ensure dir exists
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    
+    with open(log_file, "a", encoding="utf-8") as f:
         f.write(f"\n=== {__import__('datetime').datetime.now()} === HIT /api/metadata/lyrics\n")
         f.write(f"song_id={song_id}, title={title}, artist={artist}\n")
     
@@ -66,7 +71,12 @@ async def get_lyrics(
     except Exception as e:
         import traceback
         error_msg = f"Error in get_lyrics: {str(e)}\n{traceback.format_exc()}"
-        with open("d:/code/music-monitor/logs/lyrics_debug.log", "a", encoding="utf-8") as f:
+        
+        # Ensure dir exists
+        log_file = "logs/lyrics_debug.log"
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        
+        with open(log_file, "a", encoding="utf-8") as f:
             f.write(f"\n=== ERROR ===\n{error_msg}\n")
         
         sys.stderr.write(f"=== ERROR === {error_msg}\n")

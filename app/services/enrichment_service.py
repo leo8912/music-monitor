@@ -49,7 +49,14 @@ class EnrichmentService:
     def __init__(self):
         self.aggregator = MusicAggregator()
         self.metadata_service = MetadataService()
-        self.upload_root = os.path.join(os.getcwd(), "uploads")
+        
+        # [Fix] Align upload path with main.py logic for Docker persistence
+        # If /config/config.yaml exists or /config dir is present, use /config/uploads
+        if os.path.exists("/config"):
+            self.upload_root = "/config/uploads"
+        else:
+            self.upload_root = os.path.join(os.getcwd(), "uploads")
+            
         self.cover_dir = os.path.join(self.upload_root, "covers")
         os.makedirs(self.cover_dir, exist_ok=True)
 

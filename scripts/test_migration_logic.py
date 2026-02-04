@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Test Paths
 TEST_CONFIG = "test_config_dirty.yaml"
-TEST_EXAMPLE = "d:/code/music-monitor/config.example.yaml"
+TEST_EXAMPLE = "config.example.yaml"
 
 # Create Dirty Config
 dirty_data = {
