@@ -40,3 +40,4 @@ Thumbs.db
 verify_login.py
 config(3).yaml
 config.yaml.bak
+logs/application.log.2026-02-03

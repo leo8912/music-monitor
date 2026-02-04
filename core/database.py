@@ -89,31 +89,32 @@ async def async_run_migrations():
         project_root = os.path.dirname(os.path.dirname(__file__)) # d:/code/music-monitor
         alembic_ini_path = os.path.join(project_root, "alembic.ini")
         alembic_cfg = Config(alembic_ini_path)
-        # We need to set the sqlalchemy.url in the config if it's not set or needs override
-        # env.py already handles it dynamically from core.database.sync_database_url
+        # Force the Alembic Config to use the runtime DATABASE_URL
+        # This ensures env.py receives the correct URL regardless of alembic.ini
+        # We must use a sync URL for the config object if we were running offline,
+        # but env.py converts it to async engine anyway.
+        alembic_cfg.set_main_option("sqlalchemy.url", str(DATABASE_URL))
+        
         command.upgrade(alembic_cfg, "head")
 
     # Alembic is sync, so run in thread
     await asyncio.to_thread(run_upgrade)
 
 async def async_init_db():
-    import sys
-    print(f"DEBUG: Initializing Database with URL: {DATABASE_URL}", file=sys.stderr)
+    import logging
+    logger = logging.getLogger("core.database")
+    logger.info(f"DEBUG: Initializing Database with URL: {DATABASE_URL}")
+    
     async with async_engine.begin() as conn:
         # Create all tables (including tracking existing ones)
-        # Note: With Alembic, we usually rely on migrations.
-        # But for 'create on fresh start', create_all is faster than running 100 migrations.
-        # However, to keep Alembic in sync, we should stamp the head if we use create_all.
-        # For now, let's try running migrations on top.
-        # await conn.run_sync(Base.metadata.create_all)
         pass
         
     # Run Alembic Upgrade
     try:
         await async_run_migrations()
-        print("Database migrations completed successfully.")
+        logger.info("Database migrations completed successfully.")
     except Exception as e:
-        print(f"Database migration failed: {e}")
+        logger.error(f"Database migration failed: {e}")
 
 # Create sync engine for backward compatibility where needed
 sync_database_url = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
