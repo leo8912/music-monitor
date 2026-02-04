@@ -105,6 +105,8 @@ async def add_artist(
                 raise HTTPException(status_code=404, detail="未找到歌手且无法创建")
 
             added_names = []
+            notified_artist_ids = set()
+
             for item in found:
                 await SubscriptionService.add_artist(
                     db, item['name'], item['source'], 
@@ -113,7 +115,16 @@ async def add_artist(
                 added_names.append(item['name'])
                 # 为每个找到的实例触发后台拉取
                 background_tasks.add_task(run_refresh_task, item['name'], item['source'], item['id'])
-            
+                
+                # 尝试通知 (去重)
+                from app.models.artist import Artist
+                from app.services.notification import NotificationService
+                stmt = select(Artist).where(Artist.name == item['name'])
+                art = (await db.execute(stmt)).scalars().first()
+                if art and art.id not in notified_artist_ids:
+                    await NotificationService.send_artist_card(art.name, str(art.id), art.avatar)
+                    notified_artist_ids.add(art.id)
+
             return {"success": True, "message": f"已添加 {', '.join(added_names)}"}
         else:
             # 直接指定模式
@@ -125,6 +136,16 @@ async def add_artist(
             if success:
                 # 触发后台关联与刷新任务
                 background_tasks.add_task(run_refresh_task, req.name.strip(), req.source, req.id)
+                
+                # 发送通知
+                from app.models.artist import Artist
+                from app.services.notification import NotificationService
+                stmt = select(Artist).where(Artist.name == req.name)
+                art = (await db.execute(stmt)).scalars().first()
+                if art:
+                    # 使用 background_task 发送? 不，await 即可
+                    await NotificationService.send_artist_card(art.name, str(art.id), art.avatar or req.avatar)
+
                 return {"success": True, "message": f"已成功关注 {req.name}"}
             else:
                 return {"success": False, "message": "添加歌手失败"}

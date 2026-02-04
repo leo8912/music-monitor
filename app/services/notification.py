@@ -129,3 +129,61 @@ class NotificationService:
                 )
             except Exception as e:
                 logger.error(f"Telegram send failed: {e}")
+
+    @classmethod
+    async def send_artist_card(cls, artist_name: str, artist_id: str, avatar: str = ""):
+        """发送歌手关注成功卡片"""
+        # 如果未配置企业微信，直接返回
+        if not cls._wecom:
+            return
+            
+        try:
+            # 构造链接
+            external_url = config.get('global', {}).get('external_url', '')
+            if external_url and external_url.startswith('http'):
+                external_url = external_url.rstrip('/')
+                target_url = f"{external_url}/#/artist/{artist_id}"
+            else:
+                target_url = ""
+
+            # 构造描述
+            description = (
+                "✅ 已添加至音乐库\n"
+                "🔄 正在后台同步历史专辑与热门歌曲...\n\n"
+                "💡 提示：点击卡片查看歌手详情"
+            )
+
+            await cls._wecom.send_news_message(
+                title=f"关注成功：{artist_name}",
+                description=description,
+                url=target_url,
+                pic_url=avatar or "https://p2.music.126.net/tGHU62DTszbTsM7vzNgHjw==/109951165631226326.jpg"
+            )
+            logger.info(f"Notification: Sent artist card for {artist_name}")
+        except Exception as e:
+            logger.error(f"Failed to send artist card: {e}")
+
+    @classmethod
+    async def send_download_card(cls, title: str, artist: str, album: str, cover: str, magic_link: str, quality: str = "Standard"):
+        """发送下载完成卡片"""
+        if not cls._wecom:
+            return
+
+        try:
+            description = (
+                f"👤 歌手: {artist}\n"
+                f"💿 专辑: {album or '未知'}\n"
+                f"💎 音质: {quality}\n\n"
+                "✨ 点击卡片立即播放 (无需登录)"
+            )
+
+            await cls._wecom.send_news_message(
+                title=f"下载完成：{title}",
+                description=description,
+                url=magic_link,
+                pic_url=cover
+            )
+            logger.info(f"Notification: Sent download card for {title}")
+        except Exception as e:
+            logger.error(f"Failed to send download card: {e}")
+

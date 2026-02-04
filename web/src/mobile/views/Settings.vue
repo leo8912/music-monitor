@@ -56,7 +56,7 @@
       <!-- 底部信息 -->
       <div class="sp-settings-footer">
         <p>Music Monitor</p>
-        <p class="version">v2.9.2 · Spotify Edition</p>
+        <p class="version">v2.9.3 · Spotify Edition</p>
       </div>
     </main>
 

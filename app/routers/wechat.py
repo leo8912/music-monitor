@@ -168,62 +168,7 @@ async def wechat_callback(request: Request, msg_signature: str, timestamp: str, 
         user_id = msg.source
         logger.info(f"处理用户消息: {user_id} -> {content}")
         
-        async def process_message(content: str, user_id: str) -> Optional[str]:
-            # 1. 处理数字选择（确认下载或确认添加歌手）
-            if content.isdigit():
-                idx = int(content) - 1
-                session = await get_db_session(user_id)
-                
-                if session:
-                    results = session.get('results', [])
-                    if 0 <= idx < len(results):
-                        target = results[idx]
-                        stype = session.get('type', 'song')
-                        
-                        if stype == 'song':
-                            asyncio.create_task(background_download(target, user_id))
-                            artist = format_artist(target.get('artist', ''))
-                            return f"🚀 开始下载：\n{target.get('title', '未知')} - {artist}\n下载完成后将通过推送告知。"
-                        elif stype == 'artist':
-                            asyncio.create_task(background_add_artist(target, user_id))
-                            return f"🚀 正在添加歌手监控：\n{target.get('name', '未知')}\n添加完成后将同步最新作品。"
-                        
-                        await clear_db_session(user_id)
-                    else:
-                        return f"⚠️ 请输入有效的序号 (1-{len(results)})"
-                else:
-                    return "⚠️ 会话已过期或不存在，请重新搜索。"
-            
-            # 2. 处理意图识别
-            keyword = content
-            intent = "artist"  # 默认搜索歌手
-            
-            # 定义前缀对应的搜索意图
-            song_prefixes = ["下载", "喜欢", "收藏", "搜歌", "歌曲", "/song"]
-            artist_prefixes = ["监控", "歌手", "添加", "/artist"]
-            
-            for prefix in song_prefixes:
-                if content.lower().startswith(prefix):
-                    intent = "song"
-                    keyword = content[len(prefix):].strip()
-                    break
-            
-            for prefix in artist_prefixes:
-                if content.lower().startswith(prefix):
-                    intent = "artist"
-                    keyword = content[len(prefix):].strip()
-                    break
-            
-            if not keyword:
-                return "👋 你好！发送“歌曲 关键词”搜索音乐，发送“歌手 关键词”添加监控。"
-            
-            # 3. 执行搜索
-            if intent == "song":
-                return await handle_song_search(keyword, user_id)
-            else:
-                return await handle_artist_search(keyword, user_id)
-
-        reply_content = await process_message(content, user_id)
+        reply_content = await dispatch_command(content, user_id)
         
         if not reply_content:
             return Response("success")
@@ -237,6 +182,77 @@ async def wechat_callback(request: Request, msg_signature: str, timestamp: str, 
         return Response("Error", status_code=500)
 
 
+async def dispatch_command(content: str, user_id: str) -> Optional[str]:
+    """命令分发器"""
+    
+    # 1. 帮助指令
+    if content.lower() in ["帮助", "help", "/help", "菜单", "?"]:
+        return (
+            "🤖 Music Monitor 助手\n\n"
+            "支持以下自然语言指令：\n\n"
+            "🔍 搜歌与下载\n"
+            "发送 `周杰伦` 或 `下载 稻香`\n"
+            "-> 返回搜索结果，回复序号下载\n\n"
+            "🎤 歌手监控\n"
+            "发送 `歌手 周杰伦`\n"
+            "-> 自动添加监控并开始补全\n\n"
+            "💡 提示：直接发送文字即可搜索"
+        )
+
+    # 2. 数字选择 (上下文敏感)
+    if content.isdigit():
+        idx = int(content) - 1
+        session = await get_db_session(user_id)
+        
+        if session:
+            results = session.get('results', [])
+            if 0 <= idx < len(results):
+                target = results[idx]
+                stype = session.get('type', 'song')
+                
+                if stype == 'song':
+                    asyncio.create_task(background_download(target, user_id))
+                    artist = format_artist(target.get('artist', ''))
+                    return f"🚀 开始下载：\n{target.get('title', '未知')} - {artist}\n下载完成后将推送卡片通知。"
+                elif stype == 'artist':
+                    asyncio.create_task(background_add_artist(target, user_id))
+                    return f"🚀 正在添加歌手：\n{target.get('name', '未知')}\n添加完成后将推送卡片通知。"
+                
+                await clear_db_session(user_id)
+            else:
+                return f"⚠️ 请输入有效的序号 (1-{len(results)})"
+        else:
+            return "⚠️ 会话已过期或不存在，请重新搜索。"
+    
+    # 3. 意图识别
+    intent = "song" # 默认搜歌
+    keyword = content
+    
+    # 显式指令前缀
+    if content.lower().startswith(("歌手", "监控", "/artist", "添加")):
+        intent = "artist"
+        # 移除前缀
+        for p in ["歌手", "监控", "/artist", "添加"]:
+            if content.lower().startswith(p):
+                keyword = content[len(p):].strip()
+                break
+    elif content.lower().startswith(("下载", "搜歌", "歌曲", "/song")):
+        intent = "song"
+        for p in ["下载", "搜歌", "歌曲", "/song"]:
+            if content.lower().startswith(p):
+                keyword = content[len(p):].strip()
+                break
+    
+    if not keyword:
+         return "🤔 请输入关键词，例如：'周杰伦' 或 '歌手 周杰伦'"
+
+    # 4. 执行搜索
+    if intent == "song":
+        return await handle_song_search(keyword, user_id)
+    else:
+        return await handle_artist_search(keyword, user_id)
+
+
 def format_artist(artist_field) -> str:
     """格式化歌手字段"""
     if isinstance(artist_field, list):
@@ -246,17 +262,15 @@ def format_artist(artist_field) -> str:
 
 async def handle_song_search(keyword: str, user_id: str) -> str:
     """搜索歌曲"""
-    global search_session
-    
     try:
         aggregator = MusicAggregator()
         results = await asyncio.wait_for(
             aggregator.search_song(keyword, limit=8),
-            timeout=5.0
+            timeout=8.0
         )
         
         if not results:
-            return f"😔 未找到：'{keyword}'"
+            return f"😔 未找到歌曲：'{keyword}'"
         
         # 缓存搜索结果
         await set_db_session(user_id, {
@@ -283,19 +297,17 @@ async def handle_song_search(keyword: str, user_id: str) -> str:
 
 async def handle_artist_search(keyword: str, user_id: str) -> str:
     """搜索歌手"""
-    global search_session
-    
     try:
         aggregator = MusicAggregator()
         results = await asyncio.wait_for(
             aggregator.search_artist(keyword, limit=5),
-            timeout=5.0
+            timeout=8.0
         )
         
         if not results:
             return f"😔 未找到歌手：'{keyword}'"
         
-        # 缓存结果
+        # 缓存结果 - 这次我们缓存足够的信息以便 SubscriptionService 使用
         await set_db_session(user_id, {
             "type": "artist",
             "keyword": keyword,
@@ -319,12 +331,12 @@ async def handle_artist_search(keyword: str, user_id: str) -> str:
 
 async def background_download(song: dict, user_id: str):
     """后台下载歌曲"""
+    from app.services.notification import NotificationService
+    
     title = song.get('title', '')
     artist = format_artist(song.get('artist', ''))
     
     try:
-        notifier = WeComNotifier()
-        
         # 使用 DownloadService 下载
         download_service = DownloadService()
         result = await download_service.download_audio(
@@ -334,7 +346,7 @@ async def background_download(song: dict, user_id: str):
         )
         
         if not result:
-            await notifier.send_text(f"❌ 下载失败：{title}", [user_id])
+            await WeComNotifier().send_text(f"❌ 下载失败：{title}", [user_id])
             return
         
         # 使用 WeChatDownloadService 保存记录
@@ -347,15 +359,17 @@ async def background_download(song: dict, user_id: str):
             )
         
         if record_result:
-            await notifier.send_news_message(
-                title=f"✅ 下载完成: {title}",
-                description=f"🎙️ {artist}\n💾 已加入收藏",
-                url=record_result.get('magic_url', ''),
-                pic_url=record_result.get('cover_url', ''),
-                user_ids=[user_id]
+            # 发送卡片通知
+            await NotificationService.send_download_card(
+                title=title,
+                artist=artist,
+                album=song.get('album', ''),
+                cover=record_result.get('cover_url', ''),
+                magic_link=record_result.get('magic_url', ''),
+                quality=record_result.get('audio_quality') or 'Standard'
             )
         else:
-            await notifier.send_text(f"⚠️ 下载成功但保存失败", [user_id])
+            await WeComNotifier().send_text(f"⚠️ 下载成功但保存失败", [user_id])
             
     except Exception as e:
         logger.error(f"后台下载错误: {e}")
@@ -367,30 +381,50 @@ async def background_download(song: dict, user_id: str):
 
 async def background_add_artist(target: dict, user_id: str):
     """后台添加歌手监控"""
+    from app.services.subscription import SubscriptionService
+    from app.services.notification import NotificationService
+    from app.routers.subscription import run_refresh_task # 复用路由中的所有后台任务逻辑
+    
     name = target.get('name', '')
+    source = target.get('source', '')
+    source_id = str(target.get('id', ''))
+    avatar = target.get('avatar', '')
+    
+    # 兼容处理：如果是 pyncm 或 qqmusic-api 返回的格式差异
+    if not source_id:
+        source_id = str(target.get('netease_id') or target.get('qqmusic_id') or '')
+    
+    logger.info(f"WeChat trigger add artist: {name} ({source}:{source_id})")
     
     try:
-        notifier = WeComNotifier()
-        await notifier.send_text(f"⏳ 正在添加 '{name}'...", [user_id])
-        
-        # 添加到监控
-        added_sources = []
-        
-        if target.get('netease_id') or target.get('source') == 'netease':
-            source_id = target.get('netease_id') or target.get('id', '')
-            if add_monitored_user('netease', str(source_id), name, avatar=target.get('avatar')):
-                added_sources.append("网易云")
-        
-        if target.get('qqmusic_id') or target.get('source') == 'qqmusic':
-            source_id = target.get('qqmusic_id') or target.get('id', '')
-            if add_monitored_user('qqmusic', str(source_id), name, avatar=target.get('avatar')):
-                added_sources.append("QQ音乐")
-        
-        if added_sources:
-            msg = f"✅ 已添加 '{name}' 到监控：\n" + " / ".join(added_sources)
-            await notifier.send_text(msg, [user_id])
-        else:
-            await notifier.send_text(f"⚠️ 未能添加 '{name}'", [user_id])
+        async with AsyncSessionLocal() as db:
+            success = await SubscriptionService.add_artist(
+                db, name, source, source_id, avatar
+            )
+            
+            if success:
+                # 1. 发送成功卡片
+                # 注意：此时可能还没拿到逻辑艺人ID，add_artist 返回的是bool。
+                # 重新查一下DB获取ID
+                from sqlalchemy import select
+                from app.models.artist import Artist
+                stmt = select(Artist).where(Artist.name == name)
+                artist_obj = (await db.execute(stmt)).scalars().first()
+                if artist_obj:
+                    await NotificationService.send_artist_card(
+                        artist_name=artist_obj.name,
+                        artist_id=str(artist_obj.id),
+                        avatar=artist_obj.avatar or avatar
+                    )
+                
+                # 2. 触发后台任务 (智能关联 + 刷新)
+                # 使用 asyncio.create_task 运行 background task，不阻塞当前流程
+                # 但我们需要在新的 loop 中运行吗？FastAPI BackgroundTasks 是注入的。
+                # 这里我们直接 asyncio.create_task 一个 wrapper
+                asyncio.create_task(run_refresh_task(name, source, source_id))
+                
+            else:
+                await WeComNotifier().send_text(f"⚠️ 未能添加 '{name}'", [user_id])
             
     except Exception as e:
         logger.error(f"添加歌手错误: {e}")
