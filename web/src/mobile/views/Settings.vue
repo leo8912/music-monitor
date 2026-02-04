@@ -56,7 +56,7 @@
       <!-- 底部信息 -->
       <div class="sp-settings-footer">
         <p>Music Monitor</p>
-        <p class="version">v2.9.3 · Spotify Edition</p>
+        <p class="version">v{{ versionInfo }} · Spotify Edition</p>
       </div>
     </main>
 
@@ -86,6 +86,7 @@ import {
     Home, HomeOutline, Search, SearchOutline, Library, LibraryOutline
 } from '@vicons/ionicons5'
 import { useSettingsStore, useUserStore, useLibraryStore } from '@/stores'
+import axios from 'axios'
 
 const router = useRouter()
 const route = useRoute()
@@ -95,6 +96,7 @@ const libraryStore = useLibraryStore()
 
 // Active tab detection
 const activeTab = ref('')
+const versionInfo = ref('Loading...')
 
 const handleLogout = async () => {
     await userStore.logout()
@@ -113,6 +115,19 @@ const handleTestNotify = async () => {
 const onRefresh = async () => {
   await libraryStore.fetchSongs(1)
   alert('资料库同步完成')
+}
+
+// Fetch Version
+const fetchVersion = async () => {
+  try {
+    const res = await axios.get('/api/version')
+    if (res.data && res.data.version) {
+       versionInfo.value = res.data.version
+    }
+  } catch (e) {
+    console.error('Failed to fetch version', e)
+    versionInfo.value = 'Unknown'
+  }
 }
 
 // 统一的 Tab 定义，移除 Settings Tab (因为通常它是独立的或者是 Profile)
@@ -140,6 +155,7 @@ const onTabChange = (name: string) => {
 
 onMounted(() => {
   settingsStore.fetchSettings()
+  fetchVersion()
 })
 </script>
 

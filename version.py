@@ -4,10 +4,10 @@
 """
 from datetime import datetime
 
-__backend_version__ = "2.9.3"
-__frontend_version__ = "2.9.3"
+__backend_version__ = "2.9.4"
+__frontend_version__ = "2.9.4"
 # 自动生成的构建时间 (Updated by Agent)
-__build_date__ = "2026-02-04 16:35:00" 
+__build_date__ = "2026-02-04 17:00:00" 
 
 def get_version_info():
     """获取版本信息"""

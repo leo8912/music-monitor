@@ -281,8 +281,8 @@ class SubscriptionService:
                 "artist": artist.name,
                 "album": song.album,
                 "cover": song.cover,
-                "publishTime": song.publish_time.isoformat() if song.publish_time else None,
-                "isFavorite": song.is_favorite,
+                "publish_time": song.publish_time.isoformat() if song.publish_time else None,
+                "is_favorite": song.is_favorite,
                 "localPath": song.local_path,  # 添加本地路径
                 "status": song.status or "PENDING",  # 添加状态
                 "source": main_source or 'unknown',  # 主来源

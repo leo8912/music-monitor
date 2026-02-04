@@ -366,26 +366,57 @@ class ScanService:
             # --- 封面提取 ---
             try:
                 cover_data = None
+                
+                # Normalize tags object
+                tags = None
                 if hasattr(audio_file, 'tags') and audio_file.tags:
                     tags = audio_file.tags
+                elif isinstance(audio_file, dict) or hasattr(audio_file, 'get'):
+                    # audio_file itself might be the tags object (ID3 instance)
+                    tags = audio_file
+
+                if tags:
                     # ID3 (MP3) or MP3 object with tags
                     if hasattr(tags, 'get') and (tags.get("APIC:") or tags.get("APIC")):
                         apic = tags.get("APIC:") or tags.get("APIC")
                         cover_data = apic.data
-                    # FLAC or Vorbis
-                    elif hasattr(audio_file, 'pictures') and audio_file.pictures:
-                        cover_data = audio_file.pictures[0].data
-                    # Fallback for ID3 dict iteration
-                    elif isinstance(tags, dict): 
+                    # Fallback for ID3 dict iteration (APIC:Cover, etc.)
+                    elif hasattr(tags, 'keys'): 
                          for key in tags.keys():
                             if key.startswith('APIC'):
                                 cover_data = tags[key].data
                                 break
+                    
+                if not cover_data and hasattr(audio_file, 'pictures') and audio_file.pictures:
+                    cover_data = audio_file.pictures[0].data
                 
                 # M4A / MP4
                 if not cover_data and hasattr(audio_file, 'tags') and 'covr' in audio_file.tags:
                     covrs = audio_file.tags['covr']
                     if covrs: cover_data = covrs[0]
+
+                # --- Fallback: Sidecar Images (cover.jpg, folder.jpg, etc.) ---
+                if not cover_data:
+                    try:
+                        dir_path = os.path.dirname(file_path)
+                        candidates = ['cover.jpg', 'folder.jpg', 'front.jpg', 'album.jpg', 
+                                      'cover.png', 'folder.png', 'front.png', 'album.png']
+                        
+                        # Checks for filename.jpg (e.g. SongTitle.jpg)
+                        stem = os.path.splitext(os.path.basename(file_path))[0]
+                        candidates.insert(0, f"{stem}.jpg")
+                        candidates.insert(0, f"{stem}.png")
+
+                        for cand in candidates:
+                            cand_path = os.path.join(dir_path, cand)
+                            if os.path.exists(cand_path):
+                                with open(cand_path, "rb") as f:
+                                    cover_data = f.read()
+                                if cover_data:
+                                    logger.info(f"📸 Found sidecar cover for {filename}: {cand}")
+                                    break
+                    except Exception as e:
+                        logger.warning(f"Sidecar cover search failed: {e}")
 
                 if cover_data:
                     # 计算封面 MD5
@@ -409,7 +440,7 @@ class ScanService:
                     cover_url = f"/uploads/covers/{cover_filename}"
                     
             except Exception as e:
-                pass # Squelch cover errors
+                logger.error(f"Metadata extraction error: {e}")
 
             # --- 基本信息提取 ---
             def get_tag(obj, keys):
