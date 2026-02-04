@@ -5,6 +5,10 @@ set -e
 PUID=${PUID:-0}
 PGID=${PGID:-0}
 
+# 设置默认权限掩码 (002 => 775/664)
+# 这样生成的文件对组用户(通常是NAS管理员组)也是可读写的，更优雅地解决权限问题
+umask 002
+
 echo "Starting with PUID=${PUID} PGID=${PGID}"
 
 

@@ -452,6 +452,13 @@ class DownloadService:
                         if await anyio.to_thread.run_sync(os.path.exists, filepath):
                             await anyio.to_thread.run_sync(os.remove, filepath)
                         await anyio.to_thread.run_sync(os.rename, temp_path, filepath)
+                        
+                        # [Fix] Ensure audio file is readable (NAS compatibility)
+                        try:
+                            await anyio.to_thread.run_sync(os.chmod, filepath, 0o644)
+                        except Exception:
+                            pass # Ignore permission errors on Windows/weird FS
+                            
                         return True
                         
             except Exception as e:

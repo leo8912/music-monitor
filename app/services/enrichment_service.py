@@ -371,6 +371,17 @@ class EnrichmentService:
                         content = await resp.read()
                         with open(save_path, "wb") as f:
                             f.write(content)
+                        
+                        # [Fix] Force valid permissions (NAS/Docker compatibility)
+                        try:
+                            os.chmod(save_path, 0o644) # rw-r--r--
+                            # Ensure parent dir is at least 755 (if we created it)
+                            if os.path.exists(self.cover_dir):
+                                os.chmod(self.cover_dir, 0o755)
+                        except Exception as perm_err:
+                            logger.warning(f"Failed to set permissions for {filename}: {perm_err}")
+
+
                         logger.info(f"✅ 封面下载成功: {filename} ({len(content)/1024:.1f}KB)")
                         return web_url, save_path
                     else:
