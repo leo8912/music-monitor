@@ -363,13 +363,13 @@ system:
 # 启动一次成功导入数据库后，推荐在 UI 中管理。
 # ==============================================================================
 """
-        # Append notify if exists in current yaml to avoid dataloss during migration phase
-        if "notify" in current_yaml:
+        # Always preserve/update 'notify' section in config.yaml as requested
+        current_notify = self._config.get("notify")
+        if current_notify:
             import yaml
             # Dump notify block as standard yaml appended to the end
-            # Manually clean up to avoid dumping aliases or tags
-            notify_block = yaml.dump({"notify": current_yaml["notify"]}, default_flow_style=False, allow_unicode=True)
-            yaml_content += "\\n" + notify_block
+            notify_block = yaml.dump({"notify": current_notify}, default_flow_style=False, allow_unicode=True)
+            yaml_content += "\n" + notify_block
 
         try:
             with open(self.config_file, 'w', encoding='utf-8') as f:

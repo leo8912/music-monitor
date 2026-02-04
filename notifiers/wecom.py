@@ -19,9 +19,9 @@ class WeComNotifier(BaseNotifier):
         if not corp_id or not secret or not agent_id:
             from core.config import config
             wc = config.get('notify', {}).get('wecom', {})
-            corp_id = corp_id or wc.get('corpid')
-            secret = secret or wc.get('corpsecret')
-            agent_id = agent_id or wc.get('agentid')
+            corp_id = corp_id or wc.get('corpid') or wc.get('corp_id')
+            secret = secret or wc.get('corpsecret') or wc.get('secret')
+            agent_id = agent_id or wc.get('agentid') or wc.get('agent_id')
             
         self.corp_id = corp_id
         self.secret = secret

@@ -221,6 +221,30 @@ async def lifespan(app: FastAPI):
         logger.info(f"已调度自动缓存任务，每 30 分钟执行一次")
         
         NotificationService.initialize()
+        
+        # --- Startup Notification ---
+        try:
+            from version import get_version_info
+            v_info = get_version_info()
+            if NotificationService._wecom:
+                start_url = config_instance.get('system', {}).get('external_url')
+                if not start_url:
+                    start_url = "http://localhost:8000"
+                
+                await NotificationService._wecom.send_text_card(
+                    title="🚀 Music Monitor 已启动",
+                    description=(
+                        f"<div class=\"gray\">{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>"
+                        f"<div class=\"normal\">版本: {v_info['version']}</div>"
+                        f"<div class=\"normal\">构建: {v_info['build_date']}</div>"
+                        f"<div class=\"highlight\">系统已准备就绪，数据库状态正常。</div>"
+                    ),
+                    url=start_url
+                )
+                logger.info("Startup notification sent.")
+        except Exception as e:
+            logger.warning(f"Startup notification failed: {e}")
+
 
         yield
         # 关闭所有WebSocket连接

@@ -67,13 +67,15 @@ system:
 # 如果通过 Config 迁移旧版通知设置，可以在此填写。
 # 启动一次成功导入数据库后，可删除此部分，并在 UI 中管理。
 # ==============================================================================
-# notify:
-#   wecom:
-#     enabled: false
-#     corp_id: ""
-#     agent_id: ""
-#     secret: ""
-#   telegram:
-#     enabled: false
-#     bot_token: ""
-#     chat_id: ""
+notify:
+  wecom:
+    enabled: false
+    corpid: "wwxxxxxxxxxxxxxx"
+    agentid: "1000001"
+    corpsecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    token: "xxxxxxxxxxxx"         # 回调 Token
+    encoding_aes_key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" # 回调 AES Key
+  telegram:
+    enabled: false
+    bot_token: ""
+    chat_id: ""

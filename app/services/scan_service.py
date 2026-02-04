@@ -19,6 +19,7 @@ from datetime import datetime
 from pathlib import Path
 import anyio
 import logging
+import uuid
 
 from app.repositories.song import SongRepository
 from app.repositories.artist import ArtistRepository
@@ -615,7 +616,8 @@ class ScanService:
                 local_path=None,  # 稍后设置
                 created_at=datetime.now(),
                 publish_time=publish_time,
-                cover=cover
+                cover=cover,
+                unique_key=f"local_{uuid.uuid4()}"
             )
             db.add(song_obj)
             await db.flush()  # 获取 ID
