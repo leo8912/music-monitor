@@ -17,6 +17,11 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
+# [Fix] Force Alembic to use the application's configured DATABASE_URL
+# This ensures it respects Docker ENV vars and ConfigManager overrides
+from core.database import DATABASE_URL
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
+
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
