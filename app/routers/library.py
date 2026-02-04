@@ -271,6 +271,8 @@ async def scan_library(db: AsyncSession = Depends(get_async_session)):
         result = await scan_service.scan_local_files(db)
         return {"success": True, **result}
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"扫描失败: {str(e)}")
 
 
