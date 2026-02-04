@@ -22,6 +22,7 @@ class Song(Base):
     __tablename__ = "songs"
 
     id = Column(Integer, primary_key=True, index=True)
+    unique_key = Column(String, unique=True, index=True, nullable=False) # UUID-based unique key
     artist_id = Column(Integer, ForeignKey("artists.id"), nullable=True)
     
     # Display Information (Prioritized)

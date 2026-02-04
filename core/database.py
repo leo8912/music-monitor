@@ -24,7 +24,7 @@ import os
 
 # Use a local SQLite database by default
 # Use async SQLite driver
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///music_monitor.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///config/music_monitor.db")
 
 # Import unified Base from app.models to include all models
 # Import unified Base from app.models.base to avoid circular dependency

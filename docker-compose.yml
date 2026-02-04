@@ -7,6 +7,7 @@ services:
       - ./config:/config # 核心配置目录 (config.yaml, db, uploads)
       - ./cache:/audio_cache # 缓存目录
       - ./favorites:/favorites # 收藏目录
+      - ./library:/library # 资料库目录
     environment:
       - DATABASE_URL=sqlite+aiosqlite:////config/music_monitor.db
       - TZ=Asia/Shanghai

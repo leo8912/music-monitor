@@ -37,20 +37,9 @@ RUN cat requirements.txt && \
 RUN mkdir -p /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache && \
     chmod -R 777 /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache
 
-# Copy only necessary backend files (order matters for cache)
-COPY scripts/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-COPY config.example.yaml /app/config.example.yaml
-COPY main.py /app/
-COPY version.py /app/
-COPY app/ /app/app/
-COPY core/ /app/core/
-COPY domain/ /app/domain/
-COPY notifiers/ /app/notifiers/
-COPY utils/ /app/utils/
-COPY alembic/ /app/alembic/
-COPY alembic.ini /app/
+# Copy all application code (respecting .dockerignore)
+COPY . /app
+RUN chmod +x /app/scripts/entrypoint.sh
 
 
 # Create default config
@@ -58,6 +47,9 @@ RUN cp config.example.yaml config.yaml
 
 # Copy Built Frontend from Stage 1
 COPY --from=frontend /app/web/dist /app/web/dist
+
+# Ensure library directory exists (for volume mount)
+RUN mkdir -p /library
 
 # Environment defaults
 ENV DATABASE_URL=sqlite+aiosqlite:////config/music_monitor.db
@@ -67,5 +59,5 @@ VOLUME /config
 
 EXPOSE 8000
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/scripts/entrypoint.sh"]
 CMD ["python", "main.py"]

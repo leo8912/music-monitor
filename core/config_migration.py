@@ -58,7 +58,10 @@ class ConfigMigration:
             # 3. Structural Merge
             merged_config, struct_changed = self._deep_merge_defaults(user_config, template_config)
 
-            if legacy_changed or struct_changed:
+            # 4. Post-Merge Cleanup (Crucial: Remove zombies potentially re-added by merge)
+            merged_config, cleanup_changed = self._cleanup_zombie_keys(merged_config)
+
+            if legacy_changed or struct_changed or cleanup_changed:
                 with open(self.config_path, 'w', encoding='utf-8') as f:
                     yaml.safe_dump(merged_config, f, allow_unicode=True, default_flow_style=False)
                 return True, "Configuration updated to latest format"
@@ -109,25 +112,43 @@ class ConfigMigration:
                 'corp_id': 'corpid',
                 'agent_id': 'agentid',
                 'secret': 'corpsecret',
-                'aes_key': 'encoding_aes_key'
+                'aes_key': 'encoding_aes_key',
+                'corp_secret': 'corpsecret' # Handle possible variation
             }
-            keys_to_remove = []
+            
+            # Explicitly ensure target keys exist, then DELETE source keys
             for old_k, new_k in legacy_map.items():
                 if old_k in wecom:
+                    # If new key missing, copy value
                     if not wecom.get(new_k):
                         wecom[new_k] = wecom[old_k]
                         changed = True
-                    keys_to_remove.append(old_k)
-            
-            for k in keys_to_remove:
-                wecom.pop(k, None)
-                changed = True
+                    # ALWAYS remove old key to prevent duplicates
+                    wecom.pop(old_k, None) 
+                    changed = True
+
+            # Ensure we don't have partial migrations left over
+            for unwanted in ['corp_id', 'agent_id', 'secret', 'aes_key', 'corp_secret']:
+                 if unwanted in wecom:
+                     wecom.pop(unwanted, None)
+                     changed = True
             
             # Ensure token exists if we have aes_key
             if 'encoding_aes_key' in wecom and 'token' not in wecom:
                  wecom['token'] = '' 
                  changed = True
         
+        return config, changed
+
+    def _cleanup_zombie_keys(self, config: Dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
+        """Final sweep to remove unwanted aliased keys."""
+        changed = False
+        if config.get('notify', {}).get('wecom'):
+            wecom = config['notify']['wecom']
+            for unwanted in ['corp_id', 'agent_id', 'secret', 'aes_key', 'corp_secret']:
+                 if unwanted in wecom:
+                     wecom.pop(unwanted, None)
+                     changed = True
         return config, changed
 
     def _deep_merge_defaults(self, user_val: Any, template_val: Any) -> Tuple[Any, bool]:

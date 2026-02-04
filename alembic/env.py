@@ -19,7 +19,12 @@ if config.config_file_name is not None:
 
 # [Fix] Force Alembic to use the application's configured DATABASE_URL
 # This ensures it respects Docker ENV vars and ConfigManager overrides
-from core.database import DATABASE_URL
+from core.config_manager import get_config_manager
+from core.database import DATABASE_URL, sync_database_url
+
+# Reload config to ensure we pick up the 'config/' subdirectory DB path if present
+get_config_manager().reload()
+
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 target_metadata = Base.metadata

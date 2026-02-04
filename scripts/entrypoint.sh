@@ -30,7 +30,7 @@ if [ "$PUID" != "0" ]; then
 
     # 更改目录权限
     echo "Updating permissions..."
-    chown -R abc:abc /app /config /audio_cache /favorites
+    chown -R abc:abc /app /config /audio_cache /favorites /library
     
     # 切换用户运行
     echo "Running as user: abc ($PUID:$PGID)"

@@ -367,8 +367,20 @@ system:
         current_notify = self._config.get("notify")
         if current_notify:
             import yaml
+            # Deep copy to avoid mutating memory config
+            notify_dump = copy.deepcopy(current_notify)
+            if "wecom" in notify_dump:
+                wc = notify_dump["wecom"]
+                # Convert Internal Keys (corp_id) -> Legacy YAML Keys (corpid)
+                if "corp_id" in wc: wc["corpid"] = wc.pop("corp_id")
+                if "agent_id" in wc: wc["agentid"] = wc.pop("agent_id")
+                if "secret" in wc: wc["corpsecret"] = wc.pop("secret")
+                # Ensure no zombies
+                for z in ["agent_id", "corp_id", "secret", "aes_key"]:
+                     wc.pop(z, None)
+            
             # Dump notify block as standard yaml appended to the end
-            notify_block = yaml.dump({"notify": current_notify}, default_flow_style=False, allow_unicode=True)
+            notify_block = yaml.dump({"notify": notify_dump}, default_flow_style=False, allow_unicode=True)
             yaml_content += "\n" + notify_block
 
         try:

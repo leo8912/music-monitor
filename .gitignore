@@ -10,6 +10,8 @@ venv/
 # Environment Variables & Config
 .env
 config.yaml
+config/config.yaml
+config/music_monitor.db
 
 # Database
 *.db

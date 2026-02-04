@@ -29,6 +29,9 @@ class NotificationService:
         
         # WeCom
         wecom_cfg = notify_cfg.get('wecom', {})
+        if not wecom_cfg:
+            return
+
         if wecom_cfg.get('enabled') and (wecom_cfg.get('corpid') or wecom_cfg.get('corp_id')):
             try:
                 cls._wecom = WeComNotifier(
