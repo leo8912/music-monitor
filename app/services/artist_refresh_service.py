@@ -20,6 +20,7 @@ from datetime import datetime
 import logging
 import re
 import json
+import uuid
 
 from app.models.artist import Artist, ArtistSource
 from app.models.song import Song, SongSource
@@ -364,6 +365,7 @@ class ArtistRefreshService:
                     album=best_meta.album,
                     created_at=datetime.now(),
                     status="PENDING",
+                    unique_key=str(uuid.uuid4()),
                     sources=[] # 显式初始化，防止 MissingGreenlet
                 )
                 db.add(existing_song)

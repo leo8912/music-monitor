@@ -21,6 +21,7 @@ import re
 import json
 import logging
 import anyio
+import uuid
 
 from app.services.subscription import active_refreshes
 from app.services.subscription import active_refreshes
@@ -376,7 +377,8 @@ class SongManagementService:
                 publish_time=datetime.now(),  # 占位符
                 created_at=datetime.now(),
                 status="DOWNLOADED",
-                local_path=filepath
+                local_path=filepath,
+                unique_key=str(uuid.uuid4())
             )
             db.add(song)
             await db.flush()

@@ -16,6 +16,7 @@ from datetime import datetime
 from loguru import logger
 import os
 import logging
+import uuid
 
 from app.repositories.song import SongRepository
 from app.repositories.artist import ArtistRepository
@@ -279,7 +280,8 @@ class MediaService:
                         local_path=result["local_path"],
                         status="DOWNLOADED",
                         created_at=datetime.now(),
-                        cover=cover_url or metadata_result.cover_url
+                        cover=cover_url or metadata_result.cover_url,
+                        unique_key=str(uuid.uuid4())
                     )
                     db.add(existing_song)
                     await db.flush() # ID
