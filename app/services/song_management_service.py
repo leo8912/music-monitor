@@ -30,8 +30,8 @@ from app.models.artist import Artist, ArtistSource
 from app.repositories.song import SongRepository
 from app.repositories.artist import ArtistRepository
 from app.services.download_service import DownloadService
-from app.services.scraper import ScraperService
 from app.services.metadata_service import MetadataService
+from app.services.metadata_healer import MetadataHealer
 from app.services.music_providers.aggregator import MusicAggregator
 from app.services.scan_service import ScanService
 from app.utils.error_handler import handle_service_errors
@@ -228,16 +228,13 @@ class SongManagementService:
                 except Exception as e:
                     logger.warning(f"Failed to delete old file: {e}")
         
-        # 4. 刮削元数据
+        # 4. 统一调用 MetadataHealer 进行补全和物理嵌入
         try:
-            scraper = ScraperService(
-                aggregator=self.aggregator,
-                metadata_service=self.metadata_service
-            )
-            await scraper.scrape_and_apply(db, song, source, source_id)
-            logger.info("Metadata scraped and applied to new file.")
+            healer = MetadataHealer()
+            await healer.heal_song(song.id, force=True)
+            logger.info("Metadata healed and embedded via MetadataHealer.")
         except Exception as e:
-            logger.error(f"Failed to apply metadata after redownload: {e}")
+            logger.error(f"Failed to heal metadata after redownload: {e}")
         
         return True
     
@@ -426,12 +423,11 @@ class SongManagementService:
         ).where(Song.id == song.id)
         song = (await db.execute(stmt)).scalars().first()
         
-        # 5. 刮削元数据
+        # 5. 统一调用 MetadataHealer 进行补全和物理嵌入
         try:
-            scraper = ScraperService(self.aggregator, self.metadata_service)
-            await scraper.scrape_and_apply(db, song, source, source_id)
+            await MetadataHealer().heal_song(song.id, force=True)
         except Exception as e:
-            logger.warning(f"Metadata tagging failed: {e}")
+            logger.warning(f"Metadata healing failed: {e}")
         
         # 返回去重后的结果
         from app.services.deduplication_service import DeduplicationService
@@ -449,44 +445,15 @@ class SongManagementService:
         ).where(Song.status == 'PENDING').limit(limit)
         
         songs = (await db.execute(stmt)).scalars().all()
-        logger.info(f"Processing {len(songs)} pending songs for metadata enrichment...")
-        
         count = 0
-        scraper = ScraperService(self.aggregator, self.metadata_service)
-        
         for song in songs:
             try:
-                # 找到可用的源
-                valid_source = None
-                for src in song.sources:
-                    if src.source in ['qqmusic', 'netease', 'kuwo', 'kugou']:
-                        valid_source = src
-                        break
+                logger.debug(f"Healing metadata for: {song.title}")
                 
-                if not valid_source:
-                    logger.warning(f"Skipping {song.title}: No valid online source")
-                    continue
-                
-                logger.debug(f"Fetching metadata for: {song.title} [{valid_source.source}]")
-                
-                # 仅刮削元数据 (scrape_and_apply 会更新 DB，如果无本地文件跳过写标签)
-                success = await scraper.scrape_and_apply(
-                    db, 
-                    song, 
-                    valid_source.source, 
-                    valid_source.source_id
-                )
+                # 统一调用 MetadataHealer
+                success = await MetadataHealer().heal_song(song.id, force=True)
                 
                 if success:
-                    # 更新状态为 NEW (或者保持 PENDING? 用户痛点是卡 PENDING 且无封面)
-                    # 如果有了元数据且无本地文件，状态其实可以改为 'IDLE' 或类似由于现有状态枚举
-                    # 暂时改为 'DEFAULT' 或保持 PENDING 但有了封面 UI 应该能显示
-                    # 为了避免被再次选中处理，也许应该改个状态？
-                    # 但目前 Song 模型状态主要是 DOWNLOADED/PENDING/FAILED
-                    # 如果改为 'METADATA_READY' 可能会更好，但不知前端是否支持
-                    # 妥协：暂时保留 PENDING 或改为 'SUCCESS' (虽然没下载) -> 不，SUCCESS 误导
-                    # 检查 SongManagementService 通常逻辑，这里仅仅补全了元数据
-                    # 为了防止无限循环处理 (where status=PENDING)，必须更改状态！
                     song.status = "METADATA_FETCHED" 
                     count += 1
                     

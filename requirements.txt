@@ -4,7 +4,7 @@ aiosqlite>=0.20.0
 APScheduler>=3.10.4
 attrs>=23.2.0
 beautifulsoup4>=4.12.3
-bilibili-api-python>=17.4.1
+
 click>=8.1.7
 colorama>=0.4.6
 cryptography>=42.0.7

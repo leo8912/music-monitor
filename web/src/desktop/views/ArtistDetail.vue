@@ -199,7 +199,7 @@ onMounted(() => {
                     </div>
                     <div class="album-meta">
                       <div class="album-name truncate">{{ album.name }}</div>
-                      <div class="album-year">{{ album.publishTime ? album.publishTime.substring(0, 4) : '-' }}</div>
+                      <div class="album-year">{{ album.publish_time ? album.publish_time.substring(0, 4) : '-' }}</div>
                     </div>
                   </div>
                 </n-grid-item>

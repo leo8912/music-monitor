@@ -12,8 +12,8 @@ from typing import Optional, Any
 from starlette.concurrency import run_in_threadpool
 
 from core.config import config
-from notifiers.wecom import WeComNotifier
-from notifiers.telegram import TelegramNotifier
+from app.notifiers.wecom import WeComNotifier
+from app.notifiers.telegram import TelegramNotifier
 from core.security import generate_signed_url_params
 
 logger = logging.getLogger(__name__)

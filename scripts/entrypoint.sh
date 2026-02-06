@@ -36,11 +36,17 @@ if [ "$PUID" != "0" ]; then
     echo "Updating permissions..."
     chown -R abc:abc /app /config /audio_cache /favorites /library
     
+    echo "Running database migrations..."
+    gosu abc alembic upgrade head
+
     # 切换用户运行
     echo "Running as user: abc ($PUID:$PGID)"
     exec gosu abc "$@"
 else
     # Root 运行
+    echo "Running database migrations (root)..."
+    alembic upgrade head
+
     echo "Running as root"
     exec "$@"
 fi

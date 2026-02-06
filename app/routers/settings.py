@@ -169,7 +169,8 @@ async def test_notify(req: TestNotifyRequest):
             try:
                 # 动态导入避免循环依赖
                 # 使用正确的模块路径
-                from notifiers.wecom import WeComNotifier
+                from app.notifiers.wecom import WeComNotifier
+                from app.notifiers.telegram import TelegramNotifier
                 
                 notifier = WeComNotifier(
                     corp_id=cfg.get("corp_id"),

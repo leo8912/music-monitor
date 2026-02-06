@@ -26,8 +26,8 @@ from app.services.artist_refresh_service import ArtistRefreshService
 from app.services.favorite_service import FavoriteService
 from app.services.song_management_service import SongManagementService
 from app.services.scan_service import ScanService
-from app.services.enrichment_service import EnrichmentService
-from app.services.scraper import ScraperService
+from app.services.scan_service import ScanService
+from app.services.metadata_healer import MetadataHealer
 from app.services.metadata_service import MetadataService
 from app.services.music_providers.aggregator import MusicAggregator
 
@@ -43,7 +43,7 @@ class LibraryService:
         self.favorite_service = FavoriteService()
         self.song_service = SongManagementService()
         self.scan_service = ScanService()
-        self.enrichment_service = EnrichmentService()
+        self.metadata_healer = MetadataHealer()
         
         # 保留聚合器用于兼容性
         self.aggregator = MusicAggregator()
@@ -169,19 +169,19 @@ class LibraryService:
         
         委托给 ScraperService
         """
-        from app.repositories.song import SongRepository
+        # 统一委托给 MetadataHealer
+        # 修正：MetadataHealer 目前通过搜索匹配最佳元数据并写入标签
+        # 虽然 MetadataHealer 目前主要依赖搜集匹配，但我们可以支持它。
+        # 此处为了保持兼容性，直接调用 healer.heal_song
+        # 此处为了保持兼容性，直接调用 healer.heal_song
+        return await self.metadata_healer.heal_song(song_id, force=True)
+
+    # ==================== 扫描服务 ====================
+    
+    async def scan_single_file(self, file_path: str, db: AsyncSession) -> Optional[any]:
+        """
+        扫描单个文件 (即时入库)
         
-        song_repo = SongRepository(db)
-        song = await song_repo.get(song_id)
-        
-        if not song:
-            logger.error(f"Song {song_id} not found")
-            return False
-        
-        scraper = ScraperService(
-            aggregator=self.aggregator,
-            metadata_service=MetadataService()
-        )
-        
-        await scraper.scrape_and_apply(db, song, target_source, target_song_id)
-        return True
+        委托给 ScanService
+        """
+        return await self.scan_service.scan_single_file(file_path, db)

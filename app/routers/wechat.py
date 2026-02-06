@@ -30,7 +30,7 @@ from core.database import AsyncSessionLocal
 from app.services.wechat_download_service import WeChatDownloadService
 from app.services.download_service import DownloadService
 from app.services.music_providers import MusicAggregator
-from notifiers.wecom import WeComNotifier
+from app.notifiers.wecom import WeComNotifier
 
 from app.models.wechat_session import WeChatSession
 from datetime import timedelta

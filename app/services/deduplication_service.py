@@ -198,8 +198,8 @@ class DeduplicationService:
             "status": getattr(best_obj, 'status', 'PENDING'),
             "publish_time": getattr(best_obj, 'publish_time', None),
             "created_at": getattr(best_obj, 'created_at', None),
-            "availableSources": [],
-            "localFiles": [],
+            "available_sources": [],
+            "local_files": [],
             "quality": "HQ" # Default to HQ
         }
         
@@ -229,14 +229,14 @@ class DeduplicationService:
                     })
             
             # 如果是本地下载状态，添加一个标识（供前端显示绿点等）
-            lp = getattr(item, 'local_path', None)
-            if lp and not final_dict.get('local_path'):
-                final_dict['local_path'] = lp
+            local_path_val = getattr(item, 'local_path', None)
+            if local_path_val and not final_dict.get('local_path'):
+                final_dict['local_path'] = local_path_val
                 
-            if getattr(item, 'status', '') == 'DOWNLOADED' or lp:
+            if getattr(item, 'status', '') == 'DOWNLOADED' or local_path_val:
                 sources_set.add('downloaded')
-
-        final_dict['localFiles'] = local_files_list
+                
+        final_dict['local_files'] = local_files_list
         
         # Calculate best quality from local files
         best_quality = "HQ"
@@ -255,6 +255,13 @@ class DeduplicationService:
             for f in local_files_list:
                 # Normalize quality string (handling cases)
                 q_str = str(f.get('quality', 'PQ')).upper()
+                
+                # [Hotfix] Force SQ for flac/wav if marked as PQ or UNK
+                path_lower = str(f.get('path', '')).lower()
+                if (q_str == 'PQ' or q_str == 'UNK' or q_str == 'UNKNOWN') and \
+                   (path_lower.endswith('.flac') or path_lower.endswith('.wav') or path_lower.endswith('.alac')):
+                    q_str = 'SQ'
+
                 score = quality_score.get(q_str, 10) # Default to PQ level if unknown
                 
                 # Update if better
@@ -266,9 +273,13 @@ class DeduplicationService:
         elif hasattr(best_obj, 'quality'):
              final_dict['quality'] = best_obj.quality
 
-        # 补全封面
-        if not final_dict['cover']:
-            final_dict['cover'] = getattr(item, 'cover', None)
+        # 补全封面，并强制优先本地路径
+        final_dict['cover'] = getattr(best_obj, 'cover', None)
+        for item in group:
+            cv = getattr(item, 'cover', None)
+            if cv and cv.startswith("/uploads/"):
+                final_dict['cover'] = cv
+                break
             
         # 发布时间补全 (QQ 优先逻辑)
         pt = getattr(item, 'publish_time', None)
@@ -282,33 +293,38 @@ class DeduplicationService:
         final_dict['publish_time'] = best_publish_time
         
         # 提取音质信息
-        best_quality = None
-        # 优先从主来源取
-        if main_source:
-             # Find source obj
-             for item in group:
-                  for src in getattr(item, 'sources', []):
-                       if src.source == main_source:
-                            data = src.data_json or {}
-                            if isinstance(data, dict):
-                                 q = data.get('quality')
-                                 if q: best_quality = q
-                       if best_quality: break
-                  if best_quality: break
-        
-        # 如果主来源没取到，尝试取任何一个
-        if not best_quality:
-             for item in group:
-                  for src in getattr(item, 'sources', []):
-                       data = src.data_json or {}
-                       if isinstance(data, dict):
-                            q = data.get('quality')
-                            if q: 
-                                 best_quality = q
-                                 break
-                  if best_quality: break
-                  
-        final_dict['quality'] = best_quality
+        # [Fix] 如果是本地文件，上面的 local_files_list 逻辑已经计算了最佳音质 (HR/SQ > PQ)
+        # 不要让下面的通用逻辑覆盖它，因为下面的逻辑可能比较笨拙 (只取第一个 source 的 data)
+        if main_source != 'local':
+            best_quality = None
+
+            # 优先从主来源取
+            if main_source:
+                 # Find source obj
+                 for item in group:
+                      for src in getattr(item, 'sources', []):
+                           if src.source == main_source:
+                                data = src.data_json or {}
+                                if isinstance(data, dict):
+                                     q = data.get('quality')
+                                     if q: best_quality = q
+                           if best_quality: break
+                      if best_quality: break
+            
+            # 如果主来源没取到，尝试取任何一个
+            if not best_quality:
+                 for item in group:
+                      for src in getattr(item, 'sources', []):
+                           data = src.data_json or {}
+                           if isinstance(data, dict):
+                                q = data.get('quality')
+                                if q: 
+                                     best_quality = q
+                                     break
+                      if best_quality: break
+                      
+            if best_quality:
+                final_dict['quality'] = best_quality
                     
         # 标签排序
         def source_sort_key(s):
@@ -318,6 +334,6 @@ class DeduplicationService:
         if 'local' in sources_set and 'downloaded' in sources_set:
             sources_set.remove('downloaded')
 
-        final_dict['availableSources'] = sorted(list(sources_set), key=source_sort_key)
+        final_dict['available_sources'] = sorted(list(sources_set), key=source_sort_key)
 
         return final_dict

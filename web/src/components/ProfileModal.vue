@@ -21,9 +21,9 @@ const currentUser = ref({ name: 'Administrator', avatar: '', role: '超级管理
 
 // 统计信息
 const profileStats = ref({
-    artistCount: 0,
-    songCount: 0,
-    cacheSize: '0 MB'
+    artist_count: 0,
+    song_count: 0,
+    cache_size: '0 MB'
 })
 
 const profileForm = ref({
@@ -57,9 +57,9 @@ watch(() => props.show, async (val) => {
         try {
             const statsRes = await axios.get('/api/profile_stats')
             if (statsRes.data) {
-                profileStats.value.artistCount = statsRes.data.artist_count || 0
-                profileStats.value.songCount = statsRes.data.song_count || 0
-                profileStats.value.cacheSize = statsRes.data.cache_size || '0 MB'
+                profileStats.value.artist_count = statsRes.data.artist_count || 0
+                profileStats.value.song_count = statsRes.data.song_count || 0
+                profileStats.value.cache_size = statsRes.data.cache_size || '0 MB'
             }
         } catch (e) {
             // 轻量失败，用默认值
@@ -204,15 +204,15 @@ const handleLogout = async () => {
                 <!-- Stats Row (Redesigned) -->
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <div class="stat-num">{{ profileStats.artistCount }}</div>
+                        <div class="stat-num">{{ profileStats.artist_count }}</div>
                         <div class="stat-text">关注歌手</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-num">{{ profileStats.songCount }}</div>
+                        <div class="stat-num">{{ profileStats.song_count }}</div>
                         <div class="stat-text">歌曲记录</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-num">{{ profileStats.cacheSize }}</div>
+                        <div class="stat-num">{{ profileStats.cache_size }}</div>
                         <div class="stat-text">本地缓存</div>
                     </div>
                 </div>

@@ -49,7 +49,7 @@ class Song(Base):
         return f"<Song(title={self.title})>"
 
     @property
-    def localFiles(self):
+    def local_files(self):
         """
         Helper for API response: returns list of local file details
         """
@@ -69,7 +69,7 @@ class Song(Base):
         return result
 
     @property
-    def availableSources(self):
+    def available_sources(self):
         """
         Helper for API response: returns list of unique sources
         """

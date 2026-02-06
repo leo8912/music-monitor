@@ -128,7 +128,7 @@ const dropdownOptions = computed(() => {
             icon: renderIcon(PlayCircleOutline)
         },
         {
-            label: '喜欢 / 取消喜欢',
+            label: '收藏 / 取消收藏',
             key: 'toggleFavorite',
             icon: renderIcon(currentSong.value.liked ? Heart : HeartOutline)
         },
@@ -204,10 +204,10 @@ const getQualityLabel = (quality: any) => {
 const getQualityClass = (quality: any) => {
     const label = getQualityLabel(quality)
     if (label === 'HR' || label === 'HI-RES') return 'quality-gold-hires' 
-    if (label === 'SQ' || label === 'FLAC') return 'quality-gold-sq'
-    if (label === 'HQ') return 'quality-green'
-    if (label === 'ERR' || label === 'PQ') return 'quality-red'
-    return 'quality-gray'
+    if (label === 'SQ' || label === 'FLAC') return 'quality-sq-green' // Classic Green for Lossless
+    if (label === 'HQ') return 'quality-hq-blue' // Geek Blue for High Quality
+    if (label === 'ERR') return 'quality-error'
+    return 'quality-gray' // PQ / Standard
 }
 
 const formatDate = (dateStr: string | null | undefined) => {
@@ -377,6 +377,12 @@ const getPlatformLabel = (source: string) => {
                    <div v-else-if="song.source" class="source-tags">
                         <span class="platform-tag" :class="song.source">
                             {{ getPlatformLabel(song.source) }}
+                        </span>
+                   </div>
+                   <!-- Quality Badge (Only in Library) -->
+                   <div class="quality-badges" v-if="song.quality && mode === 'library'">
+                        <span class="quality-tag" :class="getQualityClass(song.quality)">
+                            {{ getQualityLabel(song.quality) }}
                         </span>
                    </div>
                 </div>
@@ -762,23 +768,50 @@ const getPlatformLabel = (source: string) => {
     background: rgba(255,255,255,0.03);
 }
 
+
+
+
+
+/* CSS Updates in style tag */
+/* 
+   New Palette:
+   HR: #FFD700 (Gold)
+   SQ: #1DB954 (Spotify Green)
+   HQ: #2E86DE (Geek Blue)
+   PQ: #888888 (Gray)
+*/
+
 .quality-gold-hires {
     color: #FFD700;
-    border-color: #FFD700;
+    border-color: rgba(255, 215, 0, 0.5);
     background: rgba(255, 215, 0, 0.1);
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
 }
 
-.quality-gold-sq {
-    color: #FFA500;
-    border-color: #FFA500;
-    background: rgba(255, 165, 0, 0.1);
+.quality-sq-green {
+    color: #1DB954;
+    border-color: rgba(29, 185, 84, 0.5);
+    background: rgba(29, 185, 84, 0.1);
 }
 
-.quality-green {
-    color: var(--sp-green);
-    border-color: var(--sp-green);
-    background: rgba(29, 185, 84, 0.05);
+.quality-hq-blue {
+    color: #4facfe; /* Lighter blue for dark theme */
+    border-color: rgba(79, 172, 254, 0.5);
+    background: rgba(79, 172, 254, 0.1);
+}
+
+.quality-gray { 
+    color: #888; 
+    border-color: #555; 
+    background: rgba(255,255,255,0.05);
+} 
+
+
+.quality-error {
+    color: #ff4d4f;
+    border-color: #ff4d4f;
+    background: rgba(255, 77, 79, 0.1);
 }
 
 .path-icon {

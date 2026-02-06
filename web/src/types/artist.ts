@@ -11,11 +11,9 @@ export interface Artist {
     source: MusicSource // "database"
     sources?: MusicSource[] // Linked sources
     avatar?: string
-    songCount?: number
-    song_count?: number // 兼容旧版
-    availableSources?: string[]
+    song_count?: number
+    available_sources?: string[]
     is_monitored?: boolean
-    isMonitored?: boolean
 }
 
 // 合并后的歌手（跨平台）
@@ -24,7 +22,7 @@ export interface MergedArtist {
     avatar?: string
     sources: MusicSource[]
     ids: Array<{ source: MusicSource; id: string }>
-    songCount?: number
+    song_count?: number
 }
 
 // 搜索结果中的歌手
@@ -33,8 +31,8 @@ export interface SearchArtist {
     name: string
     source: MusicSource
     avatar?: string
-    neteaseId?: string
-    qqmusicId?: string
+    netease_id?: string
+    qqmusic_id?: string
 }
 
 // 添加歌手请求

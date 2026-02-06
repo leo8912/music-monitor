@@ -1,7 +1,0 @@
-notify:
-  wecom:
-    agent_id: 10001_wrong
-    agentid: '10001'
-    corp_id: ww_wrong_zombie
-    corpid: ww_correct
-    enabled: true

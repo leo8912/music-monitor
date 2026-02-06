@@ -33,9 +33,9 @@ export interface PlayingInfo {
     album: string
     cover?: string
     source: MusicSource
-    mediaId: string
-    localPath?: string
-    isFavorite: boolean
+    media_id: string
+    local_path?: string
+    is_favorite: boolean
 }
 
 // 频谱数据

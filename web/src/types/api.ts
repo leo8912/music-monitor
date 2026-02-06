@@ -140,18 +140,18 @@ export interface DownloadHistory {
     artist: string
     album: string
     source: string
-    sourceId: string
+    source_id: string
     status: string
-    downloadPath?: string
-    downloadTime?: string
-    errorMessage?: string
-    coverUrl?: string
+    download_path?: string
+    download_time?: string
+    error_message?: string
+    cover_url?: string
 }
 
 // 下载统计
 export interface DownloadStats {
-    totalDownloads: number
-    successfulDownloads: number
-    failedDownloads: number
-    successRate: number
+    total_downloads: number
+    successful_downloads: number
+    failed_downloads: number
+    success_rate: number
 }

@@ -28,7 +28,7 @@ from app.repositories.artist import ArtistRepository
 from app.repositories.song import SongRepository
 from app.services.music_providers.aggregator import MusicAggregator
 from app.services.scan_service import ScanService
-from app.services.enrichment_service import EnrichmentService
+from app.services.metadata_healer import MetadataHealer
 from app.utils.error_handler import handle_service_errors
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class ArtistRefreshService:
     def __init__(self):
         self.aggregator = MusicAggregator()
         self.scan_service = ScanService()
-        self.enrichment_service = EnrichmentService()
+        self.metadata_healer = MetadataHealer()
         self._refresh_enrich_count = 0
         self._refresh_heal_count = 0
     
@@ -48,20 +48,6 @@ class ArtistRefreshService:
     async def refresh(self, db: AsyncSession, artist_name: str) -> int:
         """
         全量刷新一名歌手的歌曲资料。
-        
-        该方法是本服务的入口点，执行以下流程：
-        1. 从所有配置的音乐平台（网易云、QQ音乐）获取歌手的全量歌曲列表。
-        2. 与本地数据库中的现有记录进行合并（基于标题的智能去重）。
-        3. 进行“反向查找”，尝试从在线平台补全本地库中已有的原版歌曲。
-        4. 挽救“孤儿歌曲”，即数据库中已存在但在线平台不再返回的旧作品。
-        5. 对所有记录进行元数据“治愈”（Health Check & Repair）。
-        
-        Args:
-            db (AsyncSession): 异步数据库会话。
-            artist_name (str): 歌手的完整准确名称。
-            
-        Returns:
-            int: 本次刷新新增进库的歌曲数量。
         """
         logger.info(f"Refreshing artist: {artist_name}")
         
@@ -106,7 +92,7 @@ class ArtistRefreshService:
         # 7. 挽救孤儿歌曲
         await self._rescue_orphan_songs(db, artist, raw_songs, manager)
         
-        # 8. 全库元数据治愈
+        # 8. 全库元数据治愈 (使用 MetadataHealer)
         await self._heal_all_metadata(db, artist)
         
         # 9. 完成统计
@@ -381,8 +367,6 @@ class ArtistRefreshService:
             # 获取此歌曲的所有源 - 此处由于已 prefetch 或显式初始化，不会报错
             existing_sources = existing_song.sources
             if not existing_sources:
-                # 如果没有加载关系，则手动查一下（或确保之前 prefetch 了）
-                # 这里为了简单，先用 map
                 pass
             
             src_map = {(src.source, str(src.source_id)) for src in existing_sources}
@@ -392,7 +376,6 @@ class ArtistRefreshService:
                 s_id_str = str(s.id)
                 if (s.source, s_id_str) not in src_map:
                     # [Fix] Double check against DB to prevent IntegrityError
-                    # Even if src_map assumes it's missing (e.g. valid cached song but sources missing in session)
                     chk = select(SongSource).where(
                         SongSource.song_id == existing_song.id,
                         SongSource.source == s.source,
@@ -449,7 +432,7 @@ class ArtistRefreshService:
             
             p_raw = getattr(s, 'publish_time', None)
             if p_raw:
-                p_parsed = self.enrichment_service._parse_date(str(p_raw))
+                p_parsed = self.metadata_healer._parse_date(str(p_raw))
                 if p_parsed:
                     candidate_dates.append(p_parsed.strftime("%Y-%m-%d"))
             
@@ -481,7 +464,7 @@ class ArtistRefreshService:
                         if enriched.get('cover_url'):
                             candidate_covers.insert(0, enriched['cover_url'])
                         if enriched.get('publish_time'):
-                            p_enrich = self.enrichment_service._parse_date(
+                            p_enrich = self.metadata_healer._parse_date(
                                 str(enriched['publish_time'])
                             )
                             if p_enrich:
@@ -503,7 +486,7 @@ class ArtistRefreshService:
         # 更新日期
         new_date = None
         if candidate_dates:
-            new_date = self.enrichment_service._parse_date(candidate_dates[0])
+            new_date = self.metadata_healer._parse_date(candidate_dates[0])
         
         # 伴奏版本回退策略
         if not new_date and "_inst" in norm_key:
@@ -706,129 +689,29 @@ class ArtistRefreshService:
     async def _heal_all_metadata(self, db: AsyncSession, artist: Artist):
         """
         对歌手的所有歌曲执行元数据并行治愈。
-        
-        通过并发（受限）请求各个平台，尝试自动修复以下问题：
-        - 缺失的高清封面图。
-        - 缺失或格式不规范的专辑名称。
-        - 缺失或明显的占位符发布日期（如 1970-01-01）。
-        
-        优化特性:
-        - 使用 asyncio.gather 实现并行处理。
-        - 使用 asyncio.Semaphore(5) 限制并发数，防止触发 API 风暴或被封禁。
-        - 增量提交：仅在实际有更新时操作数据库。
-        
-        Args:
-            db (AsyncSession): 异步数据库会话。
-            artist (Artist): 目标歌手的模型对象。
+        Delegates to MetadataHealer.heal_song.
         """
-        logger.info("🏥 启动全库元数据治愈...")
+        logger.info(f"🏥 启动歌手 [{artist.name}] 专属元数据治愈...")
         
-        # 获取所有歌曲（预加载源，防止治愈过程中的 MissingGreenlet 错误）
+        # Get all songs
         res = await db.execute(
-            select(Song)
-            .options(selectinload(Song.sources))
-            .where(Song.artist_id == artist.id)
+            select(Song).where(Song.artist_id == artist.id)
         )
         all_db_songs = res.scalars().all()
         
-        # 建立标题映射（用于伴奏回退）
-        title_map = {s.title: s for s in all_db_songs}
-        
         import asyncio
-        semaphore = asyncio.Semaphore(5)  # 限制并发数为 5，防止被 API 封禁
+        semaphore = asyncio.Semaphore(5)
         
-        async def heal_with_semaphore(song):
+        async def heal_worker(song):
             async with semaphore:
-                return await self._heal_single_song(db, song, artist, title_map)
-        
-        # 创建任务列表
-        tasks = [heal_with_semaphore(s) for s in all_db_songs]
-        
-        # 批量执行
+                # Force=False ensures we respect cooldown if it was just healed
+                return await self.metadata_healer.heal_song(song.id, force=False)
+
+        tasks = [heal_worker(s) for s in all_db_songs]
         results = await asyncio.gather(*tasks)
         heal_count = sum(1 for r in results if r)
         
         if heal_count > 0:
-            await db.commit()
-            logger.info(f"✨ 全库治愈完成: 并行修复了 {heal_count} 首歌曲的元数据")
+            logger.info(f"✨ 歌手治愈完成: 修复了 {heal_count} 首歌曲")
         else:
-            logger.info("✨ 全库治愈完成: 所有歌曲状态良好")
-
-    async def _heal_single_song(self, db: AsyncSession, s: Song, artist: Artist, title_map: Dict) -> bool:
-        """
-        治愈单首歌曲的元数据。（供 _heal_all_metadata 调用）
-        
-        Args:
-            db (AsyncSession): 数据库会话。
-            s (Song): 待检查的歌曲对象。
-            artist (Artist): 所属歌手。
-            title_map (Dict): 歌手所有歌曲的标题到歌曲对象的映射，用于伴奏回退。
-            
-        Returns:
-            bool: 如果该歌曲有任何字段被更新，返回 True。
-        """
-        needs_update = False
-        
-        # 检查日期有效性
-        is_invalid_date = False
-        if not s.publish_time:
-            is_invalid_date = True
-        else:
-            y = s.publish_time.year
-            if y > datetime.now().year + 1 or y <= 1970:
-                is_invalid_date = True
-        
-        # 检查封面
-        is_missing_cover = False
-        if not s.cover:
-            is_missing_cover = True
-        else:
-            cover_str = str(s.cover)
-            if 'placeholder' in cover_str or 'T002R300x300M000.jpg' in cover_str:
-                is_missing_cover = True
-        
-        # 伴奏版回退策略
-        if is_invalid_date and ("伴奏" in s.title or "Inst" in s.title):
-            orig_title = re.sub(
-                r"[\(\[【（].*?(伴奏|Inst|Backing).*?[\)\]】）]", 
-                "", 
-                s.title, 
-                flags=re.IGNORECASE
-            ).strip()
-            if orig_title in title_map:
-                orig = title_map[orig_title]
-                if (orig.publish_time and 
-                    1970 < orig.publish_time.year <= datetime.now().year + 1):
-                    s.publish_time = orig.publish_time
-                    needs_update = True
-                    is_invalid_date = False
-        
-        # 全网补全
-        if is_invalid_date or is_missing_cover:
-            # TODO: 这里需要一个跨请求的计数器或限制
-            # 暂时保持现有逻辑，但要注意并发时的计数
-            if self._refresh_heal_count < 100:
-                try:
-                    meta = await self.aggregator.get_song_metadata_from_best_source(
-                        s.title, artist.name
-                    )
-                    if meta:
-                        if is_invalid_date and meta.get('publish_time'):
-                            p_parsed = self.enrichment_service._parse_date(str(meta['publish_time']))
-                            if p_parsed:
-                                s.publish_time = p_parsed
-                                needs_update = True
-                        
-                        if is_missing_cover and meta.get('cover_url'):
-                            s.cover = meta['cover_url']
-                            needs_update = True
-                        
-                        if not s.album and meta.get('album'):
-                            s.album = meta['album']
-                            needs_update = True
-                        
-                        self._refresh_heal_count += 1
-                except Exception as e:
-                    pass # 这里的异常由 gather 处理或抑制
-        
-        return needs_update
+            logger.info("✨ 歌手治愈完成: 所有歌曲状态良好")

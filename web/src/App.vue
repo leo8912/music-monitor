@@ -15,6 +15,7 @@
 
             <BottomPlayer v-if="!hideLayout" class="player-area" />
             <LyricsPanel v-if="!hideLayout" />
+
           </div>
       </n-dialog-provider>
     </n-message-provider>
@@ -33,6 +34,7 @@ import { useWebSocketStore } from '@/stores/websocket'
 import Sidebar from '@/components/Sidebar.vue'
 import BottomPlayer from '@/components/BottomPlayer.vue'
 import LyricsPanel from '@/components/LyricsPanel.vue'
+
 import MessageProxy from '@/components/MessageProxy.vue'
 
 const route = useRoute()

@@ -22,9 +22,9 @@
     </div>
     
     <!-- 来源指示器 -->
-    <div v-if="showSource && song.availableSources" class="song-sources">
+    <div v-if="showSource && song.available_sources" class="song-sources">
       <span 
-        v-for="src in song.availableSources" 
+        v-for="src in song.available_sources" 
         :key="src" 
         class="source-tag" 
         :class="src"
@@ -41,9 +41,9 @@
       <button 
         @click.stop="$emit('favorite', song)" 
         class="btn-action btn-favorite"
-        :class="{ active: song.isFavorite }"
+        :class="{ active: song.is_favorite }"
       >
-        <n-icon :component="song.isFavorite ? Heart : HeartOutline" />
+        <n-icon :component="song.is_favorite ? Heart : HeartOutline" />
       </button>
     </div>
   </div>

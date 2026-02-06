@@ -81,11 +81,11 @@ export const usePlayerStore = defineStore('player', () => {
                     picUrl: song.cover || ''
                 })
 
-                if (result.localPath) {
-                    const filename = result.localPath.split('/').pop() || result.localPath.split('\\').pop()
+                if (result.local_path) {
+                    const filename = result.local_path.split('/').pop() || result.local_path.split('\\').pop()
                     if (filename) {
                         audioUrl.value = playerApi.getAudioUrl(filename)
-                        song.local_path = result.localPath
+                        song.local_path = result.local_path
                     }
                 } else {
                     throw new Error('下载未返回有效路径')
@@ -96,12 +96,25 @@ export const usePlayerStore = defineStore('player', () => {
                 throw new Error('音频地址无效')
             }
 
-            // [New] Universal Quality Inference logic
-            // Runs for both local-cached and newly-downloaded songs
+            // [Improved] Universal Quality Inference logic
+            // 1. If we have explicit quality from backend (DB), keep it.
+            // 2. If not, and we have a local path (fresh download), try to infer more smartly.
             if (!song.quality && song.local_path) {
-                const ext = song.local_path.split('.').pop()?.toLowerCase()
-                if (ext === 'flac' || ext === 'wav' || ext === 'ape') song.quality = 'SQ'
-                else if (ext === 'mp3') song.quality = 'HQ'
+                const ext = song.local_path.split('.').pop()?.toLowerCase() || ''
+                if (['flac', 'wav', 'ape', 'alac', 'aiff'].includes(ext)) {
+                    // Default to SQ for lossless if unknown, but could be HR.
+                    // Ideally backend should have returned this.
+                    song.quality = 'SQ'
+                } else if (['mp3', 'aac', 'm4a', 'ogg'].includes(ext)) {
+                    song.quality = 'HQ'
+                } else {
+                    song.quality = 'PQ'
+                }
+            }
+            // Ensure quality_details is populated if missing for tooltip
+            if (!song.quality_details && song.local_path) {
+                const ext = song.local_path.split('.').pop()?.toUpperCase() || 'FILE'
+                song.quality_details = `${ext} | Local`
             }
 
             // 获取歌词 - [Non-blocking] Move after audioUrl is set

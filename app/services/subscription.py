@@ -227,76 +227,37 @@ class SubscriptionService:
             return None
         
         # 构建歌曲列表
+        from app.services.deduplication_service import DeduplicationService
+        
+        # 使用去重逻辑
+        deduplicated_songs = DeduplicationService.deduplicate_songs(artist.songs)
+        
         songs = []
         albums = {}  # 用于去重专辑
         
-        def get_publish_date(s):
-            val = s.publish_time
+        def get_dict_publish_date(s_dict):
+            val = s_dict.get("publish_time")
             if not val:
                 return datetime.min
-            if isinstance(val, str):
-                try:
-                    # SQLite might return as string: '2024-01-01 00:00:00.000000'
-                    return datetime.fromisoformat(val.split('.')[0])
-                except:
-                    return datetime.min
-            return val
+            try:
+                if isinstance(val, str):
+                    if 'T' in val:
+                        return datetime.fromisoformat(val.replace('Z', ''))
+                    return datetime.strptime(val.split('.')[0], "%Y-%m-%d %H:%M:%S")
+                return val
+            except:
+                return datetime.min
 
-        for song in sorted(artist.songs, key=get_publish_date, reverse=True):
-            # 确定主来源（优先本地）
-            main_source = 'local' if song.local_path else None
-            main_source_id = song.local_path if song.local_path else None
-            
-            if not main_source and song.sources:
-                # 优先选择在线平台作为主来源
-                platforms = [src for src in song.sources if src.source != 'local']
-                if platforms:
-                    main_source = platforms[0].source
-                    main_source_id = platforms[0].source_id
-                elif song.sources:
-                    main_source = song.sources[0].source
-                    main_source_id = song.sources[0].source_id
-            
-            # 收集所有可用来源
-            available_sources = set()
-            for src in song.sources:
-                available_sources.add(src.source)
-            
-            # 如果是本地下载状态，添加标识
-            if song.status == 'DOWNLOADED' or song.local_path:
-                available_sources.add('downloaded')
-            
-            # 去重：如果同时有 local 和 downloaded，只保留 local
-            if 'local' in available_sources and 'downloaded' in available_sources:
-                available_sources.remove('downloaded')
-            
-            # 排序来源标签
-            def source_sort_key(s):
-                keys = {'local': 0, 'downloaded': 1, 'netease': 2, 'qqmusic': 3}
-                return keys.get(s, 99)
-            
-            song_data = {
-                "id": song.id,
-                "title": song.title,
-                "artist": artist.name,
-                "album": song.album,
-                "cover": song.cover,
-                "publish_time": song.publish_time.isoformat() if song.publish_time else None,
-                "is_favorite": song.is_favorite,
-                "localPath": song.local_path,  # 添加本地路径
-                "status": song.status or "PENDING",  # 添加状态
-                "source": main_source or 'unknown',  # 主来源
-                "sourceId": main_source_id or '',  # 主来源ID
-                "availableSources": sorted(list(available_sources), key=source_sort_key)  # 所有可用来源
-            }
+        for song_data in sorted(deduplicated_songs, key=get_dict_publish_date, reverse=True):
             songs.append(song_data)
             
             # 收集专辑信息
-            if song.album and song.album not in albums:
-                albums[song.album] = {
-                    "name": song.album,
-                    "cover": song.cover,
-                    "publishTime": song.publish_time.isoformat() if song.publish_time else None
+            album_name = song_data.get("album")
+            if album_name and album_name not in albums:
+                albums[album_name] = {
+                    "name": album_name,
+                    "cover": song_data.get("cover"),
+                    "publish_time": song_data.get("publish_time")
                 }
         
         return {

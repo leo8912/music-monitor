@@ -24,7 +24,7 @@ from .download_history_service import DownloadHistoryService
 from .metadata_service import MetadataService
 from .history_service import HistoryService
 from .wechat_download_service import WeChatDownloadService
-from .favorites_service import FavoritesService
+from .favorite_service import FavoriteService
 from .notification import NotificationService
 from .subscription import SubscriptionService
 
@@ -36,7 +36,7 @@ __all__ = [
     "MetadataService",
     "HistoryService",
     "WeChatDownloadService",
-    "FavoritesService",
+    "FavoriteService",
     "NotificationService",
     "SubscriptionService",
 ]

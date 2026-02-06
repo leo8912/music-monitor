@@ -61,10 +61,11 @@ class SongResponse(BaseModel):
     status: Optional[str] = None
     publish_time: Optional[str] = None
     quality: Optional[str] = "HQ" # SQ, HQ, Hi-Res
+    quality_details: Optional[str] = None # e.g. "FLAC | SQ" or "24bit / 96kHz | HR"
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
-    localFiles: Optional[list] = [] # List of local file details
-    availableSources: Optional[list] = [] # List of available sources (qqmusic, netease, local)
+    local_files: Optional[list] = [] # List of local file details
+    available_sources: Optional[list] = [] # List of available sources (qqmusic, netease, local)
 
     class Config:
         from_attributes = True # for V2 compatibility

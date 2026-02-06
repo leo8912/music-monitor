@@ -20,7 +20,7 @@ export const useLibraryStore = defineStore('library', () => {
     const pageSize = ref(20)
     const isLoading = ref(false)
     const refreshingArtistName = ref<string | null>(null)
-    const sortField = ref('publish_time')
+    const sortField = ref('created_at')
     const sortOrder = ref<'asc' | 'desc'>('desc')
 
     // 计算属性 - 合并同名歌手
@@ -30,7 +30,7 @@ export const useLibraryStore = defineStore('library', () => {
         artists.value.forEach(a => {
             if (!map.has(a.name)) {
                 // Merge sources: prefer availableSources from backend, fallback to sources array or single source
-                const sourceList = (a.availableSources || a.sources || (a.source === 'database' ? [] : [a.source])) as MusicSource[]
+                const sourceList = (a.available_sources || a.sources || (a.source === 'database' ? [] : [a.source])) as MusicSource[]
 
                 const idEntry = { source: a.source, id: a.id }
 
@@ -39,7 +39,7 @@ export const useLibraryStore = defineStore('library', () => {
                     avatar: a.avatar,
                     sources: sourceList,
                     ids: [idEntry],
-                    songCount: a.songCount || 0
+                    song_count: a.song_count || 0
                 })
             }
             // Since backend is now normalized, duplicates by name shouldn't happen for Monitored Artists.
@@ -80,17 +80,17 @@ export const useLibraryStore = defineStore('library', () => {
                 artist: s.artist,
                 album: s.album || '',
                 source: s.source || 'local',
-                source_id: s.source_id || s.media_id || s.id,
-                cover: s.cover || s.cover_url || s.pic_url,
-                local_path: s.local_path || s.local_audio_path || s.localPath,
+                source_id: s.source_id,
+                cover: s.cover,
+                local_path: s.local_path,
                 is_favorite: s.is_favorite || false,
                 status: s.status || 'DOWNLOADED',
-                publish_time: s.publish_time || s.publishTime,
-                created_at: s.created_at || s.createdAt,
-                found_at: s.found_at || s.foundAt,
-                available_sources: s.available_sources || s.availableSources || [],
+                publish_time: s.publish_time,
+                created_at: s.created_at,
+                found_at: s.found_at,
+                available_sources: s.available_sources || [],
                 quality: s.quality,
-                local_files: s.local_files || s.localFiles || []
+                local_files: s.local_files || []
             }))
 
             totalSongs.value = result.total
@@ -134,11 +134,11 @@ export const useLibraryStore = defineStore('library', () => {
                 local_path: s.local_path,
                 is_favorite: s.is_favorite || false,
                 status: s.status,
-                publish_time: s.publish_time || s.publishTime,
-                created_at: s.created_at || s.createdAt,
-                available_sources: s.available_sources || s.availableSources || [],
+                publish_time: s.publish_time,
+                created_at: s.created_at,
+                available_sources: s.available_sources || [],
                 quality: s.quality,
-                local_files: s.local_files || s.localFiles || []
+                local_files: s.local_files || []
             }))
             totalSongs.value = result.total
         } catch (error) {
@@ -169,13 +169,13 @@ export const useLibraryStore = defineStore('library', () => {
                 source: s.source || 'local',
                 source_id: s.source_id || s.media_id,
                 cover: s.cover || s.cover_url || s.pic_url,
-                local_path: s.local_path || s.local_audio_path || s.localPath,
+                local_path: s.local_path || s.local_audio_path,
                 is_favorite: s.is_favorite || false,
                 status: s.status || 'DOWNLOADED',
-                publish_time: s.publish_time || s.publishTime,
-                created_at: s.created_at || s.createdAt,
-                found_at: s.found_at || s.foundAt,
-                available_sources: s.available_sources || s.availableSources || [],
+                publish_time: s.publish_time,
+                created_at: s.created_at,
+                found_at: s.found_at,
+                available_sources: s.available_sources || [],
                 quality: s.quality
             }))
             totalHistorySongs.value = result.total
@@ -317,7 +317,7 @@ export const useLibraryStore = defineStore('library', () => {
                 found_at: updatedData.found_at,
                 available_sources: updatedData.available_sources || [],
                 quality: updatedData.quality,
-                local_files: updatedData.local_files || updatedData.localFiles || []
+                local_files: updatedData.local_files || []
             }
             songs.value[index] = mappedSong
             return mappedSong

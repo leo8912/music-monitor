@@ -315,22 +315,40 @@ class MediaService:
                 
                 # 4. 智能元数据补全 (非阻塞)
                 try:
-                    from app.services.enrichment_service import EnrichmentService
-                    enrichment_service = EnrichmentService()
-                    await enrichment_service.enrich_song(existing_song.id)
+                    from app.services.metadata_healer import MetadataHealer
+                    healer = MetadataHealer()
+                    # 触发单曲治愈
+                    await healer.heal_song(existing_song.id, force=True) 
                     logger.info(f"✅ 自动补全元数据完成: {title}")
                 except Exception as enrich_e:
                     logger.warning(f"⚠️ 元数据补全失败(非阻塞): {enrich_e}")
-                
+
+                # [Feature] 即时入库 (秒级反馈)
+                # 无需等待全量扫描，直接把文件送入 ScanService 判定
+                try:
+                    from app.services.library import LibraryService
+                    library_service = LibraryService()
+                    # scan_single_file 应该是异步的
+                    await library_service.scan_single_file(result["local_path"], db)
+                    logger.info(f"🚀 单曲即时扫描完成: {result['local_path']}")
+                except Exception as scan_e:
+                    logger.warning(f"⚠️ 单曲即时扫描失败: {scan_e}")
+
                 await history_service.log_download_attempt(
                     db, title, artist, album, source, source_id, 
                     'SUCCESS', result["local_path"], cover_url=cover_url
                 )
                 
+                # Fetch fresh quality from source entry or recalc
+                # result['quality'] already calculated by DownloadService usually, or we assume HQ if missing
+                final_quality = result.get('quality', 'HQ')
+
                 return {
                     "message": "下载成功",
                     "song_id": existing_song.id,
-                    "file_path": result["local_path"]
+                    "file_path": result["local_path"],
+                    "quality": final_quality, # Frontend uses this directly
+                    "cover": existing_song.cover
                 }
             else:
                 await history_service.log_download_attempt(

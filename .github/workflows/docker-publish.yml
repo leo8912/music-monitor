@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
     # Publish semver tags as releases.
-    tags: [ 'v*.*.*', 'test*' ]
+    tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
 
@@ -31,6 +31,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Validate Version (for tags)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          CODE_VERSION=$(grep "__backend_version__" version.py | cut -d'"' -f2)
+          echo "Tag version: $TAG_VERSION"
+          echo "Code version: $CODE_VERSION"
+          if [ "$TAG_VERSION" != "$CODE_VERSION" ]; then
+            echo "::error::Release tag $TAG_VERSION does not match version.py $CODE_VERSION"
+            exit 1
+          fi
 
       # Set up Buildx
       - name: Set up Docker Buildx

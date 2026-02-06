@@ -90,10 +90,35 @@ watch(() => playerStore.audioUrl, async (newUrl) => {
     }
 })
 
+// Quality helpers
+const getQualityLabel = (q: any) => {
+    if (!q) return ''
+    const s = String(q).toUpperCase()
+    // HR / Hi-Res
+    if (s === 'HI-RES' || s === 'HR' || s.includes('24BIT') || s === 'MASTER') return 'HR'
+    // HQ (High Quality Lossy)
+    if (s === 'HQ' || s === '320K') return 'HQ'
+    // SQ (Standard Lossless / High Quality) -> FLAC usually implies SQ or HR. Mapping FLAC to SQ for standard 16bit.
+    if (s === 'FLAC' || s === 'SQ' || s === 'LOSSLESS') return 'SQ'
+    // PQ (Standard Quality Lossy)
+    if (s === 'PQ' || s === '128K') return 'PQ'
+    
+    return s // Return original if unknown
+}
+
+const getQualityClass = (q: any) => {
+    const label = getQualityLabel(q)
+    if (label === 'HR') return 'quality-gold' 
+    if (label === 'SQ') return 'quality-green'
+    if (label === 'HQ') return 'quality-blue'
+    return 'quality-gray'
+}
+
 onMounted(() => {
   // 初始音量同步
   if (audioRef.value) audioRef.value.volume = playerStore.volume / 100
 })
+
 
 </script>
 
@@ -116,9 +141,13 @@ onMounted(() => {
           <div class="title-container">
             <div class="title clickable" @click="playerStore.toggleLyricsPanel()">{{ playerStore.currentSong?.title || 'Music Monitor' }}</div>
             <!-- Quality Badge -->
-            <n-tag size="small" :bordered="false" class="quality-tag" v-if="playerStore.currentSong?.quality">
-                {{ playerStore.currentSong.quality }}
-            </n-tag>
+            <div class="quality-wrapper">
+                <n-tag size="small" :bordered="false" class="quality-tag" 
+                       :class="getQualityClass(playerStore.currentSong?.quality)"
+                       v-if="playerStore.currentSong?.quality">
+                    {{ getQualityLabel(playerStore.currentSong.quality) }}
+                </n-tag>
+            </div>
           </div>
           <div class="artist" v-if="!playerStore.downloadMessage">{{ playerStore.currentSong?.artist || 'Ready to play' }}</div>
           <div class="download-status-text" v-else>{{ playerStore.downloadMessage }}</div>
@@ -267,22 +296,52 @@ onMounted(() => {
     opacity: 1;
     text-decoration: none;
 }
+/* Modern Pill Style (Option B) */
 .quality-tag { 
     font-size: 10px; 
-    height: 16px; 
-    line-height: 14px; 
-    padding: 0 4px; 
-    background-color: transparent;
-    color: #FFD700; 
+    height: 18px; /* Slightly taller for pill shape */
+    line-height: 16px; 
+    padding: 0 6px; 
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff; 
     font-weight: 700;
-    border: 1px solid #FFD700;
-    border-radius: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px; /* Rounded corners for pill effect */
     margin-left: 8px;
     display: inline-flex;
     align-items: center;
-    box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.5px;
+}
+
+/* Quality Colors - Modern Pill Variant */
+.quality-gold { 
+    color: #FFD700; 
+    border: 1px solid rgba(255, 215, 0, 0.3); 
+    background: rgba(255, 215, 0, 0.15); 
+}
+.quality-green { 
+    color: #1DB954; 
+    border: 1px solid rgba(29, 185, 84, 0.3); 
+    background: rgba(29, 185, 84, 0.15); 
+}
+.quality-blue { 
+    color: #4facfe; 
+    border: 1px solid rgba(79, 172, 254, 0.3); 
+    background: rgba(79, 172, 254, 0.15); 
+}
+.quality-gray { 
+    color: #aaa; 
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    background: rgba(255, 255, 255, 0.05); 
 }
 .artist { font-size: 12px; color: var(--text-secondary); }
+
+.quality-wrapper {
+    display: inline-flex;
+    align-items: center;
+    cursor: default; /* Changed from help to default to avoid confusion */
+}
 
 /* Mini EQ Animation */
 .mini-eq { display: flex; align-items: flex-end; gap: 2px; height: 12px; width: 14px; margin-bottom: 2px; }
@@ -385,3 +444,5 @@ button:disabled {
   100% { opacity: 0.6; }
 }
 </style>
+
+

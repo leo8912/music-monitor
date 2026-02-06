@@ -11,7 +11,7 @@ export default defineConfig({
             '@stores': resolve(__dirname, 'src/stores'),
             '@types': resolve(__dirname, 'src/types'),
             '@desktop': resolve(__dirname, 'src/desktop'),
-            '@mobile': resolve(__dirname, 'src/mobile'),
+
             '@composables': resolve(__dirname, 'src/composables'),
         }
     },

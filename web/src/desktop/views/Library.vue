@@ -3,8 +3,10 @@
     <header class="view-header">
       <div class="header-main">
         <h1 class="text-huge">资料库</h1>
-        <div class="header-actions">
-          <n-button quaternary circle @click="handleRefresh" title="刷新列表">
+         <div class="header-actions">
+           <TaskIndicator />
+ 
+           <n-button quaternary circle @click="handleRefresh" title="刷新列表">
             <template #icon><n-icon :component="RefreshOutline" /></template>
           </n-button>
           
@@ -86,6 +88,7 @@ import { usePlayerStore } from '@/stores/player'
 import * as libraryApi from '@/api/library'
 import SongList from '@/components/SongList.vue'
 import MetadataMatcher from '@/components/library/MetadataMatcher.vue'
+import TaskIndicator from '@/components/library/TaskIndicator.vue'
 
 const message = useMessage()
 const dialog = useDialog()

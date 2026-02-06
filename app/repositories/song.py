@@ -64,7 +64,7 @@ class SongRepository(BaseRepository[Song]):
             and_(Song.title == title, Song.artist_id == artist)
         )
         result = await self._session.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     async def get_favorites(self, skip: int = 0, limit: int = 100) -> List[Song]:
         """获取收藏歌曲"""

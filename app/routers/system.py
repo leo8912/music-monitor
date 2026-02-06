@@ -29,7 +29,7 @@ from core.event_bus import get_event_bus, EventType
 
 event_bus = get_event_bus()
 from core.websocket import manager
-from notifiers.wecom import WeComNotifier
+from app.notifiers.wecom import WeComNotifier
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

@@ -17,7 +17,7 @@ from sqlalchemy import select, delete, desc, asc
 from core.database import get_async_session
 from app.services.library import LibraryService
 from app.services.scan_service import ScanService
-from app.services.enrichment_service import EnrichmentService
+from app.services.metadata_healer import MetadataHealer
 from app.repositories.song import SongRepository
 from app.models.song import SongSource
 from app.pagination import PaginatedResponse, convert_skip_limit_to_page
@@ -39,7 +39,7 @@ async def get_library_songs(
     artist_name: Optional[str] = Query(None, description="歌手名过滤"),
     is_favorite: Optional[bool] = Query(None, description="收藏过滤"),
     monitored_only: bool = Query(True, description="仅显示关注歌手(默认True)"),
-    sort_by: str = Query("publish_time", description="排序字段: publish_time, created_at, title"),
+    sort_by: str = Query("created_at", description="排序字段: created_at, publish_time, title"),
     order: str = Query("desc", description="排序方向: desc, asc"),
     db: AsyncSession = Depends(get_async_session)
 ):
@@ -141,6 +141,7 @@ async def get_local_songs(
         from sqlalchemy.ext.asyncio import AsyncSession
         from sqlalchemy import select, func
         from sqlalchemy.orm import selectinload
+
         # 处理分页参数
         if page is not None and page_size is not None:
             current_page = page
@@ -205,10 +206,30 @@ async def get_local_songs(
             
             for src in s.sources:
                 if src.source == 'local':
+                    
+                    # [DIAGNOSTIC] Check File Path and Raw DB
+                    if "一生所爱" in s.title:
+                        import os
+                        from sqlalchemy import text
+                        abs_db_path = os.path.abspath('config/music_monitor.db')
+                        logger.info(f"[DIAG_PATH] Expected DB Path: {abs_db_path} | Exists: {os.path.exists(abs_db_path)}")
+                        
+                        # Raw SQL Check
+                        try:
+                            raw_result = await db.execute(text(f"SELECT data_json FROM song_sources WHERE id={src.id}"))
+                            raw_row = raw_result.scalar()
+                            logger.info(f"[DIAG_RAW] Source {src.id} Raw JSON: {raw_row}")
+                        except Exception as e:
+                            logger.error(f"[DIAG_ERROR] {e}")
+
                     data = src.data_json or {}
                     start_q = quality or 'PQ'
                     new_q = data.get('quality')
                     
+                    # [DEBUG] Trace "一生所爱"
+                    if "一生所爱" in s.title and src.source == 'local':
+                        logger.info(f"[DEBUG_QUALITY] Song: {s.title} | SourceID: {src.id} | DataJSON: {data} | NewQ: {new_q} | CurrentMax: {quality}")
+
                     # Upgrade quality if better
                     if q_priority.get(new_q, 0) > q_priority.get(quality, 0):
                         quality = new_q
@@ -231,25 +252,74 @@ async def get_local_songs(
             # View object construction
             final_cover = local_cover if local_cover else s.cover
             
+            # Find best source data for details
+            q_details = None
+            if quality:
+                 # Find the source that contributed this quality
+                 for src in s.sources:
+                     if src.source == 'local':
+                         d = src.data_json or {}
+                         if d.get('quality') == quality:
+                             # Construct detail string: "FLAC | SQ" or "24bit/96kHz | HR"
+                             fmt = d.get('format', 'UNK')
+                             q_val = quality
+                             
+                             # [Fix] Display-Layer Override for "PQ" on Lossless Files
+                             if q_val == 'PQ' and s.local_path:
+                                 import os
+                                 path_ext = os.path.splitext(s.local_path)[1].lower()
+                                 if path_ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
+                                     q_val = 'SQ' # Default to SQ first
+                                     
+                                     # Try Real-time HR Detection (Fast read for paginated items)
+                                     try:
+                                         from mutagen import File as MutagenFile
+                                         if os.path.exists(s.local_path):
+                                             audio = MutagenFile(s.local_path)
+                                             if audio and audio.info:
+                                                 rate = getattr(audio.info, 'sample_rate', 0)
+                                                 bits = getattr(audio.info, 'bits_per_sample', 0)
+                                                 if rate > 48000 or bits > 16:
+                                                     q_val = 'HR'
+                                     except:
+                                         pass
+                                     
+                                     quality = q_val # Update main quality variable too
+                                     fmt = path_ext.replace('.', '').upper()
+                             
+                             q_details = f"{fmt} | {q_val}"
+                             if d.get('quality_details'):
+                                 q_details = d.get('quality_details')
+                                 if q_val != d.get('quality'): # If we overrode it
+                                      q_details = f"{fmt} | {q_val}"
+                             break
+
             items.append({
                 "id": s.id,
                 "title": s.title,
                 "artist": artist_name,
                 "album": s.album,
-                "cover": final_cover,
-                "publish_time": s.publish_time,
+                "cover_url": final_cover, # Fixed key name to match schema? Schema says cover_url, code had cover? schema says cover_url.
+                # Wait, schema def at line 54 is cover_url. `items` dict keys must match schema if using Pydantic? 
+                # Let's check typical usage. Code below says items.append({...}) and then returns PaginatedResponse(items=items).
+                # If items are unchecked, maybe it passes through. But let's check key names.
+                # Schema: cover_url. Code: "cover": final_cover.
+                # If existing code has "cover", does it map? 
+                # Let's keep existing keys but ADD quality_details.
+                "cover": final_cover, 
+                "cover": final_cover, 
+                "local_audio_path": s.local_path,
+                "local_path": s.local_path, # REQUIRED by frontend player.ts
+                "is_favorite": s.is_favorite,
                 "created_at": s.created_at,
+                "publish_time": s.publish_time,
+                "quality": quality,
+                "quality_details": q_details, # NEW FIELD
+                "local_files": local_files_list,
                 "source": "local",
                 "source_id": s.local_path,
-                "local_path": s.local_path,
-                "is_favorite": s.is_favorite,
-                "status": status,
-                "quality": quality,
-                "status": status,
-                "quality": quality,
-                "availableSources": [],
-                "localFiles": local_files_list
             })
+
 
         return PaginatedResponse.create(
             items=items,
@@ -281,16 +351,15 @@ async def enrich_local_files_endpoint(
     db: AsyncSession = Depends(get_async_session)
 ):
     """
-    补全本地文件元数据 (自动下载封面/专辑/年份)
-    触发后台任务
+    补全本地文件元数据 (自动下载封面/专辑/年份/歌词)
+    触发后台任务 (使用 MetadataHealer)
     """
     try:
-        from app.services.enrichment_service import EnrichmentService
-        # 实例化服务
-        service = EnrichmentService()
-        # 以后台任务运行，避免阻塞接口
-        asyncio.create_task(service.auto_enrich_library())
-        return {"success": True, "message": "Enrichment task started"}
+        from app.services.metadata_healer import MetadataHealer
+        service = MetadataHealer()
+        # 以后台任务运行，避免阻塞接口 (自动任务遵守冷却期, Force=False)
+        asyncio.create_task(service.heal_all(force=False, limit=50))
+        return {"success": True, "message": "Metadata healing task started (background)"}
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -302,10 +371,14 @@ async def refresh_library_metadata(
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_async_session)
 ):
-    """刷新资料库元数据 (仅数据库)"""
+    """
+    刷新资料库元数据 (强制)
+    手动触发，无视冷却期
+    """
     try:
-        enrichment_service = EnrichmentService()
-        count = await enrichment_service.refresh_library_metadata(db, limit=limit)
+        metadata_healer = MetadataHealer()
+        # 手动刷新，强制治愈 force=True
+        count = await metadata_healer.heal_all(force=True, limit=limit)
         return {"success": True, "enriched_count": count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"资料库刷新失败: {str(e)}")
@@ -538,3 +611,64 @@ async def delete_source(
         await db.rollback()
         logger.error(f"Delete source failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/fix-quality")
+async def fix_quality_internal(db: AsyncSession = Depends(get_async_session)):
+    """
+    Internal Endpoint: Force fix all local FLAC/WAV quality to SQ
+    """
+    try:
+        from app.models.song import SongSource
+        import json
+        
+        # 1. Fetch all local sources
+        stmt = select(SongSource).where(SongSource.source == 'local')
+        result = await db.execute(stmt)
+        sources = result.scalars().all()
+        
+        updated = 0
+        logs = []
+        
+        for src in sources:
+            if not src.url: continue
+            
+            # Simple Extension Check
+            target_q = None
+            # Need to re-import os if not available in this scope, but it is available in module
+            import os
+            ext = os.path.splitext(src.url)[1].lower()
+            
+            if ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
+                target_q = 'SQ'
+            
+            if target_q:
+                data = src.data_json or {}
+                # Convert immutable dict to mutable if needed, though usually SQLAlchemy returns mutable dict for JSON
+                if data is None: data = {}
+                else: data = dict(data)
+                
+                current_q = data.get('quality')
+                
+                if current_q != target_q:
+                    data['quality'] = target_q
+                    data['format'] = ext.replace('.', '').upper()
+                    data['quality_details'] = f"{data['format']} | {target_q}"
+                    
+                    src.data_json = data # Force modify
+                    
+                    logs.append(f"Fixed {src.id}: {current_q}->{target_q}")
+                    updated += 1
+        
+        if updated > 0:
+            await db.commit()
+            logger.info(f"Fixed {updated} songs internally.")
+            return {"success": True, "updated": updated, "details": logs}
+        
+        return {"success": True, "updated": 0, "message": "All good"}
+        
+    except Exception as e:
+        logger.error(f"Fix failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}

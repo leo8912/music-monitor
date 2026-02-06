@@ -35,11 +35,13 @@ const handlePlay = (song: any) => {
   playerStore.playSong(song)
 }
 
-// 初始化
 onMounted(async () => {
-    console.log('DEBUG: sortField type:', typeof libraryStore.sortField, libraryStore.sortField)
+    console.log('DEBUG: Home View mounted')
     await libraryStore.fetchArtists()
-    await libraryStore.fetchSongs()
+    // 首页保持按 'publish_time' 排序（最新发布）
+    libraryStore.sortField = 'publish_time'
+    libraryStore.sortOrder = 'desc'
+    await libraryStore.fetchSongs(1)
 })
 // 刷新数据
 const handleRefresh = async () => {

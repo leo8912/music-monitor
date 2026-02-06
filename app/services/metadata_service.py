@@ -45,6 +45,7 @@ class MetadataResult:
     error_message: Optional[str] = None
     cover_size_bytes: int = 0  # 封面大小（字节）
     source: str = ""  # 数据来源
+    search_result: Optional[object] = None # 搜索结果对象 (包含 title, artist 等)
 
 
 class MetadataService:
@@ -453,9 +454,11 @@ class MetadataService:
         if "netease" in source_data and source_data["netease"].get("lyrics"):
             result.lyrics = source_data["netease"]["lyrics"]
             result.source = "netease"
+            result.search_result = source_data["netease"].get("search_result")
         elif "qqmusic" in source_data and source_data["qqmusic"].get("lyrics"):
             result.lyrics = source_data["qqmusic"]["lyrics"]
             result.source = "qqmusic"
+            result.search_result = source_data["qqmusic"].get("search_result")
         
         # 优先QQ音乐封面和专辑
         if "qqmusic" in source_data:
@@ -466,6 +469,8 @@ class MetadataService:
                 result.album = qq_data["album"]
             if qq_data.get("publish_time"):
                 result.publish_time = qq_data["publish_time"]
+            if not result.search_result:
+                result.search_result = qq_data.get("search_result")
         
         # 网易云补全
         if "netease" in source_data:

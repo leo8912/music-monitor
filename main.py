@@ -183,8 +183,8 @@ async def lifespan(app: FastAPI):
                     if should_enrich:
                         logger.info("Triggering auto-enrichment for new files...")
                         try:
-                            # 使用新的 auto_enrich_library 方法 (无需传 db, 内部管理)
-                            await service.enrichment_service.auto_enrich_library()
+                            # 使用新的 heal_all 方法 (无需传 db, 内部管理)
+                            await service.metadata_healer.heal_all(force=False)
                         except Exception as e:
                             logger.error(f"Auto enrichment failed: {e}")
                          
@@ -344,6 +344,12 @@ app.include_router(library.router)
 app.include_router(subscription.router)
 app.include_router(settings.router)
 
+from app.routers import task_control, websocket
+# app.include_router(debug_tasks.router) # Removed
+
+app.include_router(task_control.router)
+app.include_router(websocket.router)
+
 # --- Middleware & Static Files Setup ---
 
 # 1. Custom Auth Middleware (Inner)
@@ -357,7 +363,7 @@ async def auth_middleware(request: Request, call_next):
     if path.startswith("/api/"):
         allowed_paths = [
             "/api/login", "/api/logout", "/api/check_auth", 
-            "/api/wecom/callback", "/api/mobile/metadata",
+            "/api/wecom/callback", 
             "/api/test_ws", "/api/discovery/probe_qualities", "/api/discovery/cover"
         ]
         if path in allowed_paths or path.startswith("/api/test_notify_card") or path.startswith("/api/audio/"):

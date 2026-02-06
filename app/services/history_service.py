@@ -21,7 +21,7 @@ import logging
 import os
 
 from app.repositories.media_record import MediaRecordRepository
-from utils.error_handler import enhanced_error_handler
+from app.utils.error_handler import handle_service_errors
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class HistoryService:
     def __init__(self, db: AsyncSession = None):
         self.db = db
     
-    @enhanced_error_handler(reraise=False, default_return={'items': [], 'total': 0})
+    @handle_service_errors(fallback_value={'items': [], 'total': 0}, raise_on_critical=False)
     async def get_history(
         self,
         db: AsyncSession,
@@ -210,9 +210,7 @@ class HistoryService:
             'album': getattr(record, 'album', ''),
             'publish_time': record.publish_time.isoformat() if record.publish_time else None,
             'found_at': record.found_at.isoformat() if record.found_at else None,
-            'foundAt': record.found_at.isoformat() if record.found_at else None, # Alias for Frontend
-            'local_audio_path': local_path,
-            'localPath': local_path, # Alias for Frontend compatibility
+            'local_path': local_path,
             'is_favorite': getattr(record, 'is_favorite', False),
             'extra_sources': [],  # 初始为空
             'created_at': record.found_at.isoformat() if record.found_at else None,

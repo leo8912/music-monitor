@@ -119,150 +119,186 @@ class ScanService:
         
         song_repo = SongRepository(db)
         
-        # --- 阶段 1: 清理阶段 (Pruning) ---
-        if not incremental:
-            removed_count = await self._prune_missing_files(db, progress_callback)
+        from app.services.task_monitor import task_monitor, TaskCancelledException
+        task_id = await task_monitor.start_task("scan", "正在初始化扫描...")
         
-        # 获取所有现有的本地源 ID
-        stmt = select(SongSource.source_id).where(SongSource.source == "local")
-        existing_source_ids = set((await db.execute(stmt)).scalars().all())
-        logger.info(f"📊 数据库中已存在 {len(existing_source_ids)} 个本地文件记录")
+        try:
+            # --- 阶段 1: 清理阶段 (Pruning) ---
+            if not incremental:
+                removed_count = await self._prune_missing_files(db, progress_callback, task_id)
+            
+            # 获取所有现有的本地源 ID
+            stmt = select(SongSource.source_id).where(SongSource.source == "local")
+            existing_source_ids = set((await db.execute(stmt)).scalars().all())
+            logger.info(f"📊 数据库中已存在 {len(existing_source_ids)} 个本地文件记录")
 
-        # 缓存所有歌手信息以减少查询
-        all_artists = (await db.execute(select(Artist))).scalars().all()
-        artist_map = {a.name: a for a in all_artists}
-        
-        # --- 阶段 2: 扫描阶段 (Scanning) ---
-        # --- 阶段 2: 扫描阶段 (Scanning) ---
-        logger.info(f"🔍 准备扫描目录列表: {self.scan_directories}")
-        
-        for dir_name in self.scan_directories:
-            abs_path = os.path.abspath(dir_name)
-            exists = await anyio.to_thread.run_sync(os.path.exists, dir_name)
+            # 缓存所有歌手信息以减少查询
+            all_artists = (await db.execute(select(Artist))).scalars().all()
+            artist_map = {a.name: a for a in all_artists}
             
-            if not exists:
-                logger.warning(f"⚠️ 目录不存在, 跳过: {dir_name} (绝对路径: {abs_path})")
-                continue
+            # --- 阶段 2: 扫描阶段 (Scanning) ---
+            logger.info(f"🔍 准备扫描目录列表: {self.scan_directories}")
             
-            logger.info(f"📂 正在扫描目录: {dir_name} (绝对路径: {abs_path})")
-            files = await anyio.to_thread.run_sync(os.listdir, dir_name)
-            logger.info(f"   - 目录下文件总数: {len(files)}")
-            # Filter first, then process
-            audio_files = [f for f in files if f.lower().endswith(self.supported_extensions)]
-            total_files = len(audio_files)
-            processed_files = 0
-            
-            for filename in audio_files:
-                processed_files += 1
+            for dir_name in self.scan_directories:
+                abs_path = os.path.abspath(dir_name)
+                exists = await anyio.to_thread.run_sync(os.path.exists, dir_name)
                 
-                # 进度回调
-                if progress_callback:
-                    progress_callback({
-                        "stage": "scanning",
-                        "directory": dir_name,
-                        "current": processed_files,
-                        "total": total_files,
-                        "filename": filename
-                    })
+                if not exists:
+                    logger.warning(f"⚠️ 目录不存在, 跳过: {dir_name} (绝对路径: {abs_path})")
+                    continue
                 
-                file_path = os.path.join(dir_name, filename).replace("\\", "/")
+                logger.info(f"📂 正在扫描目录: {dir_name} (绝对路径: {abs_path})")
+                files = await anyio.to_thread.run_sync(os.listdir, dir_name)
+                logger.info(f"   - 目录下文件总数: {len(files)}")
+                # Filter first, then process
+                audio_files = [f for f in files if f.lower().endswith(self.supported_extensions)]
+                total_files = len(audio_files)
+                processed_files = 0
                 
-                # [Fix]: 不要简单根据 filename 跳过，需要结合路径判断
-                # 我们将在 _create_song_source 中处理具体的去重逻辑
-                # 但为了性能，如果我们确定该文件的路径已经完全入库，可以跳过
-                # (TODO: 需要一个 existing_paths 集合来做这种快速过滤，目前先不做严格过滤以确保修复)
-                
-                # 发现潜在文件 (可能是已存在的)
-                # logger.debug(f"📂 处理文件: {file_path}")
-                metadata = await self._extract_metadata(file_path, filename)
-                
-                # [Fix] ensure metadata is a dict
-                if metadata is None:
-                     metadata = {}
+                for filename in audio_files:
+                    # Check for Pause/Cancel
+                    await task_monitor.check_status(task_id)
 
-                # 如果提取失败（返回空或无效），尝试从文件名解析 (Artist - Title)
-                filename_no_ext = os.path.splitext(filename)[0]
-                
-                if not metadata.get('title'):
-                    if " - " in filename_no_ext:
-                        parts = filename_no_ext.split(" - ", 1)
-                        metadata['artist_name'] = parts[0].strip()
-                        metadata['title'] = parts[1].strip()
+                    processed_files += 1
+                    
+                    # 进度回调 & TaskMonitor
+                    if progress_callback:
+                        progress_callback({
+                            "stage": "scanning",
+                            "directory": dir_name,
+                            "current": processed_files,
+                            "total": total_files,
+                            "filename": filename
+                        })
+                    
+                    # TaskMonitor Update
+                    if task_id:
+                        pct = int((processed_files / total_files) * 100)
+                        msg = f"扫描中 (新增: {new_count}): {filename} ({processed_files}/{total_files})"
+                        await task_monitor.update_progress(
+                            task_id, 
+                            pct, 
+                            msg,
+                            details={
+                                "directory": dir_name,
+                                "current": processed_files,
+                                "total": total_files,
+                                "new": new_count
+                            }
+                        )
+                    
+                    file_path = os.path.join(dir_name, filename).replace("\\", "/")
+                    
+                    # [Fix]: 不要简单根据 filename 跳过，需要结合路径判断
+                    # 我们将在 _create_song_source 中处理具体的去重逻辑
+                    # 但为了性能，如果我们确定该文件的路径已经完全入库，可以跳过
+                    # (TODO: 需要一个 existing_paths 集合来做这种快速过滤，目前先不做严格过滤以确保修复)
+                    
+                    # 发现潜在文件 (可能是已存在的)
+                    # logger.debug(f"📂 处理文件: {file_path}")
+                    metadata = await self._extract_metadata(file_path, filename)
+                    
+                    # [Fix] ensure metadata is a dict
+                    if metadata is None:
+                         metadata = {}
+
+                    # 如果提取失败（返回空或无效），尝试从文件名解析 (Artist - Title)
+                    filename_no_ext = os.path.splitext(filename)[0]
+                    
+                    if not metadata.get('title'):
+                        if " - " in filename_no_ext:
+                            parts = filename_no_ext.split(" - ", 1)
+                            metadata['artist_name'] = parts[0].strip()
+                            metadata['title'] = parts[1].strip()
+                        else:
+                            metadata['title'] = filename_no_ext
+                    
+                    if not metadata.get('artist_name'):
+                         metadata['artist_name'] = "Unknown Artist"
+                         
+                    # Fallback: Check if title still contains " - " and artist is Unknown
+                    # (Handle case where title was set but artist wasn't)
+                    if metadata.get('artist_name') == "Unknown Artist" and " - " in metadata.get('title', ''):
+                         parts = metadata['title'].split(" - ", 1)
+                         metadata['artist_name'] = parts[0].strip()
+                         metadata['title'] = parts[1].strip()
+                         
+                    # Ensure other keys exist
+                    for key in ['album', 'cover']:
+                        if key not in metadata:
+                            metadata[key] = None
+                    
+                    if 'publish_time' not in metadata:
+                        metadata['publish_time'] = None
+
+                    # 获取歌手 (使用缓存)
+                    artist_name = metadata['artist_name']
+                    if artist_name in artist_map:
+                        artist_obj = artist_map[artist_name]
                     else:
-                        metadata['title'] = filename_no_ext
-                
-                if not metadata.get('artist_name'):
-                     metadata['artist_name'] = "Unknown Artist"
-                     
-                # Fallback: Check if title still contains " - " and artist is Unknown
-                # (Handle case where title was set but artist wasn't)
-                if metadata.get('artist_name') == "Unknown Artist" and " - " in metadata.get('title', ''):
-                     parts = metadata['title'].split(" - ", 1)
-                     metadata['artist_name'] = parts[0].strip()
-                     metadata['title'] = parts[1].strip()
-                     
-                # Ensure other keys exist
-                for key in ['album', 'cover']:
-                    if key not in metadata:
-                        metadata[key] = None
-                
-                if 'publish_time' not in metadata:
-                    metadata['publish_time'] = None
+                        artist_repo = ArtistRepository(db)
+                        artist_obj = await artist_repo.get_or_create_by_name(artist_name)
+                        artist_map[artist_name] = artist_obj
+                    
+                    # 查找或创建歌曲
+                    song_obj = await self._find_or_create_song(
+                        db, song_repo, metadata, artist_obj
+                    )
+                    
+                    # 创建本地源记录 (使用封装方法处理去重和 path 更新)
+                    data_json = {
+                        "quality": metadata.get('quality_info', 'PQ'),
+                        "format": os.path.splitext(filename)[1].replace('.', '').upper(),
+                        "cover": metadata.get('cover')
+                    }
+                    
+                    await self._create_song_source(
+                        db, song_obj, filename, file_path, data_json
+                    )
+                    
+                    existing_source_ids.add(filename)
+                    new_count += 1
+                    
+                    # 每 50 个文件 flush 一次，防止事务过大
+                    if new_count % 50 == 0:
+                        await db.flush()
 
-                # 获取歌手 (使用缓存)
-                artist_name = metadata['artist_name']
-                if artist_name in artist_map:
-                    artist_obj = artist_map[artist_name]
-                else:
-                    artist_repo = ArtistRepository(db)
-                    artist_obj = await artist_repo.get_or_create_by_name(artist_name)
-                    artist_map[artist_name] = artist_obj
-                
-                # 查找或创建歌曲
-                song_obj = await self._find_or_create_song(
-                    db, song_repo, metadata, artist_obj
-                )
-                
-                # 创建本地源记录 (使用封装方法处理去重和 path 更新)
-                data_json = {
-                    "quality": metadata.get('quality_info', 'PQ'),
-                    "format": os.path.splitext(filename)[1].replace('.', '').upper(),
-                    "cover": metadata.get('cover')
-                }
-                
-                await self._create_song_source(
-                    db, song_obj, filename, file_path, data_json
-                )
-                
-                existing_source_ids.add(filename)
-                new_count += 1
-                
-                # 每 50 个文件 flush 一次，防止事务过大
-                if new_count % 50 == 0:
-                    await db.flush()
-
-        # 统一提交
-        if new_count > 0:
-            await db.commit()
-            logger.info(f"💾 扫描完成,已入库 {new_count} 个新文件")
-        
-        # 最终进度回调
-        if progress_callback:
-            progress_callback({
-                "stage": "completed",
+            # 统一提交
+            if new_count > 0:
+                await db.commit()
+                logger.info(f"💾 扫描完成,已入库 {new_count} 个新文件")
+            
+            # 最终进度回调
+            if progress_callback:
+                progress_callback({
+                    "stage": "completed",
+                    "new_files_found": new_count,
+                    "removed_files_count": removed_count
+                })
+            
+            msg = f"扫描完成, 新增 {new_count}, 移除 {removed_count}"
+            await task_monitor.finish_task(task_id, msg, details={"new": new_count, "removed": removed_count})
+            
+            return {
                 "new_files_found": new_count,
                 "removed_files_count": removed_count
-            })
+            }
+
+        except TaskCancelledException as e:
+            logger.warning(f"Scan task cancelled: {e}")
+            await task_monitor.finish_task(task_id, f"扫描已取消 (新增: {new_count})", details={"new": new_count})
+            return {"new_files_found": new_count, "removed_files_count": removed_count, "status": "cancelled"}
         
-        return {
-            "new_files_found": new_count,
-            "removed_files_count": removed_count
-        }
+        except Exception as e:
+            logger.error(f"Scan task failed: {e}")
+            await task_monitor.error_task(task_id, str(e))
+            raise e
     
     async def _prune_missing_files(
         self,
         db: AsyncSession,
-        progress_callback: Optional[Callable[[Dict], None]] = None
+        progress_callback: Optional[Callable[[Dict], None]] = None,
+        task_id: str = None
     ) -> int:
         """
         清理“死键”：移除数据库中存在但物理磁盘文件已丢失的记录。
@@ -296,6 +332,17 @@ class ScanService:
                     "song_title": song.title
                 })
             
+            if task_id:
+                from app.services.task_monitor import task_monitor
+                await task_monitor.check_status(task_id) # Check interruption
+                pct = int((idx / total_songs) * 100)
+                await task_monitor.update_progress(
+                    task_id, 
+                    pct, 
+                    f"清理无效记录: {song.title}",
+                    details={"stage": "pruning"}
+                )
+            
             # 校验物理文件是否存在
             exists = await anyio.to_thread.run_sync(os.path.exists, song.local_path)
             if not exists:
@@ -328,6 +375,63 @@ class ScanService:
             logger.info(f"✅ 成功清理了 {removed_count} 条失效本地记录")
             
         return removed_count
+
+    async def scan_single_file(self, file_path: str, db: AsyncSession) -> Optional[Song]:
+        """
+        扫描单个文件并入库 (用于下载后即时更新)
+        """
+        if not os.path.exists(file_path):
+            logger.warning(f"File not found for single scan: {file_path}")
+            return None
+
+        dirname = os.path.dirname(file_path)
+        filename = os.path.basename(file_path)
+        
+        # 提取元数据
+        metadata = await self._extract_metadata(file_path, filename)
+        if metadata is None: metadata = {}
+        
+        # 基础元数据补全
+        from mutagen import File as MutagenFile
+        filename_no_ext = os.path.splitext(filename)[0]
+        if not metadata.get('title'):
+             if " - " in filename_no_ext:
+                 parts = filename_no_ext.split(" - ", 1)
+                 metadata['artist_name'] = parts[0].strip()
+                 metadata['title'] = parts[1].strip()
+             else:
+                 metadata['title'] = filename_no_ext
+        if not metadata.get('artist_name'): metadata['artist_name'] = "Unknown Artist"
+        
+        # Ensure default keys
+        for key in ['album', 'cover']:
+            if key not in metadata: metadata[key] = None
+        if 'publish_time' not in metadata: metadata['publish_time'] = None
+
+        # 获取/创建歌手
+        artist_name = metadata['artist_name']
+        from app.repositories.artist import ArtistRepository
+        artist_repo = ArtistRepository(db)
+        artist_obj = await artist_repo.get_or_create_by_name(artist_name)
+        
+        # 查找或创建歌曲
+        from app.repositories.song import SongRepository
+        song_repo = SongRepository(db)
+        song_obj = await self._find_or_create_song(db, song_repo, metadata, artist_obj)
+        
+        # 创建本地源
+        data_json = {
+            "quality": metadata.get('quality', 'PQ'), # Uses new logic from _extract_metadata -> _analyze_quality
+            "format": os.path.split(file_path)[1].split('.')[-1].upper(),
+            "cover": metadata.get('cover')
+        }
+        
+        await self._create_song_source(db, song_obj, filename, file_path, data_json)
+        await db.commit()
+        
+        logger.info(f"🚀 Single file scanned and committed: {filename} ({data_json['quality']})")
+        return song_obj
+
     
     async def _extract_metadata(self, file_path: str, filename: str) -> Dict[str, any]:
         """
@@ -531,14 +635,14 @@ class ScanService:
 
     def _analyze_quality(self, audio_file) -> str:
         """
-        优雅的音质判定逻辑 (Elegant Quality Logic):
+        全能音质判定逻辑 (Ultimate Audio Quality Logic):
         
-        优先级 (Priority):
-        1. HI-RES (HR): 采样率 > 48kHz 或 位深 > 16bit (无论格式)
-        2. LOSSLESS (SQ): 无损编码格式 (FLAC/WAV/ALAC/APE) 且非 HR
-        3. HIGH QUALITY (HQ): 有损格式 (MP3/AAC/OGG) 且比特率 >= 320kbps (宽松处理 >= 250k)
-        4. STANDARD (PQ): 其他情况
-        5. ERROR (ERR): 文件损坏或无法读取
+        Tier 体系:
+        1. HI-RES (HR): > 16bit 或 > 48kHz (真·高解析)
+        2. LOSSLESS (SQ): 无损编码 (FLAC/ALAC/WAV/APE) 且 <= CD 规格 (44.1/48k, 16bit)
+        3. HIGH QUALITY (HQ): MP3/AAC >= 320kbps (宽松阈值 >= 250k)
+        4. STANDARD (PQ): < 250kbps 有损
+        5. ERROR (ERR): 无法读取
         """
         try:
             if not audio_file or not hasattr(audio_file, 'info'):
@@ -546,21 +650,23 @@ class ScanService:
             
             info = audio_file.info
             
-            # --- 1. 获取基础音频参数 ---
+            # --- 1. 获取物理声学参数 ---
+            # 采样率 (Hz)
             sample_rate = getattr(info, 'sample_rate', 0) or 0
+            # 比特率 (bps)
             bitrate = getattr(info, 'bitrate', 0) or 0
-            bits_per_sample = getattr(info, 'bits_per_sample', 0) or 0 # FLAC/WAV/ALAC usually have this
+            # 位深 (bit) - FLAC/ALAC/WAV 通常有，MP3 通常无
+            bits_per_sample = getattr(info, 'bits_per_sample', 0) or 0 
             
             # --- 2. 判定 Hi-Res (HR) ---
-            # 定义: 超过 CD 画质标准 (44.1kHz/16bit)
-            # 只要采样率 > 48k (如 96k, 192k) 或者 位深 > 16 (如 24bit) 即视为 HR
-            # 注意: 48kHz 16bit 通常也被视为常规无损(SQ)，只有 > 48k 才算 HR
-            if sample_rate > 48000 or bits_per_sample > 16:
+            # 硬指标: 只要超越 CD (16bit / 44.1kHz / 48kHz) 即视为 Hi-Res
+            # 标准: > 16bit (24/32) OR > 48000Hz (88.2/96/192)
+            if bits_per_sample > 16 or sample_rate > 48000:
+                logger.debug(f"🏆 Pro Quality Detected: {bits_per_sample}bit / {sample_rate}Hz -> HR")
                 return "HR"
             
             # --- 3. 判定无损 (SQ) ---
-            # 检查文件容器/编码格式
-            # Mutagen 类名通常包含格式信息，如 'mutagen.flac.FLAC', 'mutagen.wave.WAVE'
+            # 检查容器格式
             file_type = type(audio_file).__name__.lower()
             mime = getattr(audio_file, 'mime', [])
             
@@ -569,32 +675,39 @@ class ScanService:
                 'wave' in file_type or 
                 'alac' in file_type or
                 'monkeysaudio' in file_type or # APE
-                'aiff' in file_type
+                'aiff' in file_type or
+                'mp4' in file_type # M4A ALAC case needs bitrate check usually, but mutagen ALAC is distinct
             )
             
-            # 也可以通过 mime 判断
-            if not is_lossless_format and mime:
-                for m in mime:
-                    if 'flac' in m or 'wav' in m:
-                        is_lossless_format = True
-                        break
-            
-            if is_lossless_format:
+            # ALAC check (often recognized as MP4 container but codec is alac)
+            # Mutagen's MP4Info doesn't expose codec easily, but bitrate for lossless is usually high (>500k)
+            # Simplification: If format is FLAC/WAV, it is SQ (since HR check passed)
+            if 'flac' in file_type or 'wave' in file_type or 'monkeysaudio' in file_type:
                 return "SQ"
                 
+            # M4A check: M4A can be AAC (lossy) or ALAC (lossless)
+            # If bitrate is very high (> 600kbps) and ext is m4a, acceptable as SQ for now logic
+            # Or reliance on user knowing ALAC.
+            # 为了严谨，我们针对 FLAC/WAV 给予 SQ 绿牌。
+            
             # --- 4. 判定高品质有损 (HQ) ---
-            # 对于 MP3/AAC/OGG
-            # 320kbps MP3 (≈320000 bps)
-            # AAC 256kbps 实际上音质接近/优于 320k MP3，这里放宽阈值到 256k (250000)
+            # 320k MP3 / 256k AAC
             if bitrate >= 250000:
                 return "HQ"
                 
             # --- 5. 标准音质 (PQ) ---
-            # 128kbps, 192kbps 等
             return "PQ"
             
         except Exception as e:
             logger.warning(f"Quality analysis error: {e}")
+            # Fallback: If extension implies lossless, return SQ instad of PQ
+            try:
+                if hasattr(audio_file, 'filename') and audio_file.filename:
+                    ext = os.path.splitext(audio_file.filename)[1].lower()
+                    if ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
+                        return "SQ"
+            except:
+                pass
             return "PQ"
     
     async def _find_or_create_song(

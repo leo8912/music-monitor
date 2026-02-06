@@ -23,6 +23,7 @@ export interface Song {
     found_at?: string
     available_sources?: string[]
     quality?: string // SQ, HQ, Hi-Res
+    quality_details?: string
     local_files?: any[]
 }
 
@@ -60,7 +61,7 @@ export interface DownloadRequest {
 
 // 下载结果
 export interface DownloadResult {
-    localPath: string
+    local_path: string
     quality: number
-    hasLyric: boolean
+    has_lyric: boolean
 }
