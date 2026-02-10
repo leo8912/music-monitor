@@ -4,11 +4,14 @@ MetadataHealer - 元数据治愈者
 
 前身: EnrichmentService
 功能升级:
-1. 永久治愈: 对不完整的歌曲持续重试 (带冷却)
+1. 永久治愈: 对不完整的歌曲持续重试 (无冷却期限制)
 2. 强力搜索: 支持文件名搜索降级
 3. 统一写入: 接管所有元数据写入 (TagService)
 
-Author: google
+更新日志:
+- 2026-02-10: 移除元数据补全冷却期限制，网易云和QQ音乐接口无需冷却
+
+Author: ali
 Created: 2026-02-05
 """
 import logging
@@ -140,9 +143,8 @@ class MetadataHealer:
                         
                     # 1. 检查是否需要治愈 (不完整)
                     if not self._is_complete(song):
-                        # 2. 检查冷却期
-                        if not force and self._in_cooldown(song):
-                            continue
+                        # 2. 元数据补全无需冷却期检查
+                        # 网易云和QQ音乐接口没有频率限制，可随时调用
                         
                         # 3. 执行治愈
                         try:
@@ -178,25 +180,61 @@ class MetadataHealer:
         """
         async with AsyncSessionLocal() as db:
             song = await db.get(Song, song_id, options=[selectinload(Song.artist), selectinload(Song.sources)])
-            if not song: return False
+            if not song: 
+                logger.error(f"❌ 无法找到歌曲 ID: {song_id}")
+                return False
 
             logger.info(f"🩹 正在治愈: {song.title} (ID: {song.id})")
+            
+            # 记录详细的处理信息
+            processing_info = {
+                'song_id': song_id,
+                'title': song.title,
+                'artist': song.artist.name if song.artist else "未知",
+                'local_path': song.local_path,
+                'current_state': {
+                    'has_lyrics': any(self._parse_data_json(src.data_json).get("lyrics") for src in song.sources),
+                    'has_cover': bool(song.cover and song.cover.startswith("/uploads/")),
+                    'has_album': bool(song.album),
+                    'has_publish_time': bool(song.publish_time)
+                }
+            }
+            
+            logger.info(f"📋 处理前状态: {processing_info}")
 
             # --- 阶段 1: 搜索元数据 ---
             # 策略 A: 标准搜索 (Title Artist)
             # 用户要求不要调用 gdstudio 返回的元数据，我们的 metadata_service 已经默认使用网易云/QQ
-            best_meta = await self.metadata_service.get_best_match_metadata(song.title, song.artist.name if song.artist else "")
-            
-            # 策略 B: 文件名降级搜索 (如果是自动导入的乱码歌曲)
-            if not best_meta.success:
-                filename_clean = self._clean_filename(song.local_path)
-                if filename_clean and filename_clean != song.title:
-                    logger.info(f"⚠️ 标准搜索失败, 尝试文件名降级搜索: '{filename_clean}'")
-                    best_meta = await self.metadata_service.get_best_match_metadata(filename_clean, "")
-            
-            if not best_meta.success:
-                logger.warning(f"❌ 无法找到元数据: {song.title}")
-                # 更新重试时间，进入冷却
+            try:
+                best_meta = await self.metadata_service.get_best_match_metadata(song.title, song.artist.name if song.artist else "")
+                
+                if not best_meta.success:
+                    # 记录失败详情
+                    logger.warning(f"⚠️ 元数据搜索失败: {song.title}")
+                    logger.debug(f"🔍 搜索详情 - 标题: '{song.title}', 艺人: '{song.artist.name if song.artist else ''}'")
+                    logger.debug(f"📊 搜索结果 - 歌词: {bool(best_meta.lyrics)}, 封面: {bool(best_meta.cover_url)}, 专辑: {best_meta.album}")
+                    
+                    # 策略 B: 文件名降级搜索 (如果是自动导入的乱码歌曲)
+                    if song.local_path:
+                        filename_clean = self._clean_filename(song.local_path)
+                        if filename_clean and filename_clean != song.title:
+                            logger.info(f"🔄 标准搜索失败, 尝试文件名降级搜索: '{filename_clean}'")
+                            best_meta = await self.metadata_service.get_best_match_metadata(filename_clean, "")
+                            
+                            if not best_meta.success:
+                                logger.warning(f"❌ 文件名搜索也失败: {filename_clean}")
+                                logger.debug(f"📊 文件名搜索结果 - 歌词: {bool(best_meta.lyrics)}, 封面: {bool(best_meta.cover_url)}, 专辑: {best_meta.album}")
+                
+                if not best_meta.success:
+                    logger.error(f"❌ 无法找到元数据: {song.title}")
+                    # 更新重试时间
+                    song.last_enrich_at = datetime.now()
+                    await db.commit()
+                    return False
+                    
+            except Exception as search_error:
+                logger.error(f"💥 元数据搜索过程中发生异常: {song.title} - {str(search_error)}")
+                logger.exception(search_error)  # 记录完整堆栈
                 song.last_enrich_at = datetime.now()
                 await db.commit()
                 return False
@@ -448,12 +486,13 @@ class MetadataHealer:
         
         return is_complete
 
-    def _in_cooldown(self, song: Song) -> bool:
-        """检查是否在冷却期 (24h)"""
-        if not song.last_enrich_at:
-            return False
-        delta = datetime.now() - song.last_enrich_at
-        return delta.total_seconds() < 86400 # 24 hours
+    def _should_skip_enrichment(self, song: Song) -> bool:
+        """
+        检查是否应该跳过元数据补全
+        元数据获取使用网易云和QQ音乐接口，无需冷却期限制
+        """
+        # 元数据补全操作资源消耗很小，可随时执行
+        return False
 
     def _clean_filename(self, path: str) -> Optional[str]:
         """清洗文件名用于搜索"""

@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # 000-User Global Directives
 
 ## 1. 语言规范 (Language)

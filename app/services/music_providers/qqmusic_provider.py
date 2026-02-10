@@ -3,7 +3,10 @@ QQ音乐提供者
 
 使用 qqmusic-api 库(混合API: 搜索和获取歌曲是异步,详情和歌词是同步)
 
-Author: google  
+更新日志:
+- 2026-02-10: 增加重试次数至5次
+
+Author: ali  
 Created: 2026-01-23
 """
 
@@ -29,7 +32,7 @@ class QQMusicProvider(MusicProvider):
     def source_name(self) -> str:
         return "qqmusic"
     
-    @async_retry(max_retries=3)
+    @async_retry(max_retries=5)
     async def search_artist(self, keyword: str, limit: int = 10) -> List[ArtistInfo]:
         """
         搜索歌手
@@ -118,7 +121,7 @@ class QQMusicProvider(MusicProvider):
             logger.error(f"❌ QQMusic 搜索歌手失败: {e}")
             return []
             
-    @async_retry(max_retries=3)
+    @async_retry(max_retries=5)
     async def search_song(self, keyword: str, limit: int = 10) -> List[SongInfo]:
         """搜索歌曲 (这也是无需cookie获取元数据的关键方法)"""
         from qqmusic_api import search
@@ -161,7 +164,7 @@ class QQMusicProvider(MusicProvider):
         logger.info(f"🐧 QQMusic 搜索歌曲: 找到 {len(results)} 条结果 - '{keyword}'")
         return results
     
-    @async_retry(max_retries=3)
+    @async_retry(max_retries=5)
     async def get_artist_songs(
         self, 
         artist_id: str, 

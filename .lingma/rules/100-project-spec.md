@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # 100-Project Specification & Rules
 
 ## 项目介绍

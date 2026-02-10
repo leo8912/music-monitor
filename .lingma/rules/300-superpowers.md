@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # 300-Superpowers & Workflows
 
 ## 核心准则 (Prime Directives)

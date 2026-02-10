@@ -4,7 +4,10 @@
 使用 pyncm 库(同步API)
 通过 asyncio.run_in_executor 包装成异步接口
 
-Author: google
+更新日志:
+- 2026-02-10: 增加重试次数至5次
+
+Author: ali
 Created: 2026-01-23
 """
 
@@ -29,7 +32,7 @@ class NeteaseProvider(MusicProvider):
     def source_name(self) -> str:
         return "netease"
     
-    @async_retry(max_retries=3)
+    @async_retry(max_retries=5)
     async def search_artist(self, keyword: str, limit: int = 10) -> List[ArtistInfo]:
         """
         搜索歌手
@@ -71,7 +74,7 @@ class NeteaseProvider(MusicProvider):
             logger.error(f"❌ 网易云搜索歌手失败: {e}")
             return []
             
-    @async_retry(max_retries=3)
+    @async_retry(max_retries=5)
     async def search_song(self, keyword: str, limit: int = 10) -> List[SongInfo]:
         """搜索歌曲"""
         try:
@@ -104,7 +107,7 @@ class NeteaseProvider(MusicProvider):
             logger.error(f"❌ 网易云搜索歌曲失败: {e}")
             return []
     
-    @async_retry(max_retries=3)
+    @async_retry(max_retries=5)
     async def get_artist_songs(
         self, 
         artist_id: str, 

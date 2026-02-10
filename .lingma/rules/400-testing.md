@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # 400-Testing Standards
 
 ## 1. 测试目录结构规范

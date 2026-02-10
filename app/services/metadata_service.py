@@ -9,13 +9,17 @@
 
 注意: GDStudio API 仅用于下载，不用于元数据获取。
 
-Author: google
+更新日志:
+- 2026-02-10: 增加元数据获取重试次数至5次
+
+Author: ali
 Created: 2026-01-23
 """
 import asyncio
 import os
 import aiohttp
 import logging
+import re
 from typing import Optional
 from dataclasses import dataclass
 from pathlib import Path
@@ -58,6 +62,52 @@ class MetadataService:
     def __init__(self):
         self._netease_provider = None
         self._qqmusic_provider = None
+    
+    def _preprocess_search_keywords(self, title: str, artist: str) -> tuple[str, str]:
+        """
+        智能预处理搜索关键词
+        
+        清理标点符号和特殊字符，提取核心关键词
+        """
+        if not title and not artist:
+            return "", ""
+        
+        # 清理文本的辅助函数
+        def clean_text(text: str) -> str:
+            if not text:
+                return ""
+            
+            # 移除常见的标点符号，但保留中文标点
+            # 保留中英文空格、中文字母数字
+            cleaned = re.sub(r'[^\w\s\u4e00-\u9fff\-]', ' ', text)
+            # 规范化空白字符
+            cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+            return cleaned
+        
+        # 处理歌曲标题
+        clean_title = clean_text(title)
+        
+        # 处理艺人名称
+        clean_artist = clean_text(artist)
+        
+        # 特殊处理：提取核心关键词
+        def extract_keywords(text: str) -> str:
+            if not text:
+                return ""
+            
+            # 分割并过滤停用词
+            words = text.split()
+            stop_words = {'-', '–', '—', '|', '&', 'and', 'feat', 'ft', 'featuring', 'live', 'version', 'mix'}
+            filtered_words = [word for word in words if word.lower() not in stop_words]
+            
+            return ' '.join(filtered_words[:3])  # 最多取前3个关键词
+        
+        optimized_title = extract_keywords(clean_title)
+        optimized_artist = extract_keywords(clean_artist)
+        
+        logger.debug(f"关键词预处理: '{title}'-'{artist}' → '{optimized_title}'-'{optimized_artist}'")
+        
+        return optimized_title, optimized_artist
     
     def _get_netease_provider(self):
         """获取网易云 provider（懒加载）"""
@@ -390,10 +440,12 @@ class MetadataService:
         聚合多源数据，返回最佳元数据
         
         策略：
-        1. 并发调用网易云和QQ音乐
-        2. 优先网易云的歌词（质量更好）
-        3. 优先QQ音乐的封面/专辑信息（更全）
-        4. 计算封面大小用于后续画质对比
+        1. 预处理搜索关键词
+        2. 实施多轮渐进式搜索
+        3. 并发调用网易云和QQ音乐
+        4. 优先网易云的歌词（质量更好）
+        5. 优先QQ音乐的封面/专辑信息（更全）
+        6. 计算封面大小用于后续画质对比
         
         Args:
             title: 歌曲标题
@@ -407,6 +459,126 @@ class MetadataService:
         logger.info(f"🔍 聚合获取最佳元数据: {title} - {artist}")
         result = MetadataResult()
         
+        # 搜索策略优先级
+        search_strategies = [
+            {
+                'name': '精确匹配',
+                'func': self._exact_search,
+                'keywords': (title, artist),
+                'priority': 1
+            },
+            {
+                'name': '关键词优化',
+                'func': self._optimized_search,
+                'keywords': self._preprocess_search_keywords(title, artist),
+                'priority': 2
+            },
+            {
+                'name': '标题单独搜索',
+                'func': self._title_only_search,
+                'keywords': (title, ""),
+                'priority': 3
+            },
+            {
+                'name': '简化搜索',
+                'func': self._simplified_search,
+                'keywords': self._get_simplified_keywords(title, artist),
+                'priority': 4
+            }
+        ]
+        
+        logger.info(f"🎯 开始渐进式搜索，共{len(search_strategies)}个策略")
+        
+        for strategy in search_strategies:
+            try:
+                logger.info(f"🔄 尝试策略 {strategy['priority']}: {strategy['name']}")
+                
+                strategy_result = await strategy['func'](*strategy['keywords'])
+                
+                if strategy_result and strategy_result.success:
+                    logger.info(f"✅ 策略 {strategy['priority']} 成功: {title}")
+                    # 合并结果
+                    if strategy_result.lyrics and not result.lyrics:
+                        result.lyrics = strategy_result.lyrics
+                        result.source = strategy_result.source
+                        result.search_result = strategy_result.search_result
+                    if strategy_result.cover_url and not result.cover_url:
+                        result.cover_url = strategy_result.cover_url
+                    if strategy_result.album and not result.album:
+                        result.album = strategy_result.album
+                    if strategy_result.publish_time and not result.publish_time:
+                        result.publish_time = strategy_result.publish_time
+                    
+                    # 如果核心元数据都有了，可以提前退出
+                    if result.lyrics and result.cover_url and result.album:
+                        break
+                else:
+                    logger.info(f"⏭️ 策略 {strategy['priority']} 未找到合适结果")
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ 策略 {strategy['priority']} 异常: {e}")
+                continue
+        
+        # 获取封面大小（用于画质对比）
+        if result.cover_url:
+            try:
+                cover_data = await self.fetch_cover_data(result.cover_url)
+                if cover_data:
+                    result.cover_data = cover_data
+                    result.cover_size_bytes = len(cover_data)
+            except Exception as e:
+                logger.warning(f"获取封面大小失败: {e}")
+        
+        result.success = bool(result.lyrics or result.cover_url or result.album)
+        logger.info(f"✅ 聚合元数据完成: lyrics={bool(result.lyrics)}, cover={bool(result.cover_url)}, album={result.album}")
+        
+        return result
+    
+    async def _exact_search(self, title: str, artist: str) -> Optional[MetadataResult]:
+        """精确搜索"""
+        if not title.strip():
+            return None
+        keyword = f"{title} {artist}".strip()
+        return await self._basic_search(keyword)
+    
+    async def _optimized_search(self, title: str, artist: str) -> Optional[MetadataResult]:
+        """优化关键词搜索"""
+        if not title.strip():
+            return None
+        keyword = f"{title} {artist}".strip()
+        return await self._basic_search(keyword)
+    
+    async def _title_only_search(self, title: str, _) -> Optional[MetadataResult]:
+        """仅使用标题搜索"""
+        if not title.strip():
+            return None
+        return await self._basic_search(title)
+    
+    async def _simplified_search(self, title: str, artist: str) -> Optional[MetadataResult]:
+        """简化搜索"""
+        # 提取最核心的关键词
+        main_title = title.split()[0] if title.split() else ""
+        main_artist = artist.split()[0] if artist.split() else ""
+        
+        if main_title:
+            keyword = f"{main_title} {main_artist}".strip()
+            return await self._basic_search(keyword)
+        return None
+    
+    def _get_simplified_keywords(self, title: str, artist: str) -> tuple[str, str]:
+        """获取简化的搜索关键词"""
+        # 只取第一个词
+        simple_title = title.split()[0] if title.split() else title
+        simple_artist = artist.split()[0] if artist.split() else artist
+        return simple_title, simple_artist
+    
+    async def _basic_search(self, keyword: str) -> Optional[MetadataResult]:
+        """基础搜索实现"""
+        if not keyword:
+            return None
+            
+        logger.debug(f"执行基础搜索: '{keyword}'")
+        
         providers = [
             ("netease", self._get_netease_provider()),
             ("qqmusic", self._get_qqmusic_provider())
@@ -417,7 +589,6 @@ class MetadataService:
             if not provider:
                 return source_name, None
             try:
-                keyword = f"{title} {artist}"
                 search_results = await provider.search_song(keyword, limit=3)
                 if search_results:
                     best_match = search_results[0]
@@ -440,7 +611,7 @@ class MetadataService:
                             "search_result": best_match
                         }
             except Exception as e:
-                logger.warning(f"从 {source_name} 获取元数据失败: {e}")
+                logger.debug(f"从 {source_name} 搜索失败: {e}")
             return source_name, None
         
         # 并发执行
@@ -449,7 +620,12 @@ class MetadataService:
         
         source_data = {name: data for name, data in results if data}
         
-        # 聚合策略
+        if not source_data:
+            return None
+            
+        # 构建结果
+        result = MetadataResult()
+        
         # 优先网易云歌词
         if "netease" in source_data and source_data["netease"].get("lyrics"):
             result.lyrics = source_data["netease"]["lyrics"]
@@ -482,17 +658,5 @@ class MetadataService:
             if not result.publish_time and ne_data.get("publish_time"):
                 result.publish_time = ne_data["publish_time"]
         
-        # 获取封面大小（用于画质对比）
-        if result.cover_url:
-            try:
-                cover_data = await self.fetch_cover_data(result.cover_url)
-                if cover_data:
-                    result.cover_data = cover_data
-                    result.cover_size_bytes = len(cover_data)
-            except Exception as e:
-                logger.warning(f"获取封面大小失败: {e}")
-        
         result.success = bool(result.lyrics or result.cover_url or result.album)
-        logger.info(f"✅ 聚合元数据完成: lyrics={bool(result.lyrics)}, cover={bool(result.cover_url)}, album={result.album}")
-        
         return result
