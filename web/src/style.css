@@ -11,6 +11,8 @@
   --sp-card: #181818;
   --sp-card-hover: #282828;
   --sp-highlight: #333333;
+  --glass-bg: rgba(24, 24, 24, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
 
   --text-primary: #FFFFFF;
   --text-secondary: #B3B3B3;
@@ -59,12 +61,22 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Legacy Effect Stripping */
-.glass,
-.glass-dark,
-.material-surface,
-.aurora-container {
-  display: none !important;
+/* Modern Surface Classes */
+.glass-surface {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--glass-border);
+}
+
+.card-touch {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-touch:hover {
+  background-color: var(--sp-card-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
 }
 
 /* Typography */
@@ -139,7 +151,8 @@ body {
   left: var(--sidebar-width);
   right: 8px;
   bottom: calc(var(--player-height) + 8px);
-  background: linear-gradient(to bottom, #1a1a1a 0%, #121212 100%); /* Softer gradient */
+  background: linear-gradient(to bottom, #1e1e1e 0%, #121212 100%);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-lg);
   overflow-y: auto;
   overflow-x: hidden;

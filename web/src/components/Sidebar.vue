@@ -30,7 +30,7 @@ const isActive = (path: string) => route.path === path
 </script>
 
 <template>
-  <aside class="sidebar apple-transition">
+  <aside class="sidebar glass-surface apple-transition">
     <div class="sidebar-header">
       <div class="app-logo">
         <div class="logo-inner"></div>
@@ -107,9 +107,9 @@ const isActive = (path: string) => route.path === path
   padding: 10px 16px; /* Slightly tighter vertical padding */
   border-radius: 4px;
   color: var(--text-secondary);
-  font-weight: 700; /* Bold sidebar text */
+  font-weight: 700;
   font-size: 14px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
@@ -119,7 +119,7 @@ const isActive = (path: string) => route.path === path
 
 .nav-item.active {
   color: #FFFFFF;
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .nav-item.active::before {

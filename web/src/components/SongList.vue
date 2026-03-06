@@ -355,7 +355,7 @@ const getPlatformLabel = (source: string) => {
           <!-- Title & Cover -->
           <div class="col-title" :style="{ paddingLeft: !showIndex ? '16px' : '0' }">
             <div class="title-with-cover">
-              <div class="cover-container" :class="{ 'discovery-cover': mode === 'discovery' }">
+              <div class="cover-container card-touch" :class="{ 'discovery-cover': mode === 'discovery' }">
                 <img :src="song.cover || '/default-cover.png'" class="song-cover" loading="lazy">
                 <div v-if="song.status === 'PENDING'" class="loading-overlay">
                     <n-spin size="small" stroke="var(--sp-green)" />

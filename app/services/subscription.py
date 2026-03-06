@@ -34,25 +34,28 @@ class SubscriptionService:
         获取所有关注的歌手。
         """
         from sqlalchemy import func
-        stmt = select(Artist).options(selectinload(Artist.sources)).where(Artist.is_monitored == True).order_by(Artist.id.asc())
+        stmt = (
+            select(Artist, func.count(Song.id).label('song_count'))
+            .options(selectinload(Artist.sources))
+            .outerjoin(Song, Song.artist_id == Artist.id)
+            .where(Artist.is_monitored == True)
+            .group_by(Artist.id)
+            .order_by(Artist.id.asc())
+        )
         result = await db.execute(stmt)
-        artists = result.scalars().all()
+        artists_with_counts = result.unique().all()
         
-        res = []
-        for a in artists:
-            # Get real song count from DB
-            count_stmt = select(func.count()).select_from(Song).where(Song.artist_id == a.id)
-            song_count = (await db.execute(count_stmt)).scalar() or 0
-            
-            source_list = [s.source for s in a.sources] if a.sources else []
-            res.append({
+        res = [
+            {
                 "name": a.name,
                 "id": str(a.id),
                 "source": "database",
-                "sources": source_list,
+                "sources": [s.source for s in a.sources] if a.sources else [],
                 "avatar": a.avatar,
-                "songCount": song_count
-            })
+                "songCount": song_count or 0
+            }
+            for a, song_count in artists_with_counts
+        ]
         return res
 
     @staticmethod
@@ -248,9 +251,9 @@ class SubscriptionService:
             except:
                 return datetime.min
 
-        for song_data in sorted(deduplicated_songs, key=get_dict_publish_date, reverse=True):
-            songs.append(song_data)
-            
+        songs = sorted(deduplicated_songs, key=get_dict_publish_date, reverse=True)
+        
+        for song_data in songs:
             # 收集专辑信息
             album_name = song_data.get("album")
             if album_name and album_name not in albums:

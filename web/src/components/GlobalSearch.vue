@@ -116,19 +116,10 @@ const addArtist = async (artist: any) => {
 
 const emit = defineEmits(['added'])
 
-// Click outside to close
-const handleClickOutside = (event: MouseEvent) => {
-    if (searchContainer.value && !searchContainer.value.contains(event.target as Node)) {
-        showDropdown.value = false
-    }
-}
+import { onClickOutside } from '@vueuse/core'
 
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside)
+onClickOutside(searchContainer, () => {
+    showDropdown.value = false
 })
 
 const handleKeydown = (e: KeyboardEvent) => {

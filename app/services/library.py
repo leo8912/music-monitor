@@ -176,6 +176,25 @@ class LibraryService:
         # 此处为了保持兼容性，直接调用 healer.heal_song
         return await self.metadata_healer.heal_song(song_id, force=True)
 
+    # ==================== 本地文件专属操作 ====================
+    
+    async def get_local_songs_paginated(
+        self,
+        db: AsyncSession,
+        offset: int,
+        fetch_limit: int,
+        sort_by: str,
+        order: str
+    ) -> tuple[list, int]:
+        """专门获取所有本地歌曲，委托给 SongManagementService"""
+        return await self.song_service.get_local_songs_paginated(
+            db, offset, fetch_limit, sort_by, order
+        )
+        
+    async def force_fix_quality(self, db: AsyncSession) -> tuple[int, list]:
+        """强制修复质量信息，委托给 SongManagementService"""
+        return await self.song_service.force_fix_quality(db)
+
     # ==================== 扫描服务 ====================
     
     async def scan_single_file(self, file_path: str, db: AsyncSession) -> Optional[any]:

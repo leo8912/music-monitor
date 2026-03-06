@@ -111,9 +111,11 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
         filename = f"{uuid.uuid4().hex}{ext}"
         filepath = os.path.join(upload_dir, filename)
         
-        # Save file
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        # Save file asynchronously
+        import aiofiles
+        async with aiofiles.open(filepath, "wb") as buffer:
+            while chunk := await file.read(1024 * 1024):  # 1MB chunks
+                await buffer.write(chunk)
             
         # Return URL
         # Assumption: /uploads is mounted in main.py

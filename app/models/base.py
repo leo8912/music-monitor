@@ -8,16 +8,7 @@ Author: music-monitor development team
 """
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-import os
+from sqlalchemy.orm import declarative_base
 
-# 使用异步 SQLite 驱动
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///music_monitor.db")
-
-engine = create_async_engine(DATABASE_URL, echo=False)
-AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
 
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session

@@ -137,11 +137,8 @@ async def get_local_songs(
     无视是否关注歌手,按入库时间倒序排列
     """
     try:
-        from app.models.song import Song, SongSource
-        from sqlalchemy.ext.asyncio import AsyncSession
-        from sqlalchemy import select, func
-        from sqlalchemy.orm import selectinload
-
+        from app.services.library import LibraryService
+        
         # 处理分页参数
         if page is not None and page_size is not None:
             current_page = page
@@ -157,169 +154,11 @@ async def get_local_songs(
             current_page_size = 20
             offset = 0
             fetch_limit = 20
-        
-        stmt = select(Song).options(
-            selectinload(Song.artist),
-            selectinload(Song.sources)
+            
+        service = LibraryService()
+        items, total = await service.get_local_songs_paginated(
+            db, offset, fetch_limit, sort_by, order
         )
-        stmt = stmt.where(Song.local_path.isnot(None))
-        
-        # 排序处理
-        order_func = desc if order.lower() == "desc" else asc
-        if sort_by == "created_at":
-            stmt = stmt.order_by(order_func(Song.created_at))
-        elif sort_by == "publish_time":
-            stmt = stmt.order_by(order_func(Song.publish_time).nullslast())
-        elif sort_by == "artist":
-            from app.models.artist import Artist
-            stmt = stmt.join(Artist).order_by(order_func(Artist.name))
-        elif sort_by == "title":
-            stmt = stmt.order_by(order_func(Song.title))
-        elif sort_by == "album":
-            stmt = stmt.order_by(order_func(Song.album))
-        else:
-             stmt = stmt.order_by(Song.created_at.desc())
-        
-        # 分页
-        count_stmt = select(func.count()).select_from(stmt.subquery())
-        total = (await db.execute(count_stmt)).scalar() or 0
-        
-        stmt = stmt.offset(offset).limit(fetch_limit)
-        
-        result = await db.execute(stmt)
-        songs = result.scalars().all()
-        
-        # 序列化
-        items = []
-        for s in songs:
-            artist_name = s.artist.name if s.artist else "Unknown"
-            status = s.status if s.status else "DOWNLOADED"
-            
-            # Extract quality and cover from local sources
-            quality = None
-            local_cover = None
-            
-            # Define quality priority
-            # q_priority = {"HR": 5, "SQ": 4, "HQ": 3, "PQ": 2, "ERR": 1, None: 0}
-            q_priority = {"HR": 5, "SQ": 4, "HQ": 3, "PQ": 2, "ERR": 1, None: 0}
-            local_files_list = []
-            
-            for src in s.sources:
-                if src.source == 'local':
-                    
-                    # [DIAGNOSTIC] Check File Path and Raw DB
-                    if "一生所爱" in s.title:
-                        import os
-                        from sqlalchemy import text
-                        abs_db_path = os.path.abspath('config/music_monitor.db')
-                        logger.info(f"[DIAG_PATH] Expected DB Path: {abs_db_path} | Exists: {os.path.exists(abs_db_path)}")
-                        
-                        # Raw SQL Check
-                        try:
-                            raw_result = await db.execute(text(f"SELECT data_json FROM song_sources WHERE id={src.id}"))
-                            raw_row = raw_result.scalar()
-                            logger.info(f"[DIAG_RAW] Source {src.id} Raw JSON: {raw_row}")
-                        except Exception as e:
-                            logger.error(f"[DIAG_ERROR] {e}")
-
-                    data = src.data_json or {}
-                    start_q = quality or 'PQ'
-                    new_q = data.get('quality')
-                    
-                    # [DEBUG] Trace "一生所爱"
-                    if "一生所爱" in s.title and src.source == 'local':
-                        logger.info(f"[DEBUG_QUALITY] Song: {s.title} | SourceID: {src.id} | DataJSON: {data} | NewQ: {new_q} | CurrentMax: {quality}")
-
-                    # Upgrade quality if better
-                    if q_priority.get(new_q, 0) > q_priority.get(quality, 0):
-                        quality = new_q
-                        
-                    # Check for local cover
-                    # 优先使用 uploads 开头的本地封面
-                    src_cover = getattr(src, 'cover', None) or data.get('cover')
-                    if src_cover and str(src_cover).startswith('/uploads/'):
-                        local_cover = src_cover
-                        
-                    # Collect file details
-                    local_files_list.append({
-                        "id": src.id,
-                        "source_id": src.source_id,
-                        "path": src.url,
-                        "quality": new_q or 'PQ',
-                        "format": data.get('format', 'UNK')
-                    })
-            
-            # View object construction
-            final_cover = local_cover if local_cover else s.cover
-            
-            # Find best source data for details
-            q_details = None
-            if quality:
-                 # Find the source that contributed this quality
-                 for src in s.sources:
-                     if src.source == 'local':
-                         d = src.data_json or {}
-                         if d.get('quality') == quality:
-                             # Construct detail string: "FLAC | SQ" or "24bit/96kHz | HR"
-                             fmt = d.get('format', 'UNK')
-                             q_val = quality
-                             
-                             # [Fix] Display-Layer Override for "PQ" on Lossless Files
-                             if q_val == 'PQ' and s.local_path:
-                                 import os
-                                 path_ext = os.path.splitext(s.local_path)[1].lower()
-                                 if path_ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
-                                     q_val = 'SQ' # Default to SQ first
-                                     
-                                     # Try Real-time HR Detection (Fast read for paginated items)
-                                     try:
-                                         from mutagen import File as MutagenFile
-                                         if os.path.exists(s.local_path):
-                                             audio = MutagenFile(s.local_path)
-                                             if audio and audio.info:
-                                                 rate = getattr(audio.info, 'sample_rate', 0)
-                                                 bits = getattr(audio.info, 'bits_per_sample', 0)
-                                                 if rate > 48000 or bits > 16:
-                                                     q_val = 'HR'
-                                     except:
-                                         pass
-                                     
-                                     quality = q_val # Update main quality variable too
-                                     fmt = path_ext.replace('.', '').upper()
-                             
-                             q_details = f"{fmt} | {q_val}"
-                             if d.get('quality_details'):
-                                 q_details = d.get('quality_details')
-                                 if q_val != d.get('quality'): # If we overrode it
-                                      q_details = f"{fmt} | {q_val}"
-                             break
-
-            items.append({
-                "id": s.id,
-                "title": s.title,
-                "artist": artist_name,
-                "album": s.album,
-                "cover_url": final_cover, # Fixed key name to match schema? Schema says cover_url, code had cover? schema says cover_url.
-                # Wait, schema def at line 54 is cover_url. `items` dict keys must match schema if using Pydantic? 
-                # Let's check typical usage. Code below says items.append({...}) and then returns PaginatedResponse(items=items).
-                # If items are unchecked, maybe it passes through. But let's check key names.
-                # Schema: cover_url. Code: "cover": final_cover.
-                # If existing code has "cover", does it map? 
-                # Let's keep existing keys but ADD quality_details.
-                "cover": final_cover, 
-                "cover": final_cover, 
-                "local_audio_path": s.local_path,
-                "local_path": s.local_path, # REQUIRED by frontend player.ts
-                "is_favorite": s.is_favorite,
-                "created_at": s.created_at,
-                "publish_time": s.publish_time,
-                "quality": quality,
-                "quality_details": q_details, # NEW FIELD
-                "local_files": local_files_list,
-                "source": "local",
-                "source_id": s.local_path,
-            })
-
 
         return PaginatedResponse.create(
             items=items,
@@ -592,7 +431,8 @@ async def delete_source(
         deleted_file = False
         if file_path_to_delete and os.path.exists(file_path_to_delete):
             try:
-                os.remove(file_path_to_delete)
+                import anyio
+                await anyio.to_thread.run_sync(os.remove, file_path_to_delete)
                 deleted_file = True
                 logger.info(f"🗑️ Deleted physical file: {file_path_to_delete}")
             except Exception as e:
@@ -619,50 +459,11 @@ async def fix_quality_internal(db: AsyncSession = Depends(get_async_session)):
     Internal Endpoint: Force fix all local FLAC/WAV quality to SQ
     """
     try:
-        from app.models.song import SongSource
-        import json
-        
-        # 1. Fetch all local sources
-        stmt = select(SongSource).where(SongSource.source == 'local')
-        result = await db.execute(stmt)
-        sources = result.scalars().all()
-        
-        updated = 0
-        logs = []
-        
-        for src in sources:
-            if not src.url: continue
-            
-            # Simple Extension Check
-            target_q = None
-            # Need to re-import os if not available in this scope, but it is available in module
-            import os
-            ext = os.path.splitext(src.url)[1].lower()
-            
-            if ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
-                target_q = 'SQ'
-            
-            if target_q:
-                data = src.data_json or {}
-                # Convert immutable dict to mutable if needed, though usually SQLAlchemy returns mutable dict for JSON
-                if data is None: data = {}
-                else: data = dict(data)
-                
-                current_q = data.get('quality')
-                
-                if current_q != target_q:
-                    data['quality'] = target_q
-                    data['format'] = ext.replace('.', '').upper()
-                    data['quality_details'] = f"{data['format']} | {target_q}"
-                    
-                    src.data_json = data # Force modify
-                    
-                    logs.append(f"Fixed {src.id}: {current_q}->{target_q}")
-                    updated += 1
+        from app.services.library import LibraryService
+        service = LibraryService()
+        updated, logs = await service.force_fix_quality(db)
         
         if updated > 0:
-            await db.commit()
-            logger.info(f"Fixed {updated} songs internally.")
             return {"success": True, "updated": updated, "details": logs}
         
         return {"success": True, "updated": 0, "message": "All good"}

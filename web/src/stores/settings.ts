@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import type { Settings, SystemStatus } from '@/types'
-import * as systemApi from '@/api/system'
+import { useLocalStorage } from '@vueuse/core'
 
 export const useSettingsStore = defineStore('settings', () => {
     // 状态
@@ -13,13 +13,13 @@ export const useSettingsStore = defineStore('settings', () => {
     const settings = ref<Settings | null>(null)
     const systemStatus = ref<SystemStatus | null>(null)
     const isLoading = ref(false)
+    const themeStorage = useLocalStorage('theme', '')
 
     // 初始化主题
     const initTheme = () => {
-        const saved = localStorage.getItem('theme')
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 
-        isDark.value = saved ? saved === 'dark' : prefersDark
+        isDark.value = themeStorage.value ? themeStorage.value === 'dark' : prefersDark
         applyTheme()
     }
 
@@ -29,7 +29,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const toggleTheme = () => {
         isDark.value = !isDark.value
-        localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+        themeStorage.value = isDark.value ? 'dark' : 'light'
         applyTheme()
     }
 

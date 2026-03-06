@@ -123,10 +123,29 @@ class SmartMerger:
         return bool(re.search(lrc_pattern, lyrics))
     
     @classmethod
+    def check_similarity(cls, a: str, b: str) -> float:
+        """计算字符串相似度 (简单实现)"""
+        if not a or not b: return 0.0
+        a, b = a.lower().strip(), b.lower().strip()
+        if a == b: return 1.0
+        
+        # 核心词匹配
+        words_a = set(re.findall(r'\w+', a))
+        words_b = set(re.findall(r'\w+', b))
+        if not words_a or not words_b: return 0.0
+        
+        intersection = words_a.intersection(words_b)
+        return len(intersection) / max(len(words_a), len(words_b))
+
+    @classmethod
     def should_update_title(cls, current: Optional[str], new: Optional[str]) -> bool:
         """判断是否应更新标题"""
         if cls.is_garbage_value(current) and not cls.is_garbage_value(new):
             return True
+        # 如果新标题更长/包含更多有用信息且相似度高，也考虑更新
+        if current and new and cls.check_similarity(current, new) > 0.8:
+             if len(new) > len(current) and "(" in new and "(" not in current:
+                 return True
         return False
     
     @classmethod

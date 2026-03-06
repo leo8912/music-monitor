@@ -98,65 +98,51 @@ class MetadataHealer:
                         details={"healed": healed_count, "total": total_candidates}
                     )
                     
-                    # 🔧 关键修复: 在检查完整性之前，先同步文件标签到 data_json
-                    # 这样即使歌曲在冷却期，也能从文件获取歌词并避免重复补全
+                    # 🔧 关键修复: 先检查完整性，如果已完整则直接跳过
+                    if self._is_complete(song):
+                        continue
+
+                    # 🔧 关键修复: 在补全之前，先尝试从文件标签同步歌词
                     if song.local_path and os.path.exists(song.local_path):
                         try:
                             file_tags = await TagService.read_tags(song.local_path)
                             file_lyrics = file_tags.get("lyrics") if file_tags else None
                             
                             if file_lyrics:
-                                # 检查 data_json 中是否已有歌词
-                                has_lyrics_in_db = False
-                                for src in song.sources:
-                                    data = self._parse_data_json(src.data_json)
-                                    if data.get("lyrics"):
-                                        has_lyrics_in_db = True
-                                        break
-                                
-                                # 如果文件有歌词但 DB 没有，立即同步
+                                has_lyrics_in_db = any(self._parse_data_json(src.data_json).get("lyrics") for src in song.sources)
                                 if not has_lyrics_in_db:
                                     logger.info(f"📥 发现文件标签歌词，同步到数据库: {song.title}")
                                     if not song.sources:
-                                        # 如果没有 source，创建一个
                                         from app.models.song import SongSource
-                                        new_src = SongSource(song_id=song.id, source="local", data_json={})
+                                        new_src = SongSource(song_id=song.id, source="local", data_json={"lyrics": file_lyrics})
                                         db.add(new_src)
-                                        await db.flush()
-                                        song.sources.append(new_src)
+                                    else:
+                                        for src in song.sources:
+                                            data = self._parse_data_json(src.data_json)
+                                            data["lyrics"] = file_lyrics
+                                            src.data_json = data
+                                            from sqlalchemy.orm.attributes import flag_modified
+                                            flag_modified(src, "data_json")
                                     
-                                    for src in song.sources:
-                                        data = self._parse_data_json(src.data_json)
-                                        data["lyrics"] = file_lyrics
-                                        src.data_json = data
-                                        from sqlalchemy.orm.attributes import flag_modified
-                                        flag_modified(src, "data_json")
-                                    
-                                    # 更新补全时间，标记为已处理
-                                    song.last_enrich_at = datetime.now()
                                     await db.commit()
-                                    logger.info(f"✅ 歌词同步完成: {song.title}")
-                                    healed_count += 1
-                                    continue  # 同步完成，跳到下一首
+                                    # 同步完成后重新检查，如果变完整了就跳过后续 API 调用
+                                    if self._is_complete(song):
+                                        healed_count += 1
+                                        continue
                         except Exception as e:
                             logger.warning(f"⚠️ 同步文件标签失败 [{song.title}]: {e}")
                         
-                    # 1. 检查是否需要治愈 (不完整)
-                    if not self._is_complete(song):
-                        # 2. 元数据补全无需冷却期检查
-                        # 网易云和QQ音乐接口没有频率限制，可随时调用
-                        
-                        # 3. 执行治愈
-                        try:
-                            success = await self.heal_song(song.id, force=force)
-                            if success:
-                                healed_count += 1
-                                # Update details on success
-                                await task_monitor.update_progress(
-                                    task_id, pct, f"已修复: {song.title}", details={"healed": healed_count}
-                                )
-                        except Exception as e:
-                            logger.error(f"❌ 治愈失败 [{song.title}]: {e}")
+                    # 2. 执行网络补全
+                    try:
+                        success = await self.heal_song(song.id, force=force)
+                        if success:
+                            healed_count += 1
+                            # Update details on success
+                            await task_monitor.update_progress(
+                                task_id, pct, f"已修复: {song.title}", details={"healed": healed_count}
+                            )
+                    except Exception as e:
+                        logger.error(f"❌ 治愈失败 [{song.title}]: {e}")
                 
                 msg = f"治愈完成, 成功修复 {healed_count} 首"
                 logger.info(f"✅ {msg}")
@@ -240,7 +226,6 @@ class MetadataHealer:
                 return False
 
             # --- 阶段 2: 智能合并 ---
-            # 修正: 从 sources 中获取歌词
             current_lyrics = None
             for src in song.sources:
                 data = self._parse_data_json(src.data_json)
@@ -257,16 +242,6 @@ class MetadataHealer:
                 publish_time=song.publish_time
             )
             
-            # (补充: 检查 Song 模型是否有 lyrics 字段，之前的代码好像都在 SongSource.data_json 里存 lyrics ?)
-            # 检查 scraper.py 发现 song.lyrics 可能不存在于 Song 模型, 
-            # 但用户想把 lyrics 写到文件。DB 存哪里？
-            # 暂时假设 Song 模型有 lyrics 或者我们只关心写文件和写 data_json。
-            # 查看 scaper.py: `if new_lyrics: song.lyrics = new_lyrics` -> 看来 Song 模型可能被修改过或动态添加？
-            # 确认模型定义: app/models/song.py 只有 `data_json` 在 SongSource。
-            # Song 类没有 lyrics 字段。 scaper.py 可能是错的，或者动态属性。
-            # 我们这里遵循 "Data in SongSource, Display in Song"
-            # 但 Song 没有 lyrics。所以我们把 lyrics 存哪里？ -> SongSource.data_json
-            
             new_meta = SongMetadata(
                 title=best_meta.search_result.title if best_meta.search_result else song.title,
                 artist=best_meta.search_result.artist if best_meta.search_result else "",
@@ -275,7 +250,15 @@ class MetadataHealer:
                 lyrics=best_meta.lyrics,
                 publish_time=self._parse_date(best_meta.publish_time)
             )
-            
+
+            # 相似度分级校验 (防止误关联)
+            similarity = SmartMerger.check_similarity(song.title, new_meta.title)
+            if similarity < 0.6:
+                logger.warning(f"⚠️ 相似度过低 ({similarity:.2f}), 跳过自动治愈: '{song.title}' vs '{new_meta.title}'")
+                song.last_enrich_at = datetime.now()
+                await db.commit()
+                return False
+
             updates = SmartMerger.merge(current, new_meta)
             
             if not updates and not force:

@@ -486,3 +486,180 @@ class SongManagementService:
             logger.error(f"❌ Database reset failed: {e}")
             await db.rollback()
             return False
+
+    async def get_local_songs_paginated(
+        self,
+        db: AsyncSession,
+        offset: int,
+        fetch_limit: int,
+        sort_by: str,
+        order: str
+    ) -> tuple[list, int]:
+        """
+        专门获取所有本地歌曲 (有 local_path 的歌曲)
+        无视是否关注歌手,按入库时间倒序排列
+        """
+        from sqlalchemy import func, desc, asc
+        from app.models.artist import Artist
+
+        stmt = select(Song).options(
+            selectinload(Song.artist),
+            selectinload(Song.sources)
+        )
+        stmt = stmt.where(Song.local_path.isnot(None))
+        
+        # 排序处理
+        order_func = desc if order.lower() == "desc" else asc
+        if sort_by == "created_at":
+            stmt = stmt.order_by(order_func(Song.created_at))
+        elif sort_by == "publish_time":
+            stmt = stmt.order_by(order_func(Song.publish_time).nullslast())
+        elif sort_by == "artist":
+            stmt = stmt.join(Artist).order_by(order_func(Artist.name))
+        elif sort_by == "title":
+            stmt = stmt.order_by(order_func(Song.title))
+        elif sort_by == "album":
+            stmt = stmt.order_by(order_func(Song.album))
+        else:
+             stmt = stmt.order_by(Song.created_at.desc())
+        
+        # 分页
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        total = (await db.execute(count_stmt)).scalar() or 0
+        
+        stmt = stmt.offset(offset).limit(fetch_limit)
+        
+        result = await db.execute(stmt)
+        songs = result.scalars().all()
+        
+        # 序列化
+        items = []
+        for s in songs:
+            artist_name = s.artist.name if s.artist else "Unknown"
+            quality = None
+            local_cover = None
+            
+            q_priority = {"HR": 5, "SQ": 4, "HQ": 3, "PQ": 2, "ERR": 1, None: 0}
+            local_files_list = []
+            
+            for src in s.sources:
+                if src.source == 'local':
+                    data = src.data_json or {}
+                    new_q = data.get('quality')
+                    
+                    if q_priority.get(new_q, 0) > q_priority.get(quality, 0):
+                        quality = new_q
+                        
+                    src_cover = getattr(src, 'cover', None) or data.get('cover')
+                    if src_cover and str(src_cover).startswith('/uploads/'):
+                        local_cover = src_cover
+                        
+                    local_files_list.append({
+                        "id": src.id,
+                        "source_id": src.source_id,
+                        "path": src.url,
+                        "quality": new_q or 'PQ',
+                        "format": data.get('format', 'UNK')
+                    })
+            
+            final_cover = local_cover if local_cover else s.cover
+            
+            q_details = None
+            if quality:
+                 for src in s.sources:
+                     if src.source == 'local':
+                         d = src.data_json or {}
+                         if d.get('quality') == quality:
+                             fmt = d.get('format', 'UNK')
+                             q_val = quality
+                             
+                             if q_val == 'PQ' and s.local_path:
+                                 path_ext = os.path.splitext(s.local_path)[1].lower()
+                                 if path_ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
+                                     q_val = 'SQ'
+                                     
+                                     try:
+                                         from mutagen import File as MutagenFile
+                                         if await anyio.to_thread.run_sync(os.path.exists, s.local_path):
+                                             audio = await anyio.to_thread.run_sync(MutagenFile, s.local_path)
+                                             if audio and audio.info:
+                                                 rate = getattr(audio.info, 'sample_rate', 0)
+                                                 bits = getattr(audio.info, 'bits_per_sample', 0)
+                                                 if rate > 48000 or bits > 16:
+                                                     q_val = 'HR'
+                                     except:
+                                         pass
+                                     
+                                     quality = q_val
+                                     fmt = path_ext.replace('.', '').upper()
+                             
+                             q_details = f"{fmt} | {q_val}"
+                             if d.get('quality_details'):
+                                 q_details = d.get('quality_details')
+                                 if q_val != d.get('quality'):
+                                      q_details = f"{fmt} | {q_val}"
+                             break
+
+            items.append({
+                "id": s.id,
+                "title": s.title,
+                "artist": artist_name,
+                "album": s.album,
+                "cover_url": final_cover,
+                "cover": final_cover, 
+                "local_audio_path": s.local_path,
+                "local_path": s.local_path,
+                "is_favorite": s.is_favorite,
+                "created_at": s.created_at,
+                "publish_time": s.publish_time,
+                "quality": quality,
+                "quality_details": q_details,
+                "local_files": local_files_list,
+                "source": "local",
+                "source_id": s.local_path,
+            })
+
+        return items, total
+
+    async def force_fix_quality(self, db: AsyncSession) -> tuple[int, list]:
+        """
+        Internal Method: Force fix all local FLAC/WAV quality to SQ
+        """
+        stmt = select(SongSource).where(SongSource.source == 'local')
+        result = await db.execute(stmt)
+        sources = result.scalars().all()
+        
+        updated = 0
+        logs = []
+        
+        for src in sources:
+            if not src.url: continue
+            
+            target_q = None
+            ext = os.path.splitext(src.url)[1].lower()
+            
+            if ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
+                target_q = 'SQ'
+            
+            if target_q:
+                data = src.data_json or {}
+                if data is None: data = {}
+                else: data = dict(data)
+                
+                current_q = data.get('quality')
+                
+                if current_q != target_q:
+                    data['quality'] = target_q
+                    data['format'] = ext.replace('.', '').upper()
+                    data['quality_details'] = f"{data['format']} | {target_q}"
+                    
+                    src.data_json = data
+                    
+                    logs.append(f"Fixed {src.id}: {current_q}->{target_q}")
+                    updated += 1
+        
+        if updated > 0:
+            await db.commit()
+            logger.info(f"Fixed {updated} songs internally.")
+            
+        return updated, logs

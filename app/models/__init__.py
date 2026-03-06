@@ -6,7 +6,7 @@ Models包初始化文件 - 导入所有数据模型
 
 Author: music-monitor development team
 """
-from app.models.base import Base, get_db, engine
+from app.models.base import Base
 from app.models.artist import Artist
 from app.models.song import Song
 from app.models.download_history import DownloadHistory

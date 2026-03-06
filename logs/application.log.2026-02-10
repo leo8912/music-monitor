@@ -1,0 +1,64 @@
+2026-02-10 12:57:29,884 - main - INFO - --------------------------------------------------
+2026-02-10 12:57:29,886 - main - INFO - System Starting...
+2026-02-10 12:57:29,886 - main - INFO - Using Configuration File: config/config.yaml
+2026-02-10 12:57:29,886 - main - INFO - --------------------------------------------------
+2026-02-10 12:57:49,089 - main - INFO - --------------------------------------------------
+2026-02-10 12:57:49,089 - main - INFO - System Starting...
+2026-02-10 12:57:49,089 - main - INFO - Using Configuration File: config/config.yaml
+2026-02-10 12:57:49,089 - main - INFO - --------------------------------------------------
+2026-02-10 13:05:38,020 - main - INFO - --------------------------------------------------
+2026-02-10 13:05:38,029 - main - INFO - System Starting...
+2026-02-10 13:05:38,029 - main - INFO - Using Configuration File: config/config.yaml
+2026-02-10 13:05:38,029 - main - INFO - --------------------------------------------------
+2026-02-10 13:05:38,167 - app.services.metadata_healer - INFO - 🩹 正在治愈: 稻香 (ID: test_song_1)
+2026-02-10 13:05:38,168 - app.services.metadata_healer - INFO - 📋 处理前状态: {'song_id': 'test_song_1', 'title': '稻香', 'artist': '周杰伦', 'local_path': '/test/path/稻香.mp3', 'current_state': {'has_lyrics': False, 'has_cover': False, 'has_album': False, 'has_publish_time': False}}
+2026-02-10 13:05:39,543 - app.services.metadata_healer - WARNING - 下载图片失败 (http://test.com/cover.jpg): Server disconnected
+2026-02-10 13:05:39,543 - app.services.metadata_healer - INFO - ⚠️ 歌曲没有 source 记录，创建 local source: 稻香
+2026-02-10 13:05:39,553 - app.services.metadata_healer - INFO - 📝 已更新 source[local].data_json: lyrics=True
+2026-02-10 13:05:39,553 - app.services.metadata_healer - INFO - 🔍 持久化检查: 稻香 歌词已保存=True, sources数量=1
+2026-02-10 13:05:39,558 - app.services.metadata_healer - INFO - 🩹 正在治愈: 稻香 (ID: test_song_1)
+2026-02-10 13:05:39,558 - app.services.metadata_healer - INFO - 📋 处理前状态: {'song_id': 'test_song_1', 'title': '稻香', 'artist': '周杰伦', 'local_path': '/test/path/稻香.mp3', 'current_state': {'has_lyrics': False, 'has_cover': False, 'has_album': False, 'has_publish_time': False}}
+2026-02-10 13:05:39,558 - app.services.metadata_healer - WARNING - ⚠️ 元数据搜索失败: 稻香
+2026-02-10 13:05:39,558 - app.services.metadata_healer - ERROR - ❌ 无法找到元数据: 稻香
+2026-02-10 13:05:39,558 - app.services.metadata_healer - INFO - 🩹 正在治愈: 稻香 (ID: test_song_1)
+2026-02-10 13:05:39,558 - app.services.metadata_healer - INFO - 📋 处理前状态: {'song_id': 'test_song_1', 'title': '稻香', 'artist': '周杰伦', 'local_path': '/test/path/稻香.mp3', 'current_state': {'has_lyrics': False, 'has_cover': False, 'has_album': False, 'has_publish_time': False}}
+2026-02-10 13:05:39,558 - app.services.metadata_healer - WARNING - ⚠️ 元数据搜索失败: 稻香
+2026-02-10 13:05:39,558 - app.services.metadata_healer - ERROR - ❌ 无法找到元数据: 稻香
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - 🔍 聚合获取最佳元数据: 测试歌曲 - 测试艺人
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - 🎯 开始渐进式搜索，共4个策略
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - 🔄 尝试策略 1: 精确匹配
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - ⏭️ 策略 1 未找到合适结果
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - 🔄 尝试策略 2: 关键词优化
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - ⏭️ 策略 2 未找到合适结果
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - 🔄 尝试策略 3: 标题单独搜索
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - ✅ 策略 3 成功: 测试歌曲
+2026-02-10 13:05:39,564 - app.services.metadata_service - WARNING - 下载封面失败: Constructor parameter should be str
+2026-02-10 13:05:39,564 - app.services.metadata_service - INFO - ✅ 聚合元数据完成: lyrics=True, cover=True, album=<Mock name='mock.album' id='1775792789152'>
+2026-02-10 13:07:43,511 - main - INFO - --------------------------------------------------
+2026-02-10 13:07:43,512 - main - INFO - System Starting...
+2026-02-10 13:07:43,512 - main - INFO - Using Configuration File: config/config.yaml
+2026-02-10 13:07:43,512 - main - INFO - --------------------------------------------------
+2026-02-10 13:07:43,610 - app.services.metadata_healer - INFO - 🩹 正在治愈: 稻香 (ID: test_song_1)
+2026-02-10 13:07:43,610 - app.services.metadata_healer - INFO - 📋 处理前状态: {'song_id': 'test_song_1', 'title': '稻香', 'artist': '周杰伦', 'local_path': '/test/path/稻香.mp3', 'current_state': {'has_lyrics': False, 'has_cover': False, 'has_album': False, 'has_publish_time': False}}
+2026-02-10 13:07:44,963 - app.services.metadata_healer - WARNING - 下载图片失败 (http://test.com/cover.jpg): Server disconnected
+2026-02-10 13:07:44,964 - app.services.metadata_healer - INFO - ⚠️ 歌曲没有 source 记录，创建 local source: 稻香
+2026-02-10 13:07:44,974 - app.services.metadata_healer - INFO - 📝 已更新 source[local].data_json: lyrics=True
+2026-02-10 13:07:44,974 - app.services.metadata_healer - INFO - 🔍 持久化检查: 稻香 歌词已保存=True, sources数量=1
+2026-02-10 13:07:44,979 - app.services.metadata_healer - INFO - 🩹 正在治愈: 稻香 (ID: test_song_1)
+2026-02-10 13:07:44,980 - app.services.metadata_healer - INFO - 📋 处理前状态: {'song_id': 'test_song_1', 'title': '稻香', 'artist': '周杰伦', 'local_path': '/test/path/稻香.mp3', 'current_state': {'has_lyrics': False, 'has_cover': False, 'has_album': False, 'has_publish_time': False}}
+2026-02-10 13:07:44,980 - app.services.metadata_healer - WARNING - ⚠️ 元数据搜索失败: 稻香
+2026-02-10 13:07:44,980 - app.services.metadata_healer - ERROR - ❌ 无法找到元数据: 稻香
+2026-02-10 13:07:44,980 - app.services.metadata_healer - INFO - 🩹 正在治愈: 稻香 (ID: test_song_1)
+2026-02-10 13:07:44,980 - app.services.metadata_healer - INFO - 📋 处理前状态: {'song_id': 'test_song_1', 'title': '稻香', 'artist': '周杰伦', 'local_path': '/test/path/稻香.mp3', 'current_state': {'has_lyrics': False, 'has_cover': False, 'has_album': False, 'has_publish_time': False}}
+2026-02-10 13:07:44,980 - app.services.metadata_healer - WARNING - ⚠️ 元数据搜索失败: 稻香
+2026-02-10 13:07:44,980 - app.services.metadata_healer - ERROR - ❌ 无法找到元数据: 稻香
+2026-02-10 13:07:44,985 - app.services.metadata_service - INFO - 🔍 聚合获取最佳元数据: 测试歌曲 - 测试艺人
+2026-02-10 13:07:44,985 - app.services.metadata_service - INFO - 🎯 开始渐进式搜索，共4个策略
+2026-02-10 13:07:44,986 - app.services.metadata_service - INFO - 🔄 尝试策略 1: 精确匹配
+2026-02-10 13:07:44,986 - app.services.metadata_service - INFO - ⏭️ 策略 1 未找到合适结果
+2026-02-10 13:07:44,986 - app.services.metadata_service - INFO - 🔄 尝试策略 2: 关键词优化
+2026-02-10 13:07:44,986 - app.services.metadata_service - INFO - ⏭️ 策略 2 未找到合适结果
+2026-02-10 13:07:44,986 - app.services.metadata_service - INFO - 🔄 尝试策略 3: 标题单独搜索
+2026-02-10 13:07:44,986 - app.services.metadata_service - INFO - ✅ 策略 3 成功: 测试歌曲
+2026-02-10 13:07:44,986 - app.services.metadata_service - WARNING - 下载封面失败: Constructor parameter should be str
+2026-02-10 13:07:44,986 - app.services.metadata_service - INFO - ✅ 聚合元数据完成: lyrics=True, cover=True, album=<Mock name='mock.album' id='1899664843376'>

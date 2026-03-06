@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@vicons/ionicons5": "^0.13.0",
+    "@vueuse/core": "^14.2.1",
     "axios": "^1.13.2",
     "colorthief": "^2.6.0",
     "naive-ui": "^2.43.2",

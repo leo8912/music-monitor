@@ -123,7 +123,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bottom-player">
+  <div class="bottom-player glass-surface">
     <div class="player-container">
       <!-- 视效层 -->
       <!-- 视效层 (已移除以符合 Spotify 风格) -->
@@ -225,11 +225,10 @@ onMounted(() => {
 <style scoped>
 .bottom-player {
   height: var(--player-height);
-  background-color: #000;
-  border-top: 1px solid #282828;
-  padding: 0 16px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
+  z-index: 6000;
 }
 .player-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-between; position: relative; }
 /* .visualizer-canvas { ... } */
@@ -259,8 +258,15 @@ onMounted(() => {
 }
 
 
-.song-info { display: flex; align-items: center; gap: 14px; width: 30%; z-index: 1; min-width: 180px; }
-.cover-art { width: 56px; height: 56px; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.song-info { display: flex; align-items: center; gap: 14px; width: 30%; z-index: 1; min-width: 220px; }
+.cover-art { 
+  width: 56px; 
+  height: 56px; 
+  border-radius: 4px; 
+  overflow: hidden; 
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6); 
+  border: 1px solid rgba(255,255,255,0.05);
+}
 .cover-art img { width: 100%; height: 100%; object-fit: cover; }
 .title-container { display: flex; align-items: center; gap: 8px; }
 .title { font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; cursor: default; }
@@ -442,6 +448,38 @@ button:disabled {
   0% { opacity: 0.6; }
   50% { opacity: 1; }
   100% { opacity: 0.6; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .bottom-player {
+    display: flex !important; /* Force show in mobile as a bar */
+    padding: 0 12px;
+    height: 72px;
+  }
+  .song-info {
+    width: 60%;
+  }
+  .meta {
+      max-width: 120px;
+  }
+  .title {
+      max-width: 100px;
+  }
+  .player-controls {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: auto;
+    flex: 0;
+  }
+  .control-buttons {
+    gap: 12px;
+  }
+  .progress-area, .right-side-controls, .fav-btn {
+    display: none !important;
+  }
 }
 </style>
 

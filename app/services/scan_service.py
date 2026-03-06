@@ -322,7 +322,16 @@ class ScanService:
         
         total_songs = len(all_local_songs)
         
-        for idx, song in enumerate(all_local_songs, 1):
+        # 并发检查本地文件存在性
+        import asyncio
+        async def check_exists(song):
+            return await anyio.to_thread.run_sync(os.path.exists, song.local_path)
+        
+        exists_results = await asyncio.gather(*(check_exists(song) for song in all_local_songs))
+        
+        missing_songs = []
+        
+        for idx, (song, exists) in enumerate(zip(all_local_songs, exists_results), 1):
             # 进度回调
             if progress_callback:
                 progress_callback({
@@ -335,44 +344,65 @@ class ScanService:
             if task_id:
                 from app.services.task_monitor import task_monitor
                 await task_monitor.check_status(task_id) # Check interruption
-                pct = int((idx / total_songs) * 100)
-                await task_monitor.update_progress(
-                    task_id, 
-                    pct, 
-                    f"清理无效记录: {song.title}",
-                    details={"stage": "pruning"}
-                )
+                if idx % 50 == 0 or idx == total_songs:
+                    pct = int((idx / total_songs) * 100)
+                    await task_monitor.update_progress(
+                        task_id, 
+                        pct, 
+                        f"清理无效记录: {song.title}",
+                        details={"stage": "pruning"}
+                    )
             
-            # 校验物理文件是否存在
-            exists = await anyio.to_thread.run_sync(os.path.exists, song.local_path)
+            # 记录失效文件
             if not exists:
-                logger.info(f"🗑️ 发现失效本地文件记录,正在清理: {song.title} ({song.local_path})")
+                logger.info(f"🗑️ 发现失效本地文件记录,准备清理: {song.title} ({song.local_path})")
+                missing_songs.append(song)
                 
-                # 1. 移除本地源信息
-                source_del_stmt = delete(SongSource).where(
-                    SongSource.song_id == song.id,
-                    SongSource.source == "local"
-                )
-                await db.execute(source_del_stmt)
-                await db.flush()  # 必须即时刷新，否则下方的查询会包含已删除的源
-                
-                # 2. 检查是否还有其他在线源
-                source_count_stmt = select(SongSource).where(SongSource.song_id == song.id)
-                sources = (await db.execute(source_count_stmt)).scalars().all()
-                
-                if not sources:
-                    # 彻底孤立的歌曲记录,直接删除
-                    await db.delete(song)
+        if missing_songs:
+            missing_ids = [s.id for s in missing_songs]
+            
+            # 1. 批量移除所有相关的本地源信息
+            source_del_stmt = delete(SongSource).where(
+                SongSource.song_id.in_(missing_ids),
+                SongSource.source == "local"
+            )
+            await db.execute(source_del_stmt)
+            await db.flush()
+            
+            # 2. 批量检查每个缺失歌曲剩余的在线源数量
+            from sqlalchemy import func
+            source_count_stmt = select(SongSource.song_id, func.count(SongSource.id)).where(
+                SongSource.song_id.in_(missing_ids)
+            ).group_by(SongSource.song_id)
+            
+            res = await db.execute(source_count_stmt)
+            remaining_sources = dict(res.all())
+            
+            songs_to_delete = []
+            songs_to_update = []
+            
+            for song in missing_songs:
+                count = remaining_sources.get(song.id, 0)
+                if count == 0:
+                    songs_to_delete.append(song)
                 else:
-                    # 仍然有在线监控,只是本地文件丢了,重置状态
-                    song.local_path = None
-                    song.status = "PENDING"
+                    songs_to_update.append(song)
+                    
+            # 3. 彻底删除无在线源的孤立歌曲 
+            if songs_to_delete:
+                delete_ids = [s.id for s in songs_to_delete]
+                await db.execute(delete(Song).where(Song.id.in_(delete_ids)))
                 
-                removed_count += 1
-        
+            # 4. 更新仍然有在线源的歌曲状态
+            for song in songs_to_update:
+                song.local_path = None
+                song.status = "PENDING"
+                
+            removed_count = len(missing_songs)
+            
         if removed_count > 0:
             await db.commit()
-            logger.info(f"✅ 成功清理了 {removed_count} 条失效本地记录")
+            logger.info(f"✅ 成功批量清理了 {removed_count} 条失效本地记录")
             
         return removed_count
 

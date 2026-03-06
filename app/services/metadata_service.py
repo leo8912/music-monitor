@@ -100,7 +100,7 @@ class MetadataService:
             stop_words = {'-', '–', '—', '|', '&', 'and', 'feat', 'ft', 'featuring', 'live', 'version', 'mix'}
             filtered_words = [word for word in words if word.lower() not in stop_words]
             
-            return ' '.join(filtered_words[:3])  # 最多取前3个关键词
+            return ' '.join(filtered_words)  # 不再限制关键词数量，让 API 引擎处理相关性
         
         optimized_title = extract_keywords(clean_title)
         optimized_artist = extract_keywords(clean_artist)

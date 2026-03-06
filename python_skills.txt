@@ -1,0 +1,28 @@
+﻿
+[38;5;250m鈻堚枅鈻堚枅鈻堚枅鈻堚晽鈻堚枅鈺? 鈻堚枅鈺椻枅鈻堚晽鈻堚枅鈺?    鈻堚枅鈺?    鈻堚枅鈻堚枅鈻堚枅鈻堚晽[0m
+[38;5;248m鈻堚枅鈺斺晲鈺愨晲鈺愨暆鈻堚枅鈺?鈻堚枅鈺斺暆鈻堚枅鈺戔枅鈻堚晳     鈻堚枅鈺?    鈻堚枅鈺斺晲鈺愨晲鈺愨暆[0m
+[38;5;245m鈻堚枅鈻堚枅鈻堚枅鈻堚晽鈻堚枅鈻堚枅鈻堚晹鈺?鈻堚枅鈺戔枅鈻堚晳     鈻堚枅鈺?    鈻堚枅鈻堚枅鈻堚枅鈻堚晽[0m
+[38;5;243m鈺氣晲鈺愨晲鈺愨枅鈻堚晳鈻堚枅鈺斺晲鈻堚枅鈺?鈻堚枅鈺戔枅鈻堚晳     鈻堚枅鈺?    鈺氣晲鈺愨晲鈺愨枅鈻堚晳[0m
+[38;5;240m鈻堚枅鈻堚枅鈻堚枅鈻堚晳鈻堚枅鈺? 鈻堚枅鈺椻枅鈻堚晳鈻堚枅鈻堚枅鈻堚枅鈻堚晽鈻堚枅鈻堚枅鈻堚枅鈻堚晽鈻堚枅鈻堚枅鈻堚枅鈻堚晳[0m
+[38;5;238m鈺氣晲鈺愨晲鈺愨晲鈺愨暆鈺氣晲鈺? 鈺氣晲鈺濃暁鈺愨暆鈺氣晲鈺愨晲鈺愨晲鈺愨暆鈺氣晲鈺愨晲鈺愨晲鈺愨暆鈺氣晲鈺愨晲鈺愨晲鈺愨暆[0m
+
+[38;5;102mInstall with[0m npx skills add <owner/repo@skill>
+
+[38;5;145mwshobson/agents@python-performance-optimization[0m [36m7.6K installs[0m
+[38;5;102m鈹?https://skills.sh/wshobson/agents/python-performance-optimization[0m
+
+[38;5;145mwshobson/agents@python-testing-patterns[0m [36m6.2K installs[0m
+[38;5;102m鈹?https://skills.sh/wshobson/agents/python-testing-patterns[0m
+
+[38;5;145mwshobson/agents@async-python-patterns[0m [36m4.9K installs[0m
+[38;5;102m鈹?https://skills.sh/wshobson/agents/async-python-patterns[0m
+
+[38;5;145mgithub/awesome-copilot@python-mcp-server-generator[0m [36m4.5K installs[0m
+[38;5;102m鈹?https://skills.sh/github/awesome-copilot/python-mcp-server-generator[0m
+
+[38;5;145mgithub/awesome-copilot@dataverse-python-production-code[0m [36m4.5K installs[0m
+[38;5;102m鈹?https://skills.sh/github/awesome-copilot/dataverse-python-production-code[0m
+
+[38;5;145mgithub/awesome-copilot@dataverse-python-advanced-patterns[0m [36m4.5K installs[0m
+[38;5;102m鈹?https://skills.sh/github/awesome-copilot/dataverse-python-advanced-patterns[0m
+

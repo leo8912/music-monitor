@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import functools
 
 class DeduplicationService:
     """
@@ -7,6 +8,7 @@ class DeduplicationService:
     """
     
     @staticmethod
+    @functools.lru_cache(maxsize=4096)
     def _normalize_title(title: str) -> str:
         """归一化标题用于去重建议：转小写、去空格、移除括号内的备注"""
         if not title: return ""
