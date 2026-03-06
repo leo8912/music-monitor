@@ -11,7 +11,7 @@ export interface Artist {
     source: MusicSource // "database"
     sources?: MusicSource[] // Linked sources
     avatar?: string
-    song_count?: number
+    songCount?: number
     available_sources?: string[]
     is_monitored?: boolean
 }
@@ -22,7 +22,7 @@ export interface MergedArtist {
     avatar?: string
     sources: MusicSource[]
     ids: Array<{ source: MusicSource; id: string }>
-    song_count?: number
+    songCount?: number
 }
 
 // 搜索结果中的歌手

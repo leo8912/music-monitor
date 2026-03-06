@@ -5,9 +5,14 @@
 歌曲: 我要你 (ID: 1)
   Source ID: 1, Source: local
   data_json 类型: str
-  包含歌词: False
-  歌词预览: N/A...
-  其他字段: ['quality', 'format', 'cover']
+  包含歌词: True
+  歌词预览: [00:00.00] 作词 : 樊冲
+[00:00.00] 作曲 : 樊冲
+[00:00.00]我要你 - 任素汐
+[00:00.57]词：樊冲
+[00:01.14]曲：樊冲
+[00:01.71]我要...
+  其他字段: ['quality', 'format', 'cover', 'lyrics']
 
 歌曲: 一生所爱 (ID: 2)
   Source ID: 2, Source: local

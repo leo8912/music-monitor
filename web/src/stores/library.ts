@@ -39,7 +39,7 @@ export const useLibraryStore = defineStore('library', () => {
                     avatar: a.avatar,
                     sources: sourceList,
                     ids: [idEntry],
-                    song_count: a.song_count || 0
+                    songCount: a.songCount || 0
                 })
             }
             // Since backend is now normalized, duplicates by name shouldn't happen for Monitored Artists.
