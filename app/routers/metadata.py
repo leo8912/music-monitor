@@ -9,11 +9,10 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 import io
 import logging
-import sys
 
 logger = logging.getLogger(__name__)
 
-from app.services.metadata_service import MetadataService
+from app.services._singletons import get_metadata_service
 from core.database import AsyncSessionLocal
 from app.models.song import Song
 from sqlalchemy import select
@@ -28,18 +27,6 @@ async def get_lyrics(
     song_id: str = None
 ):
     """获取歌词"""
-    # 强制写入文件进行调试 (使用相对路径，兼容Docker)
-    import os
-    log_file = "logs/lyrics_debug.log"
-    # Ensure dir exists
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    
-    with open(log_file, "a", encoding="utf-8") as f:
-        f.write(f"\n=== {__import__('datetime').datetime.now()} === HIT /api/metadata/lyrics\n")
-        f.write(f"song_id={song_id}, title={title}, artist={artist}\n")
-    
-    sys.stderr.write(f"\n=== DEBUG === HIT /api/metadata/lyrics with song_id={song_id}, title={title}\n")
-    sys.stderr.flush()
     try:
         local_path = None
         if song_id:
@@ -51,17 +38,13 @@ async def get_lyrics(
                     song = result.scalars().first()
                     if song and song.local_path:
                         local_path = song.local_path
-                        sys.stderr.write(f"=== DEBUG === Resolved song_id={song_id} to local_path={local_path}\n")
-                        sys.stderr.flush()
+                        logger.debug(f"解析 song_id={song_id} 到 local_path={local_path}")
                     else:
-                        sys.stderr.write(f"=== DEBUG === Song not found or no local_path for id={song_id}\n")
-                        sys.stderr.flush()
+                        logger.debug(f"未找到歌曲或无 local_path: id={song_id}")
             except Exception as db_e:
-                sys.stderr.write(f"=== DEBUG === DB Error resolving song_id: {db_e}\n")
-                sys.stderr.flush()
-                pass 
+                logger.warning(f"解析 song_id 时数据库错误: {db_e}")
 
-        metadata_service = MetadataService()
+        metadata_service = get_metadata_service()
         lyrics = await metadata_service.fetch_lyrics(title, artist, source_id=None, local_path=local_path)
         
         if lyrics:
@@ -69,18 +52,7 @@ async def get_lyrics(
         else:
             return {"success": False, "error": "无法获取歌词"}
     except Exception as e:
-        import traceback
-        error_msg = f"Error in get_lyrics: {str(e)}\n{traceback.format_exc()}"
-        
-        # Ensure dir exists
-        log_file = "logs/lyrics_debug.log"
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
-        
-        with open(log_file, "a", encoding="utf-8") as f:
-            f.write(f"\n=== ERROR ===\n{error_msg}\n")
-        
-        sys.stderr.write(f"=== ERROR === {error_msg}\n")
-        sys.stderr.flush()
+        logger.error(f"获取歌词失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"获取歌词失败: {str(e)}")
 
 
@@ -91,7 +63,7 @@ async def get_cover(
 ):
     """获取封面"""
     try:
-        metadata_service = MetadataService()
+        metadata_service = get_metadata_service()
         cover_url = await metadata_service.fetch_cover_url(title, artist)
         
         if cover_url:
@@ -117,7 +89,7 @@ async def fetch_all_metadata(
 ):
     """获取完整元数据（歌词和封面）"""
     try:
-        metadata_service = MetadataService()
+        metadata_service = get_metadata_service()
         result = await metadata_service.fetch_metadata(title, artist, source, source_id)
         
         return {

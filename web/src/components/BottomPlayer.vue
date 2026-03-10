@@ -119,7 +119,18 @@ onMounted(() => {
   if (audioRef.value) audioRef.value.volume = playerStore.volume / 100
 })
 
-
+// 切换全屏歌词视图
+const toggleFullscreen = () => {
+    if (route.path === '/lyrics') {
+        if (window.history.state.back) {
+            router.back()
+        } else {
+            router.push('/')
+        }
+    } else {
+        router.push('/lyrics')
+    }
+}
 </script>
 
 <template>
@@ -131,7 +142,7 @@ onMounted(() => {
 
       <!-- 左侧：歌曲信息 (30%) -->
       <div class="song-info">
-        <div class="cover-art hover-scale clickable" @click="playerStore.toggleLyricsPanel()">
+        <div class="cover-art hover-scale clickable" @click="toggleFullscreen">
           <img :src="playerStore.currentSong?.cover || 'public/pwa-192x192.png'" alt="Cover" v-if="playerStore.currentSong">
           <div class="placeholder-cover" v-else>
             <n-icon :component="MusicalNotesOutline" />
@@ -139,7 +150,7 @@ onMounted(() => {
         </div>
         <div class="meta">
           <div class="title-container">
-            <div class="title clickable" @click="playerStore.toggleLyricsPanel()">{{ playerStore.currentSong?.title || 'Music Monitor' }}</div>
+            <div class="title clickable" @click="toggleFullscreen">{{ playerStore.currentSong?.title || 'Music Monitor' }}</div>
             <!-- Quality Badge -->
             <div class="quality-wrapper">
                 <n-tag size="small" :bordered="false" class="quality-tag" 
@@ -187,7 +198,7 @@ onMounted(() => {
       <!-- 右侧：歌词与功能 (30%) -->
       <div class="right-side-controls">
           <!-- 迷你歌词显示 -->
-          <div class="mini-lyrics-container clickable" @click="playerStore.toggleLyricsPanel()" v-if="currentLyricText">
+          <div class="mini-lyrics-container clickable" @click="toggleFullscreen" v-if="currentLyricText">
             <span class="mini-lyric-text">{{ currentLyricText }}</span>
           </div>
           <div class="mini-lyrics-container" v-else></div>

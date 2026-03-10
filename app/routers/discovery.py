@@ -14,14 +14,12 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Query, HTTPException, Depends
 from fastapi.responses import RedirectResponse
-from app.services.download_service import DownloadService
-from app.services.music_providers import MusicAggregator
+from app.services._singletons import get_download_service, get_aggregator
 
 router = APIRouter(prefix="/api/discovery", tags=["discovery"])
 logger = logging.getLogger(__name__)
 
 
-@router.get("/search")
 @router.get("/search")
 async def search_discovery(
     keyword: Optional[str] = Query(None),
@@ -48,7 +46,7 @@ async def search_discovery(
             else:
                 raise HTTPException(status_code=400, detail="Missing parameter: keyword or (title, artist)")
 
-        aggregator = MusicAggregator()
+        aggregator = get_aggregator()
         results = await aggregator.search_song(keyword, limit=limit)
         
         # 转换为字典格式
@@ -68,7 +66,7 @@ async def search_download(
     专门用于"重新下载"功能，确保搜索结果 ID 与下载接口兼容。
     """
     try:
-        service = DownloadService()
+        service = get_download_service()
         
         # 为了提高效率，我们并行搜索几个主要源 (已剔除目前返回 400 的 tencent, kugou)
         sources = ["kuwo", "netease", "migu", "joox"]
@@ -127,7 +125,7 @@ async def probe_qualities_endpoint(
     实时探测该歌曲在不同音质下的可用性
     """
     try:
-        service = DownloadService()
+        service = get_download_service()
         results = await service.probe_available_qualities(source, id)
         return results
     except Exception as e:
@@ -172,7 +170,7 @@ async def search_artists(keyword: str):
     在多个平台搜索歌手,返回包含头像、平台等信息的结果列表。
     """
     try:
-        aggregator = MusicAggregator()
+        aggregator = get_aggregator()
         results = await aggregator.search_artist(keyword, limit=10)
         
         return [artist.to_dict() for artist in results]
@@ -191,7 +189,7 @@ async def get_artist_online_songs(
     获取歌手的在线歌曲列表
     """
     try:
-        aggregator = MusicAggregator()
+        aggregator = get_aggregator()
         
         # 获取指定源的 provider
         provider = aggregator.get_provider(source)

@@ -247,17 +247,19 @@ class ScanService:
                     
                     # 创建本地源记录 (使用封装方法处理去重和 path 更新)
                     data_json = {
-                        "quality": metadata.get('quality_info', 'PQ'),
+                        "quality": metadata.get('quality', 'PQ'),
                         "format": os.path.splitext(filename)[1].replace('.', '').upper(),
-                        "cover": metadata.get('cover')
+                        "cover": metadata.get('cover'),
+                        "lyrics": metadata.get('lyrics')
                     }
                     
-                    await self._create_song_source(
+                    is_new = await self._create_song_source(
                         db, song_obj, filename, file_path, data_json
                     )
                     
                     existing_source_ids.add(filename)
-                    new_count += 1
+                    if is_new:
+                        new_count += 1
                     
                     # 每 50 个文件 flush 一次，防止事务过大
                     if new_count % 50 == 0:
@@ -278,6 +280,14 @@ class ScanService:
             
             msg = f"扫描完成, 新增 {new_count}, 移除 {removed_count}"
             await task_monitor.finish_task(task_id, msg, details={"new": new_count, "removed": removed_count})
+            
+            # 扫描完成后自动触发后台元数据补全 (仅在有新增文件时)
+            if new_count > 0:
+                import asyncio
+                from app.services.metadata_healer import MetadataHealer
+                healer = MetadataHealer()
+                asyncio.create_task(healer.heal_all(force=False, limit=50))
+                logger.info(f"🚀 已启动后台元数据补全任务 (新增 {new_count} 个文件)")
             
             return {
                 "new_files_found": new_count,
@@ -477,6 +487,7 @@ class ScanService:
         album = None
         publish_time = None
         cover_url = None
+        lyrics = None
         quality_info = "HQ" 
         
         audio_file = None
@@ -576,6 +587,40 @@ class ScanService:
             except Exception as e:
                 logger.error(f"Metadata extraction error: {e}")
 
+            # --- 歌词提取 ---
+            try:
+                if audio_file:
+                    tags = audio_file
+                    if hasattr(audio_file, 'tags') and audio_file.tags:
+                        tags = audio_file.tags
+                    
+                    # ID3 (MP3) - USLT 帧
+                    if hasattr(tags, 'keys'):
+                        for key in tags.keys():
+                            if key.startswith('USLT'):
+                                lyrics = tags[key].text
+                                break
+                    
+                    # FLAC / Vorbis
+                    if not lyrics:
+                        from mutagen.flac import FLAC
+                        if isinstance(audio_file, FLAC) or hasattr(audio_file, 'tags'):
+                            if 'LYRICS' in audio_file:
+                                val = audio_file['LYRICS']
+                                lyrics = val[0] if isinstance(val, list) else str(val)
+                            elif 'UNSYNCEDLYRICS' in audio_file:
+                                val = audio_file['UNSYNCEDLYRICS']
+                                lyrics = val[0] if isinstance(val, list) else str(val)
+                    
+                    # MP4 / M4A
+                    if not lyrics:
+                        from mutagen.mp4 import MP4
+                        if isinstance(audio_file, MP4) and '\xa9lyr' in audio_file:
+                            val = audio_file['\xa9lyr']
+                            lyrics = val[0] if isinstance(val, list) else str(val)
+            except Exception as e:
+                logger.debug(f"歌词提取失败 [{filename}]: {e}")
+
             # --- 基本信息提取 ---
             def get_tag(obj, keys):
                 for k in keys:
@@ -659,8 +704,9 @@ class ScanService:
             "artist_name": artist_name,
             "album": album,
             "publish_time": publish_time,
-            "cover_url": cover_url,
-            "quality": quality_info
+            "cover": cover_url,
+            "quality": quality_info,
+            "lyrics": lyrics
         }
 
     def _analyze_quality(self, audio_file) -> str:
@@ -816,7 +862,7 @@ class ScanService:
         filename: str,
         file_path: str,
         data_json: Dict = None
-    ):
+    ) -> bool:
         """
         创建歌曲源记录 (支持多路径同名文件)
         
@@ -845,7 +891,7 @@ class ScanService:
             if data_json:
                 existing_by_path.data_json = data_json
                 existing_by_path.cover = data_json.get('cover')
-            return
+            return False
 
         # 2. 如果路径未匹配，说明这是该歌曲的一个新文件 (可能是 duplicate at different path)
         # 我们需要生成一个唯一的 source_id
@@ -878,3 +924,4 @@ class ScanService:
             cover=data_json.get('cover') if data_json else None
         )
         db.add(new_source)
+        return True

@@ -197,6 +197,47 @@ async def lifespan(app: FastAPI):
         # Job 2: Backup Scan (Every 30m)
         scheduler.add_job(run_library_scan_task, 'interval', minutes=30, args=['backup'], id='job_library_backup')
         
+        async def run_artist_refresh_task():
+            import logging
+            logger = logging.getLogger("scheduler")
+            try:
+                from core.database import AsyncSessionLocal
+                from app.services.artist_refresh_service import ArtistRefreshService
+                from app.models.artist import Artist
+                from sqlalchemy import select
+                
+                async with AsyncSessionLocal() as db:
+                    # 获取需要监控的艺人，比如 status == "active"
+                    res = await db.execute(select(Artist).where(Artist.status == "active"))
+                    artists = res.scalars().all()
+                    
+                    if not artists:
+                        logger.info("[Artist Refresh Task] 没有需要监控的活跃艺人。")
+                        return
+                    
+                    logger.info(f"[Artist Refresh Task] 开始后台轮询 {len(artists)} 位歌手的新歌...")
+                    service = ArtistRefreshService()
+                    for artist in artists:
+                        try:
+                            # 传入 session 和 artist.name
+                            await service.refresh(db, artist.name)
+                        except Exception as e:
+                            logger.error(f"[Artist Refresh Task] 刷新 {artist.name} 失败: {e}", exc_info=True)
+                            
+                    logger.info("[Artist Refresh Task] 轮询完成。")
+            except Exception as e:
+                logger.error(f"[Artist Refresh Task] 执行异常: {e}", exc_info=True)
+
+        # Job 3: Artist New Song Monitoring (Every 6 hours)
+        scheduler.add_job(
+            run_artist_refresh_task,
+            'interval',
+            hours=6,
+            id="job_artist_refresh",
+            replace_existing=True
+        )
+        logger.info("已调度歌手定时轮询任务，每 6 小时执行一次")
+        
         # 已移除: PLUGINS 监控任务 (使用 music_providers 替代)
                 
         from app.services.media_service import check_file_integrity

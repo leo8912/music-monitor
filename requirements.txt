@@ -16,7 +16,6 @@ loguru>=0.7.2
 mutagen>=1.47.0
 pillow>=10.3.0
 pydantic>=2.7.1
-pydantic_core>=2.18.2
 pyncm>=1.8.1
 python-dateutil>=2.9.0.post0
 python-multipart>=0.0.9

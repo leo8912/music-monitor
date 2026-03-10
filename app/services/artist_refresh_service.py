@@ -38,7 +38,8 @@ class ArtistRefreshService:
     """歌手刷新服务 - 负责从在线源同步歌曲列表"""
     
     def __init__(self):
-        self.aggregator = MusicAggregator()
+        from app.services._singletons import get_aggregator
+        self.aggregator = get_aggregator()
         self.scan_service = ScanService()
         self.metadata_healer = MetadataHealer()
         self._refresh_enrich_count = 0
@@ -71,7 +72,7 @@ class ArtistRefreshService:
             "state": "scanning",
             "progress": 10,
             "message": "📥 正在拉取全网歌曲...",
-            "songCount": await artist_repo.get_song_count(artist.id)
+            "song_count": await artist_repo.get_song_count(artist.id)
         })
         
         # 4. 获取在线歌曲
@@ -110,7 +111,7 @@ class ArtistRefreshService:
             "state": "complete",
             "progress": 100,
             "message": f"✅ 刷新完成 (新增 {new_count} 首, 总计 {total_count} 首)",
-            "songCount": total_count
+            "song_count": total_count
         })
         
         # 触发前端刷新
@@ -358,6 +359,7 @@ class ArtistRefreshService:
                 await db.flush()
                 new_count += 1
                 db_song_map[norm_key] = existing_song
+                existing_song._is_newly_discovered = True
             
             # 智能合并元数据
             await self._smart_merge_metadata(
@@ -396,6 +398,23 @@ class ArtistRefreshService:
                     )
                     db.add(src_ent)
                     src_map.add((s.source, s_id_str)) # 避免同一批次重复添加
+            
+            # 2. 自动化下载与推送 (新特征)
+            if getattr(existing_song, '_is_newly_discovered', False):
+                existing_song._is_newly_discovered = False
+                if existing_song.publish_time:
+                    delta = datetime.now() - existing_song.publish_time
+                    if 0 <= delta.days <= 30:
+                        try:
+                            from app.services.auto_download_service import get_auto_download_service
+                            auto_service = get_auto_download_service()
+                            # 补充必要信息供下载参考
+                            existing_song.source = group[0].source if group else "system"
+                            # 触发后台异步下载（下载成功后会自动发送通知）
+                            await auto_service.add_to_queue([existing_song])
+                            logger.info(f"🆕 发现近期新歌，已加入自动下载队列: {existing_song.title}")
+                        except Exception as e:
+                            logger.error(f"⚠️ 自动下载触发失败: {e}")
             
             # 进度广播
             if processed % 20 == 0 or processed == total_groups:
@@ -704,8 +723,8 @@ class ArtistRefreshService:
         
         async def heal_worker(song):
             async with semaphore:
-                # Force=False ensures we respect cooldown if it was just healed
-                return await self.metadata_healer.heal_song(song.id, force=False)
+                # 传入 db 会话，避免每个 worker 创建独立会话导致竞争
+                return await self.metadata_healer.heal_song(song.id, force=False, db=db)
 
         tasks = [heal_worker(s) for s in all_db_songs]
         results = await asyncio.gather(*tasks)

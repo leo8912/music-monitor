@@ -24,15 +24,13 @@ import anyio
 import uuid
 
 from app.services.subscription import active_refreshes
-from app.services.subscription import active_refreshes
 from app.models.song import Song, SongSource
 from app.models.artist import Artist, ArtistSource
 from app.repositories.song import SongRepository
 from app.repositories.artist import ArtistRepository
 from app.services.download_service import DownloadService
-from app.services.metadata_service import MetadataService
+from app.services._singletons import get_download_service, get_aggregator, get_metadata_service
 from app.services.metadata_healer import MetadataHealer
-from app.services.music_providers.aggregator import MusicAggregator
 from app.services.scan_service import ScanService
 from app.utils.error_handler import handle_service_errors
 
@@ -43,8 +41,8 @@ class SongManagementService:
     """歌曲增删改服务"""
     
     def __init__(self):
-        self.aggregator = MusicAggregator()
-        self.metadata_service = MetadataService()
+        self.aggregator = get_aggregator()
+        self.metadata_service = get_metadata_service()
     
     @handle_service_errors(fallback_value=False)
     async def delete_song(
@@ -160,7 +158,7 @@ class SongManagementService:
         old_path = song.local_path
         
         # 1. 下载
-        download_service = DownloadService()
+        download_service = _get_download_service()
         
         # [Fix] 如果来源是 local，我们需要先搜索一个在线来源
         if source == 'local':
@@ -307,7 +305,7 @@ class SongManagementService:
                         break
         
         # 2. 下载
-        download_service = DownloadService()
+        download_service = _get_download_service()
         
         # 确保音质默认为高质量
         req_quality = quality if quality and quality > 0 else 999
@@ -371,7 +369,7 @@ class SongManagementService:
                 artist_id=db_artist.id,
                 album=album,
                 cover=cover_url,
-                publish_time=datetime.now(),  # 占位符
+                publish_time=None,  # 由 MetadataHealer 后续补全真实发布日期
                 created_at=datetime.now(),
                 status="DOWNLOADED",
                 local_path=filepath,

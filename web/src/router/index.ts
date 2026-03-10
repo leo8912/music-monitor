@@ -64,6 +64,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/Login.vue'),
         meta: {}
     },
+    {
+        path: '/mobile/play',
+        name: 'MobilePlay',
+        component: () => import('@/views/MobilePlay.vue'),
+        meta: { hideLayout: true, requiresAuth: false }
+    },
 
     // ========== 兼容旧路由 ==========
     {

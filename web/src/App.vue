@@ -41,7 +41,7 @@ const route = useRoute()
 const settingsStore = useSettingsStore()
 const wsStore = useWebSocketStore()
 
-const hideLayout = computed(() => route.name === 'Login')
+const hideLayout = computed(() => route.name === 'Login' || route.meta.hideLayout)
 
 // Spotify Style 主题配置
 const themeOverrides = computed(() => ({

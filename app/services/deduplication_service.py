@@ -330,7 +330,15 @@ class DeduplicationService:
                     
         # 标签排序
         def source_sort_key(s):
-            keys = {'local': 0, 'downloaded': 1, 'netease': 2, 'qqmusic': 3}
+            keys = {
+                'local': 0, 
+                'downloaded': 1, 
+                'qqmusic': 2, 
+                'netease': 3, 
+                'kuwo': 4, 
+                'kugou': 5, 
+                'migu': 6
+            }
             return keys.get(s, 99)
             
         if 'local' in sources_set and 'downloaded' in sources_set:

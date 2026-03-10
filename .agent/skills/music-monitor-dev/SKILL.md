@@ -8,6 +8,12 @@ trigger: 触发词: [音乐监控开发, 架构规范, 前端规范, GDStudio接
 
 此技能是开发、重构和维护 Music Monitor 项目的权威指南。
 
+> [!IMPORTANT]
+> **编写代码前必须参考** [field-naming-convention.md](file:///d:/code/music-monitor/.agent/skills/music-monitor-dev/field-naming-convention.md)
+> 此文档定义了所有模型字段名、API Schema 和服务方法签名的唯一真理源。
+> 修改字段名或签名时必须同步更新该文档。
+> **新建技术方案或报告时**，必须遵循现有的 `文档/` 和 `需求/` 树结构存放，切勿四处乱放。
+
 ## 1. 项目架构 (Project Architecture)
 
 本项目遵循严格的 **Service-Repository** 模式，关注点分离清晰。

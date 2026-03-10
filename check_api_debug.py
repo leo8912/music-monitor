@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+import sys
+import io
+
+# 强制标准输出为 UTF-8，解决 Windows 环境乱码问题
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 import asyncio
 import json
 from sqlalchemy import select, func

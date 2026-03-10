@@ -157,7 +157,7 @@ class NotificationService:
                 title=f"关注成功：{artist_name}",
                 description=description,
                 url=target_url,
-                pic_url=avatar or "https://p2.music.126.net/tGHU62DTszbTsM7vzNgHjw==/109951165631226326.jpg"
+                pic_url=avatar or "/static/default_artist.png"
             )
             logger.info(f"Notification: Sent artist card for {artist_name}")
         except Exception as e:

@@ -3,7 +3,7 @@
  * 桌面端设置视图 - 侧边栏布局 (优化版)
  */
 import { onMounted, ref } from 'vue'
-import { NSpin, NIcon } from 'naive-ui'
+import { NSpin, NIcon, NResult, NButton } from 'naive-ui'
 import { useSettingsStore } from '@/stores'
 import { 
     SettingsOutline, NotificationsOutline 
@@ -49,8 +49,17 @@ onMounted(async () => {
 
         <!-- 右侧内容 -->
         <div class="settings-content">
+            <!-- Error State -->
+            <div v-if="settingsStore.error" class="error-wrapper">
+                <n-result status="error" title="加载失败" :description="settingsStore.error">
+                    <template #footer>
+                        <n-button @click="settingsStore.fetchSettings()">重试</n-button>
+                    </template>
+                </n-result>
+            </div>
+
             <!-- Loading State -->
-            <div v-if="settingsStore.isLoading || !settingsStore.settings" class="loading-wrapper">
+            <div v-else-if="settingsStore.isLoading || !settingsStore.settings" class="loading-wrapper">
                 <n-spin size="large" description="加载配置中..." />
             </div>
 
@@ -128,11 +137,13 @@ onMounted(async () => {
     min-width: 0; /* 防止子组件超出 */
 }
 
-.loading-wrapper {
+.loading-wrapper, .error-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 300px;
+    height: 400px;
+    background-color: var(--sp-card);
+    border-radius: 12px;
 }
 
 .tab-pane {

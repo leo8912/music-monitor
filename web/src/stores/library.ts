@@ -28,23 +28,39 @@ export const useLibraryStore = defineStore('library', () => {
         const map = new Map<string, MergedArtist>()
 
         artists.value.forEach(a => {
+            // Merge sources: prefer availableSources from backend, fallback to sources array or single source
+            const sourceList = (a.available_sources || a.sources || (a.source === 'database' ? [] : [a.source])) as MusicSource[]
+            const idEntry = { source: a.source, id: a.id }
+
             if (!map.has(a.name)) {
-                // Merge sources: prefer availableSources from backend, fallback to sources array or single source
-                const sourceList = (a.available_sources || a.sources || (a.source === 'database' ? [] : [a.source])) as MusicSource[]
-
-                const idEntry = { source: a.source, id: a.id }
-
                 map.set(a.name, {
                     name: a.name,
                     avatar: a.avatar,
                     sources: sourceList,
                     ids: [idEntry],
-                    songCount: a.songCount || 0
+                    songCount: a.song_count || 0
                 })
+            } else {
+                const existing = map.get(a.name)!
+                // 合并来源 (Merge sources)
+                const combinedSources = new Set([...existing.sources, ...sourceList])
+                existing.sources = Array.from(combinedSources)
+
+                // 合并 ID (Merge IDs, avoid duplicates)
+                if (!existing.ids.some(i => i.source === idEntry.source && i.id === idEntry.id)) {
+                    existing.ids.push(idEntry)
+                }
+
+                // 补充头像 (Fill avatar)
+                if (!existing.avatar && a.avatar) {
+                    existing.avatar = a.avatar
+                }
+
+                // 更新歌曲计数 (取较大值，通常后端返回的逻辑艺人计数已包含所有源)
+                if ((a.song_count || 0) > (existing.songCount || 0)) {
+                    existing.songCount = a.song_count
+                }
             }
-            // Since backend is now normalized, duplicates by name shouldn't happen for Monitored Artists.
-            // But if we had mixed sources... 
-            // We assume backend handles uniqueness.    
         })
 
         return Array.from(map.values())
@@ -255,7 +271,11 @@ export const useLibraryStore = defineStore('library', () => {
     const toggleFavorite = async (song: Song) => {
         try {
             const result = await libraryApi.toggleFavorite(song.id)
-            song.is_favorite = result.is_favorite
+            // 同步更新所有列表
+            updateSongInList({
+                ...song,
+                is_favorite: result.is_favorite
+            })
             return true
         } catch (error) {
             console.error('切换收藏失败:', error)
@@ -268,18 +288,6 @@ export const useLibraryStore = defineStore('library', () => {
             fetchArtists(),
             fetchSongs(currentPage.value)
         ])
-    }
-
-    const repairSong = async (song: Song) => {
-        try {
-            isLoading.value = true
-            console.log('Repairing song:', song)
-            await refresh()
-            return true
-        } catch (error) {
-            console.error('修复歌曲失败:', error)
-            return false
-        }
     }
 
     const refreshArtist = async (artist: MergedArtist) => {
@@ -298,31 +306,39 @@ export const useLibraryStore = defineStore('library', () => {
     }
 
     const updateSongInList = (updatedData: any) => {
-        const index = songs.value.findIndex(s => s.id === updatedData.id)
-        if (index !== -1) {
-            // Map backend fields to frontend fields
-            const mappedSong: Song = {
-                id: updatedData.id,
-                title: updatedData.title,
-                artist: updatedData.artist,
-                album: updatedData.album || '',
-                source: updatedData.source || 'local',
-                source_id: updatedData.source_id || updatedData.media_id || updatedData.id,
-                cover: updatedData.cover || updatedData.pic_url,
-                local_path: updatedData.local_path || updatedData.local_audio_path,
-                is_favorite: updatedData.is_favorite || false,
-                status: updatedData.status || 'DOWNLOADED',
-                publish_time: updatedData.publish_time,
-                created_at: updatedData.created_at,
-                found_at: updatedData.found_at,
-                available_sources: updatedData.available_sources || [],
-                quality: updatedData.quality,
-                local_files: updatedData.local_files || []
-            }
-            songs.value[index] = mappedSong
-            return mappedSong
+        // Map backend fields to frontend fields
+        const mappedSong: Song = {
+            id: updatedData.id,
+            title: updatedData.title,
+            artist: updatedData.artist,
+            album: updatedData.album || '',
+            source: updatedData.source || 'local',
+            source_id: updatedData.source_id || updatedData.media_id || updatedData.id,
+            cover: updatedData.cover || updatedData.pic_url,
+            local_path: updatedData.local_path,
+            is_favorite: updatedData.is_favorite || false,
+            status: updatedData.status || 'DOWNLOADED',
+            publish_time: updatedData.publish_time,
+            created_at: updatedData.created_at,
+            found_at: updatedData.found_at,
+            available_sources: updatedData.available_sources || [],
+            quality: updatedData.quality,
+            local_files: updatedData.local_files || []
         }
-        return null
+
+        // 1. 在歌曲列表中查找并更新
+        const songIndex = songs.value.findIndex(s => s.id === updatedData.id)
+        if (songIndex !== -1) {
+            songs.value[songIndex] = { ...songs.value[songIndex], ...mappedSong }
+        }
+
+        // 2. 在历史记录中查找并更新
+        const historyIndex = historySongs.value.findIndex(s => s.id === updatedData.id)
+        if (historyIndex !== -1) {
+            historySongs.value[historyIndex] = { ...historySongs.value[historyIndex], ...mappedSong }
+        }
+
+        return mappedSong
     }
 
     return {
@@ -352,7 +368,6 @@ export const useLibraryStore = defineStore('library', () => {
         deleteArtist,
         toggleFavorite,
         refresh,
-        repairSong,
         refreshArtist,
         downloadSong: async (data: any) => {
             try {

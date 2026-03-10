@@ -78,7 +78,6 @@ async def get_artist_detail(
         logger.error(f"Get artist detail error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/artists")
 @router.post("/api/subscription/artists")
 async def add_artist(
     req: ArtistConfig,

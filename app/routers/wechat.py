@@ -28,8 +28,7 @@ except ImportError:
 from core.config import config, add_monitored_user
 from core.database import AsyncSessionLocal
 from app.services.wechat_download_service import WeChatDownloadService
-from app.services.download_service import DownloadService
-from app.services.music_providers import MusicAggregator
+from app.services._singletons import get_download_service, get_aggregator
 from app.notifiers.wecom import WeComNotifier
 
 from app.models.wechat_session import WeChatSession
@@ -219,7 +218,7 @@ def format_artist(artist_field) -> str:
 async def handle_song_search(keyword: str, user_id: str) -> str:
     """搜索歌曲"""
     try:
-        aggregator = MusicAggregator()
+        aggregator = get_aggregator()
         results = await asyncio.wait_for(
             aggregator.search_song(keyword, limit=8),
             timeout=8.0
@@ -254,7 +253,7 @@ async def handle_song_search(keyword: str, user_id: str) -> str:
 async def handle_artist_search(keyword: str, user_id: str) -> str:
     """搜索歌手"""
     try:
-        aggregator = MusicAggregator()
+        aggregator = get_aggregator()
         results = await asyncio.wait_for(
             aggregator.search_artist(keyword, limit=5),
             timeout=8.0
@@ -294,7 +293,7 @@ async def background_download(song: dict, user_id: str):
     
     try:
         # 使用 DownloadService 下载
-        download_service = DownloadService()
+        download_service = get_download_service()
         result = await download_service.download_audio(
             title=title,
             artist=artist,

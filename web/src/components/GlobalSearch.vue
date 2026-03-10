@@ -80,7 +80,7 @@ const addArtist = async (artist: any) => {
     try {
         const promises = artist.sources.map((source: string) => {
             const sourceId = artist.extra_ids[source] || artist.id
-            return axios.post('/api/artists', {
+            return axios.post('/api/subscription/artists', {
                 name: artist.name,
                 source: source,
                 id: sourceId,

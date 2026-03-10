@@ -44,7 +44,7 @@ class WeChatDownloadService:
         Returns:
             下载结果字典
         """
-        from app.services.download_service import DownloadService
+        from app.services._singletons import get_download_service
         
         title = song.get('title', '')
         artist = song.get('artist', '')
@@ -53,13 +53,15 @@ class WeChatDownloadService:
         album = song.get('album', '')
         
         # 使用 DownloadService 执行下载
-        download_service = DownloadService()
+        download_service = get_download_service()
         
         try:
             result = await download_service.download_audio(
                 title=title,
                 artist=artist,
-                album=album
+                album=album,
+                source=song.get('source'),
+                source_id=str(song.get('id', ''))
             )
             
             if result:

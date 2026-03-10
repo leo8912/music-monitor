@@ -481,6 +481,8 @@ class DownloadService:
                              artist: str, 
                              album: str = "",
                              quality: int = 999,
+                             source: str = None,
+                             source_id: str = None,
                              progress_callback: Callable[[str], Awaitable[None]] = None) -> Optional[Dict]:
         """
         主下载方法
@@ -490,6 +492,8 @@ class DownloadService:
             artist: 歌手名
             album: 专辑名 (可选)
             quality: 音质 (128/192/320/740/999)
+            source: 指定音源平台 (可选，如 'netease')
+            source_id: 指定平台歌曲 ID (可选)
             progress_callback: 进度回调
         
         Returns:
@@ -513,6 +517,41 @@ class DownloadService:
                 created_at=datetime.now()
             )
             self._tasks[task_id] = task
+            
+            # 快速路径：指定 source + source_id 时直接下载，跳过搜索
+            if source and source_id:
+                task.status = DownloadStatus.DOWNLOADING
+                if progress_callback:
+                    await progress_callback(f"🎯 直接下载指定源: [{source}:{source_id}]")
+                
+                audio_info = await self.get_audio_url(source, source_id, quality)
+                if audio_info:
+                    safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
+                    safe_artist = re.sub(r'[<>:"/\\|?*]', '_', artist)
+                    ext = "flac" if audio_info.get("br", 0) >= 740 else "mp3"
+                    filename = f"{safe_artist} - {safe_title}.{ext}"
+                    filepath = os.path.join(self.cache_dir, filename)
+                    
+                    async def update_progress_direct(pct):
+                        if progress_callback:
+                            await progress_callback(f"⬇️ 下载中... {pct:.0f}%")
+                    
+                    success = await self.download_file(audio_info["url"], filepath, update_progress_direct)
+                    if success:
+                        task.status = DownloadStatus.SUCCESS
+                        task.download_path = filename
+                        if progress_callback:
+                            await progress_callback("✅ 下载完成！")
+                        return {
+                            "local_path": filename,
+                            "quality": audio_info.get("br", quality),
+                            "size": audio_info.get("size", 0),
+                            "format": ext,
+                            "source": source
+                        }
+                
+                # 指定源失败，降级到搜索模式
+                logger.warning(f"指定源 {source}:{source_id} 下载失败，降级到搜索模式")
             
             # 1. 搜集候选池 (瀑布式重试基础)
             task.status = DownloadStatus.SEARCHING

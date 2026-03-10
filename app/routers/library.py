@@ -196,8 +196,8 @@ async def enrich_local_files_endpoint(
     try:
         from app.services.metadata_healer import MetadataHealer
         service = MetadataHealer()
-        # 以后台任务运行，避免阻塞接口 (自动任务遵守冷却期, Force=False)
-        asyncio.create_task(service.heal_all(force=False, limit=50))
+        # 以后台任务运行，避免阻塞接口 (用户手动触发，使用 force=True 确保真正补全)
+        asyncio.create_task(service.heal_all(force=True, limit=50))
         return {"success": True, "message": "Metadata healing task started (background)"}
     except Exception as e:
         import traceback

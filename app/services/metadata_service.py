@@ -146,31 +146,31 @@ class MetadataService:
         3. [Auto-Embed] 在线获取成功后，异步写入本地文件
         """
         # 1. 尝试本地读取
-        print(f"=== DEBUG === fetch_lyrics called for '{title}' by '{artist}'. local_path: {local_path}, source_id: {source_id}", flush=True)
+        logger.debug(f"fetch_lyrics called for '{title}' by '{artist}'. local_path: {local_path}, source_id: {source_id}")
 
         # 1. Try to read embedded lyrics first if local path is available
         if local_path and mutagen:
-            print(f"=== DEBUG === Attempting to read embedded lyrics from: {local_path}", flush=True)
+            logger.debug(f"尝试从本地文件读取内嵌歌词: {local_path}")
             if os.path.exists(local_path):
-                print("=== DEBUG === File exists, attempting to read embedded lyrics...", flush=True)
+                logger.debug("文件存在，尝试读取内嵌歌词...")
                 try:
                     embedded_lyrics = await self._read_embedded_lyrics(local_path)
                     if embedded_lyrics:
-                        print(f"=== DEBUG === ✅ Found embedded lyrics ({len(embedded_lyrics)} chars)", flush=True)
+                        logger.debug(f"✅ 找到内嵌歌词 ({len(embedded_lyrics)} 字符)")
                         return embedded_lyrics
                     else:
-                        print("=== DEBUG === ❌ No embedded lyrics found in file.", flush=True)
+                        logger.debug("❌ 文件中未找到内嵌歌词")
                 except Exception as e:
-                    print(f"=== DEBUG === ❌ Error reading embedded lyrics: {e}", flush=True)
+                    logger.debug(f"❌ 读取内嵌歌词出错: {e}")
             else:
-                 print(f"=== DEBUG === ❌ Local file not found at: {local_path}", flush=True)
+                 logger.debug(f"❌ 本地文件不存在: {local_path}")
         elif local_path and not mutagen:
-            print("=== DEBUG === Skipping embedded lyrics check: mutagen not installed.", flush=True)
+            logger.debug("跳过内嵌歌词检查: mutagen 未安装")
         elif not local_path:
-            print("=== DEBUG === No local_path provided, skipping embedded lyrics check.", flush=True)
+            logger.debug("未提供 local_path，跳过内嵌歌词检查")
 
         # 2. Fallback to online providers
-        print(f"=== DEBUG === Falling back to online search for: {title} - {artist}", flush=True)
+        logger.debug(f"降级到在线搜索歌词: {title} - {artist}")
         lyrics = await self._fetch_online_lyrics(title, artist, source, source_id)
         
         # 3. 自动回写 (Auto-Embed)
@@ -430,7 +430,72 @@ class MetadataService:
         
         result.success = bool(result.lyrics or result.cover_url or result.publish_time)
         return result
-    
+
+    async def get_metadata_by_source_id(self, source: str, source_id: str) -> MetadataResult:
+        """
+        通过指定的 source 和 song_id 直接获取元数据（无需搜索）
+        
+        用于用户手动选择匹配结果后，按其指定的源和 ID 精确获取元数据。
+        
+        Args:
+            source: 数据源名称 (netease / qqmusic)
+            source_id: 该源中的歌曲 ID
+            
+        Returns:
+            MetadataResult: 包含歌词、封面、专辑等元数据
+        """
+        result = MetadataResult()
+        result.source = source
+        
+        # 选择 provider
+        provider = None
+        if source == "netease":
+            provider = self._get_netease_provider()
+        elif source in ("qqmusic", "qq", "tencent"):
+            provider = self._get_qqmusic_provider()
+        
+        if not provider:
+            result.error_message = f"不支持的数据源: {source}"
+            return result
+        
+        try:
+            # 直接按 ID 获取详细元数据
+            song_meta = await provider.get_song_metadata(source_id)
+            if song_meta:
+                def get_val(obj, key, default=None):
+                    if isinstance(obj, dict): return obj.get(key, default)
+                    return getattr(obj, key, default)
+                
+                result.lyrics = get_val(song_meta, 'lyrics')
+                result.cover_url = get_val(song_meta, 'cover_url')
+                result.album = get_val(song_meta, 'album')
+                result.publish_time = get_val(song_meta, 'publish_time')
+                result.success = True
+                
+                # 如果元数据没有歌词，尝试单独获取
+                if not result.lyrics:
+                    try:
+                        lyrics = await self._fetch_lyrics_by_id(source, source_id)
+                        if lyrics:
+                            result.lyrics = lyrics
+                    except Exception:
+                        pass
+                
+                logger.info(f"✅ 通过 {source}:{source_id} 直接获取元数据成功")
+            else:
+                result.error_message = f"{source}:{source_id} 未找到元数据"
+                logger.warning(result.error_message)
+                
+        except Exception as e:
+            result.error_message = str(e)
+            logger.error(f"❌ 通过 {source}:{source_id} 获取元数据失败: {e}")
+        
+        # 下载封面数据
+        if result.cover_url:
+            result.cover_data = await self.fetch_cover_data(result.cover_url)
+        
+        return result
+
     async def close(self):
         """关闭服务"""
         pass

@@ -36,7 +36,8 @@ class MetadataHealer:
     """
     
     def __init__(self):
-        self.metadata_service = MetadataService()
+        from app.services._singletons import get_metadata_service
+        self.metadata_service = get_metadata_service()
         
         # 配置上传路径
         if os.path.exists("/config"):
@@ -134,7 +135,7 @@ class MetadataHealer:
                         
                     # 2. 执行网络补全
                     try:
-                        success = await self.heal_song(song.id, force=force)
+                        success = await self.heal_song(song.id, force=force, db=db)
                         if success:
                             healed_count += 1
                             # Update details on success
@@ -160,37 +161,66 @@ class MetadataHealer:
                 await task_monitor.error_task(task_id, str(e))
                 return healed_count
 
-    async def heal_song(self, song_id: str, force: bool = False) -> bool:
+    async def heal_song(self, song_id: str, force: bool = False, db=None,
+                        target_source: str = None, target_song_id: str = None) -> bool:
         """
         治愈单首歌曲 (核心逻辑)
+        
+        Args:
+            song_id: 歌曲 ID
+            force: 是否强制更新（忽略 SmartMerger 无变化判断）
+            db: 可选的外部数据库会话，避免创建独立会话导致数据隔离
+            target_source: 指定数据源 (netease/qqmusic)，用于手动匹配时跳过搜索
+            target_song_id: 指定源中的歌曲 ID
         """
-        async with AsyncSessionLocal() as db:
-            song = await db.get(Song, song_id, options=[selectinload(Song.artist), selectinload(Song.sources)])
-            if not song: 
-                logger.error(f"❌ 无法找到歌曲 ID: {song_id}")
-                return False
+        if db:
+            return await self._do_heal_song(db, song_id, force, target_source, target_song_id)
+        else:
+            async with AsyncSessionLocal() as new_db:
+                return await self._do_heal_song(new_db, song_id, force, target_source, target_song_id)
 
-            logger.info(f"🩹 正在治愈: {song.title} (ID: {song.id})")
-            
-            # 记录详细的处理信息
-            processing_info = {
-                'song_id': song_id,
-                'title': song.title,
-                'artist': song.artist.name if song.artist else "未知",
-                'local_path': song.local_path,
-                'current_state': {
-                    'has_lyrics': any(self._parse_data_json(src.data_json).get("lyrics") for src in song.sources),
-                    'has_cover': bool(song.cover and song.cover.startswith("/uploads/")),
-                    'has_album': bool(song.album),
-                    'has_publish_time': bool(song.publish_time)
-                }
+    async def _do_heal_song(self, db, song_id: str, force: bool = False,
+                            target_source: str = None, target_song_id: str = None) -> bool:
+        """
+        治愈单首歌曲的内部实现
+        """
+        song = await db.get(Song, song_id, options=[selectinload(Song.artist), selectinload(Song.sources)])
+        if not song: 
+            logger.error(f"❌ 无法找到歌曲 ID: {song_id}")
+            return False
+
+        logger.info(f"🩹 正在治愈: {song.title} (ID: {song.id})")
+        
+        # 记录详细的处理信息
+        processing_info = {
+            'song_id': song_id,
+            'title': song.title,
+            'artist': song.artist.name if song.artist else "未知",
+            'local_path': song.local_path,
+            'current_state': {
+                'has_lyrics': any(self._parse_data_json(src.data_json).get("lyrics") for src in song.sources),
+                'has_cover': bool(song.cover and song.cover.startswith("/uploads/")),
+                'has_album': bool(song.album),
+                'has_publish_time': bool(song.publish_time)
             }
-            
-            logger.info(f"📋 处理前状态: {processing_info}")
+        }
+        
+        logger.info(f"📋 处理前状态: {processing_info}")
 
-            # --- 阶段 1: 搜索元数据 ---
-            # 策略 A: 标准搜索 (Title Artist)
-            # 用户要求不要调用 gdstudio 返回的元数据，我们的 metadata_service 已经默认使用网易云/QQ
+        # --- 阶段 1: 搜索元数据 ---
+        # 策略 0: 如果指定了 target_source/target_song_id，直接用指定源获取
+        if target_source and target_song_id:
+            logger.info(f"🎯 用户指定源: {target_source}:{target_song_id}，跳过搜索")
+            try:
+                best_meta = await self.metadata_service.get_metadata_by_source_id(target_source, target_song_id)
+            except Exception as e:
+                logger.error(f"💥 指定源获取失败: {e}")
+                best_meta = None
+        else:
+            best_meta = None
+
+        # 策略 A: 标准搜索 (Title Artist) —— 仅在未指定源或指定源失败时执行
+        if not best_meta or not best_meta.success:
             try:
                 best_meta = await self.metadata_service.get_best_match_metadata(song.title, song.artist.name if song.artist else "")
                 
@@ -225,189 +255,195 @@ class MetadataHealer:
                 await db.commit()
                 return False
 
-            # --- 阶段 2: 智能合并 ---
-            current_lyrics = None
-            for src in song.sources:
-                data = self._parse_data_json(src.data_json)
-                if data.get("lyrics"):
-                    current_lyrics = data["lyrics"]
-                    break
+        # --- 阶段 2: 智能合并 ---
+        current_lyrics = None
+        for src in song.sources:
+            data = self._parse_data_json(src.data_json)
+            if data.get("lyrics"):
+                current_lyrics = data["lyrics"]
+                break
 
-            current = SongMetadata(
-                title=song.title,
-                artist=song.artist.name if song.artist else "",
-                album=song.album,
-                cover_url=song.cover,
-                lyrics=current_lyrics, 
-                publish_time=song.publish_time
-            )
-            
-            new_meta = SongMetadata(
-                title=best_meta.search_result.title if best_meta.search_result else song.title,
-                artist=best_meta.search_result.artist if best_meta.search_result else "",
-                album=best_meta.album,
-                cover_url=best_meta.cover_url,
-                lyrics=best_meta.lyrics,
-                publish_time=self._parse_date(best_meta.publish_time)
-            )
+        current = SongMetadata(
+            title=song.title,
+            artist=song.artist.name if song.artist else "",
+            album=song.album,
+            cover_url=song.cover,
+            lyrics=current_lyrics, 
+            publish_time=song.publish_time
+        )
+        
+        new_meta = SongMetadata(
+            title=best_meta.search_result.title if best_meta.search_result else song.title,
+            artist=best_meta.search_result.artist if best_meta.search_result else "",
+            album=best_meta.album,
+            cover_url=best_meta.cover_url,
+            lyrics=best_meta.lyrics,
+            publish_time=self._parse_date(best_meta.publish_time)
+        )
 
-            # 相似度分级校验 (防止误关联)
-            similarity = SmartMerger.check_similarity(song.title, new_meta.title)
-            if similarity < 0.6:
-                logger.warning(f"⚠️ 相似度过低 ({similarity:.2f}), 跳过自动治愈: '{song.title}' vs '{new_meta.title}'")
-                song.last_enrich_at = datetime.now()
-                await db.commit()
-                return False
+        # 相似度分级校验 (防止误关联)
+        similarity = SmartMerger.check_similarity(song.title, new_meta.title)
+        # 额外检查：标题包含关系（中文短标题常见场景）
+        title_contains = (
+            song.title.lower().strip() in new_meta.title.lower().strip()
+        ) or (
+            new_meta.title.lower().strip() in song.title.lower().strip()
+        )
+        if similarity < 0.4 and not title_contains:
+            logger.warning(f"⚠️ 相似度过低 ({similarity:.2f}), 跳过自动治愈: '{song.title}' vs '{new_meta.title}'")
+            song.last_enrich_at = datetime.now()
+            await db.commit()
+            return False
 
-            updates = SmartMerger.merge(current, new_meta)
-            
-            if not updates and not force:
-                logger.info("⏩ 元数据未发生显著变化，跳过")
-                song.last_enrich_at = datetime.now()
-                await db.commit()
-                return True # 虽然没更，但也算处理完
+        updates = SmartMerger.merge(current, new_meta)
+        
+        if not updates and not force:
+            logger.info("⏩ 元数据未发生显著变化，跳过")
+            song.last_enrich_at = datetime.now()
+            await db.commit()
+            return True # 虽然没更，但也算处理完
 
-            # --- 阶段 3: 执行更新 ---
-            
-            # 3.1 下载封面
-            cover_data = None
-            
-            # 确定是否需要下载/处理封面
-            # 逻辑：
-            # 1. updates 里有新封面 (SmartMerger 决定更新)
-            # 2. 当前封面是在线链接 (http开头) -> 始终本地化，以满足“全部物理嵌入”要求
-            need_download_cover = "cover" in updates
-            if not need_download_cover and song.cover and (song.cover.startswith("http") or song.cover.startswith("/api/discovery/cover")):
-                need_download_cover = True
-                # 这里不需要强制加入 updates["cover"]，下面逻辑会直接拿 song.cover
-            
-            if need_download_cover:
-                cover_url = updates.get("cover") or song.cover
-                # 处理代理 URL: /api/discovery/cover?source=xxx&id=yyy
-                if cover_url.startswith("/api/discovery/cover"):
-                    import urllib.parse as urlparse
-                    parsed = urlparse.urlparse(cover_url)
-                    qs = urlparse.parse_qs(parsed.query)
-                    source = qs.get("source", [""])[0]
-                    target_id = qs.get("id", [""])[0]
-                    if source and target_id:
-                        # 还原为 GDStudio 的真实 pic 链接 (实际上 pic 会返回 json，所以我们直接用那个 pic 接口)
-                        cover_url = f"{self.api_base_url}?types=pic&source={source}&id={target_id}"
+        # --- 阶段 3: 执行更新 ---
+        
+        # 3.1 下载封面
+        cover_data = None
+        
+        # 确定是否需要下载/处理封面
+        # 逻辑：
+        # 1. updates 里有新封面 (SmartMerger 决定更新)
+        # 2. 当前封面是在线链接 (http开头) -> 始终本地化，以满足“全部物理嵌入”要求
+        need_download_cover = "cover" in updates
+        if not need_download_cover and song.cover and (song.cover.startswith("http") or song.cover.startswith("/api/discovery/cover")):
+            need_download_cover = True
+            # 这里不需要强制加入 updates["cover"]，下面逻辑会直接拿 song.cover
+        
+        if need_download_cover:
+            cover_url = updates.get("cover") or song.cover
+            # 处理代理 URL: /api/discovery/cover?source=xxx&id=yyy
+            if cover_url.startswith("/api/discovery/cover"):
+                import urllib.parse as urlparse
+                parsed = urlparse.urlparse(cover_url)
+                qs = urlparse.parse_qs(parsed.query)
+                source = qs.get("source", [""])[0]
+                target_id = qs.get("id", [""])[0]
+                if source and target_id:
+                    # 还原为 GDStudio 的真实 pic 链接 (实际上 pic 会返回 json，所以我们直接用那个 pic 接口)
+                    cover_url = f"{self.api_base_url}?types=pic&source={source}&id={target_id}"
 
-                web_url, local_path = await self._download_cover(cover_url)
-                if web_url:
-                     song.cover = web_url # 这一步很关键，将在线链接改为本地 /uploads 链接
-                     # 读取 bytes 用于写 tag
-                     if local_path and os.path.exists(local_path):
-                         with open(local_path, "rb") as f:
-                             cover_data = f.read()
-            elif song.cover and song.cover.startswith("/uploads/"):
-                 # 已经是本地封面，读取出来
-                 # 修复 Windows 下的路径拼接逻辑
-                 rel_path = song.cover.replace("/", os.sep).lstrip(os.sep)
-                 # 如果 cover 是 /uploads/covers/xxx.jpg，rel_path 变成 uploads\covers\xxx.jpg
-                 # 而 self.upload_root 可能是 D:\code\music-monitor\uploads
-                 # 所以要小心拼接。 song.cover 包含 'uploads' 吗？
-                 # 查看 _download_cover: web_url = f"/uploads/covers/{filename}"
-                 # 所以 rel_path 包含 uploads/covers/...
-                 # 我们需要的是相对于 cwd 的路径。
-                 local_path = os.path.join(os.getcwd(), rel_path)
-                 if os.path.exists(local_path):
+            web_url, local_path = await self._download_cover(cover_url)
+            if web_url:
+                 song.cover = web_url # 这一步很关键，将在线链接改为本地 /uploads 链接
+                 # 读取 bytes 用于写 tag
+                 if local_path and os.path.exists(local_path):
                      with open(local_path, "rb") as f:
                          cover_data = f.read()
+        elif song.cover and song.cover.startswith("/uploads/"):
+             # 已经是本地封面，读取出来
+             # 修复 Windows 下的路径拼接逻辑
+             rel_path = song.cover.replace("/", os.sep).lstrip(os.sep)
+             # 如果 cover 是 /uploads/covers/xxx.jpg，rel_path 变成 uploads\covers\xxx.jpg
+             # 而 self.upload_root 可能是 D:\code\music-monitor\uploads
+             # 所以要小心拼接。 song.cover 包含 'uploads' 吗？
+             # 查看 _download_cover: web_url = f"/uploads/covers/{filename}"
+             # 所以 rel_path 包含 uploads/covers/...
+             # 我们需要的是相对于 cwd 的路径。
+             local_path = os.path.join(os.getcwd(), rel_path)
+             if os.path.exists(local_path):
+                 with open(local_path, "rb") as f:
+                     cover_data = f.read()
 
-            # 3.2 更新 DB 字段
-            if "title" in updates: song.title = updates["title"]
-            if "album" in updates: song.album = updates["album"]
-            if "publish_time" in updates: song.publish_time = updates["publish_time"]
-            
-            # 3.3 写入文件 (TagService)
-            # 准备写入的数据
-            # 确保即使这次没获取到歌词，也要尝试从数据库现有记录里拿，防止被空值覆盖
-            final_lyrics = updates.get("lyrics") or new_meta.lyrics or current_lyrics
-            
-            tag_meta = {
-                "title": song.title,
-                "artist": song.artist.name if song.artist else "",
-                "album": song.album,
-                "date": song.publish_time,
-                "lyrics": final_lyrics,
-                "cover_data": cover_data
-            }
-            
-            # 清理 None 值
-            tag_meta = {k: v for k, v in tag_meta.items() if v is not None}
+        # 3.2 更新 DB 字段
+        if "title" in updates: song.title = updates["title"]
+        if "album" in updates: song.album = updates["album"]
+        if "publish_time" in updates: song.publish_time = updates["publish_time"]
+        
+        # 3.3 写入文件 (TagService)
+        # 准备写入的数据
+        # 确保即使这次没获取到歌词，也要尝试从数据库现有记录里拿，防止被空值覆盖
+        final_lyrics = updates.get("lyrics") or new_meta.lyrics or current_lyrics
+        
+        tag_meta = {
+            "title": song.title,
+            "artist": song.artist.name if song.artist else "",
+            "album": song.album,
+            "date": song.publish_time,
+            "lyrics": final_lyrics,
+            "cover_data": cover_data
+        }
+        
+        # 清理 None 值
+        tag_meta = {k: v for k, v in tag_meta.items() if v is not None}
 
-            if song.local_path and os.path.exists(song.local_path):
-                success = await TagService.write_tags(song.local_path, tag_meta)
-                if success:
-                    logger.info(f"💾 文件标签回写成功: {song.local_path}")
+        if song.local_path and os.path.exists(song.local_path):
+            success = await TagService.write_tags(song.local_path, tag_meta)
+            if success:
+                logger.info(f"💾 文件标签回写成功: {song.local_path}")
+        
+        # 3.4 更新 Source 数据 (lyrics 和 cover 存这里)
+        # 🔧 修复: 如果没有 source 记录，创建一个 local source
+        if not song.sources:
+            from app.models.song import SongSource
+            logger.info(f"⚠️ 歌曲没有 source 记录，创建 local source: {song.title}")
+            new_source = SongSource(
+                song_id=song.id,
+                source="local",
+                source_id=song.local_path or str(song.id),
+                data_json={"lyrics": final_lyrics} if final_lyrics else {}
+            )
+            db.add(new_source)
+            # 立即刷新以获取新创建的 source
+            await db.flush()
+            song.sources.append(new_source)
+        
+        for src in song.sources:
+            data = self._parse_data_json(src.data_json)
+            changed = False
             
-            # 3.4 更新 Source 数据 (lyrics 和 cover 存这里)
-            # 🔧 修复: 如果没有 source 记录，创建一个 local source
-            if not song.sources:
-                from app.models.song import SongSource
-                logger.info(f"⚠️ 歌曲没有 source 记录，创建 local source: {song.title}")
-                new_source = SongSource(
-                    song_id=song.id,
-                    source="local",
-                    source_id=song.local_path or str(song.id),
-                    data_json={"lyrics": final_lyrics} if final_lyrics else {}
-                )
-                db.add(new_source)
-                # 立即刷新以获取新创建的 source
-                await db.flush()
-                song.sources.append(new_source)
+            # 同步歌词 - 确保歌词一定写入 data_json (修复持久化问题)
+            # 不论 SmartMerger 是否决定"更新"，只要有歌词就写入
+            if final_lyrics and not data.get("lyrics"):
+                data["lyrics"] = final_lyrics
+                changed = True
+            elif updates.get("lyrics"):  # SmartMerger 决定升级歌词 (如 纯文本->LRC)
+                data["lyrics"] = updates["lyrics"]
+                changed = True
             
-            for src in song.sources:
-                data = self._parse_data_json(src.data_json)
-                changed = False
-                
-                # 同步歌词 - 确保歌词一定写入 data_json (修复持久化问题)
-                # 不论 SmartMerger 是否决定"更新"，只要有歌词就写入
-                if final_lyrics and not data.get("lyrics"):
-                    data["lyrics"] = final_lyrics
-                    changed = True
-                elif updates.get("lyrics"):  # SmartMerger 决定升级歌词 (如 纯文本->LRC)
-                    data["lyrics"] = updates["lyrics"]
+            # 同步专辑
+            if "album" in updates:
+                data["album"] = updates["album"]
+                changed = True
+            
+            # 同步封面 (如果已本地化，强制所有来源同步)
+            if song.cover and song.cover.startswith("/uploads/"):
+                if src.cover != song.cover:
+                    src.cover = song.cover
                     changed = True
                 
-                # 同步专辑
-                if "album" in updates:
-                    data["album"] = updates["album"]
-                    changed = True
-                
-                # 同步封面 (如果已本地化，强制所有来源同步)
-                if song.cover and song.cover.startswith("/uploads/"):
-                    if src.cover != song.cover:
-                        src.cover = song.cover
+                # 确保 data_json 里的封面也更新
+                if isinstance(data, dict):
+                    if data.get("cover") != song.cover:
+                        data["cover"] = song.cover
                         changed = True
-                    
-                    # 确保 data_json 里的封面也更新
-                    if isinstance(data, dict):
-                        if data.get("cover") != song.cover:
-                            data["cover"] = song.cover
-                            changed = True
-                
-                if changed:
-                    src.data_json = data
-                    # 🔧 关键修复: SQLAlchemy 不会自动追踪 JSON 字段的内部修改
-                    # 必须显式标记字段已变更，否则 commit 时不会持久化
-                    from sqlalchemy.orm.attributes import flag_modified
-                    flag_modified(src, "data_json")
-                    logger.info(f"📝 已更新 source[{src.source}].data_json: lyrics={bool(data.get('lyrics'))}")
             
-            # 调试: 确认最终状态
-            final_check = False
-            for src in song.sources:
-                d = self._parse_data_json(src.data_json)
-                if d.get("lyrics"):
-                    final_check = True
-                    break
-            logger.info(f"🔍 持久化检查: {song.title} 歌词已保存={final_check}, sources数量={len(song.sources)}")
-            
-            await db.commit()
-            return True
+            if changed:
+                src.data_json = data
+                # 🔧 关键修复: SQLAlchemy 不会自动追踪 JSON 字段的内部修改
+                # 必须显式标记字段已变更，否则 commit 时不会持久化
+                from sqlalchemy.orm.attributes import flag_modified
+                flag_modified(src, "data_json")
+                logger.info(f"📝 已更新 source[{src.source}].data_json: lyrics={bool(data.get('lyrics'))}")
+        
+        # 调试: 确认最终状态
+        final_check = False
+        for src in song.sources:
+            d = self._parse_data_json(src.data_json)
+            if d.get("lyrics"):
+                final_check = True
+                break
+        logger.info(f"🔍 持久化检查: {song.title} 歌词已保存={final_check}, sources数量={len(song.sources)}")
+        
+        await db.commit()
+        return True
 
     async def heal_artist(self, db, artist) -> bool:
         """治愈歌手头像 (本地化)"""

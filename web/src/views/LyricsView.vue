@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores'
 // @ts-ignore
 import ColorThief from 'colorthief/dist/color-thief.mjs'
-import { MusicalNotesOutline } from '@vicons/ionicons5'
+import { MusicalNotesOutline, ChevronDownOutline } from '@vicons/ionicons5'
 import { NIcon } from 'naive-ui'
+
+const router = useRouter()
 
 const playerStore = usePlayerStore()
 const lyricContainer = ref<HTMLElement | null>(null)
@@ -53,11 +56,27 @@ watch(() => playerStore.currentLyricIndex, (index) => {
     }
   }
 })
+
+// 退出全屏逻辑
+const handleBack = () => {
+    if (window.history.state.back) {
+        router.back()
+    } else {
+        router.push('/')
+    }
+}
 </script>
 
 <template>
   <div class="lyrics-view" :style="bgStyle">
     <div class="glass-overlay"></div>
+
+    <!-- Top Toolbar -->
+    <div class="lyrics-toolbar">
+        <div class="btn-back" @click="handleBack">
+            <n-icon :component="ChevronDownOutline" size="32" />
+        </div>
+    </div>
     
     <div class="content-wrapper">
         <!-- Left: Huge Cover Art & Info -->
@@ -209,5 +228,34 @@ watch(() => playerStore.currentLyricIndex, (index) => {
     height: 100%;
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; color: rgba(255,255,255,0.4);
+}
+/* Toolbar & Back Button */
+.lyrics-toolbar {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    z-index: 10;
+}
+
+.btn-back {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.btn-back:active {
+    transform: scale(0.95);
 }
 </style>

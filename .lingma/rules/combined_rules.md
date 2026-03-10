@@ -10,6 +10,8 @@ trigger: always_on
 - 文档目录结构要规范清晰
 - api和相关稳定等等放在文档文件夹下，文件夹名文档
 - 所有需求、todo、修改方案计划、等等都放在需求文件夹下，文件夹名需求
+- **【核心要求】**：未来的新增接口开发前，**务必先查阅** `.agent/skills/music-monitor-dev/field-naming-convention.md` 进行字段和接口命名对齐。
+- **【核心要求】**：在开发新方案或输出审查报告时，必须遵循现有的 `文档/` 和 `需求/` 树形结构规范。不可在根目录或错误目录随意堆放 `*.md`。
 
 GD Studio's Online Music Platform API
 To report any unlawful activity or to protect your local authority, please contact us: gdstudio@email.com

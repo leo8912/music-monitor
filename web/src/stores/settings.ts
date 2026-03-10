@@ -6,13 +6,14 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import type { Settings, SystemStatus } from '@/types'
 import { useLocalStorage } from '@vueuse/core'
-
+import * as systemApi from '@/api/system'
 export const useSettingsStore = defineStore('settings', () => {
     // 状态
     const isDark = ref(false)
     const settings = ref<Settings | null>(null)
     const systemStatus = ref<SystemStatus | null>(null)
     const isLoading = ref(false)
+    const error = ref<string | null>(null)
     const themeStorage = useLocalStorage('theme', '')
 
     // 初始化主题
@@ -39,11 +40,13 @@ export const useSettingsStore = defineStore('settings', () => {
     // 获取设置
     const fetchSettings = async () => {
         isLoading.value = true
+        error.value = null
 
         try {
             settings.value = await systemApi.getSettings()
-        } catch (error) {
-            console.error('获取设置失败:', error)
+        } catch (err: any) {
+            console.error('获取设置失败:', err)
+            error.value = err.message || '加载设置失败，请检查网络或后端状态'
         } finally {
             isLoading.value = false
         }
@@ -74,42 +77,19 @@ export const useSettingsStore = defineStore('settings', () => {
         }
     }
 
-    // 触发检查
-    const triggerCheck = async (source: string) => {
-        try {
-            const result = await systemApi.triggerCheck(source)
-            return result
-        } catch (error) {
-            console.error('触发检查失败:', error)
-            throw error
-        }
-    }
-
-    // 触发扫描
-    const triggerScan = async () => {
-        try {
-            const result = await systemApi.triggerScan()
-            return result
-        } catch (error) {
-            console.error('触发扫描失败:', error)
-            throw error
-        }
-    }
-
     return {
         // 状态
         isDark,
         settings,
         systemStatus,
         isLoading,
+        error,
 
         // 方法
         initTheme,
         toggleTheme,
         fetchSettings,
         saveSettings,
-        fetchStatus,
-        triggerCheck,
-        triggerScan
+        fetchStatus
     }
 })

@@ -19,7 +19,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.artist import Artist, ArtistSource
 from app.models.song import Song
-from app.services.music_providers.aggregator import MusicAggregator
+from app.services._singletons import get_aggregator
 
 # Global lock for artist addition to prevent duplicate creation on concurrent requests
 _add_artist_lock = asyncio.Lock()
@@ -52,7 +52,7 @@ class SubscriptionService:
                 "source": "database",
                 "sources": [s.source for s in a.sources] if a.sources else [],
                 "avatar": a.avatar,
-                "songCount": song_count or 0
+                "song_count": song_count or 0
             }
             for a, song_count in artists_with_counts
         ]
@@ -125,7 +125,7 @@ class SubscriptionService:
         """
         [Background Task] 后台搜寻并关联全平台 ID。
         """
-        aggregator = MusicAggregator()
+        aggregator = get_aggregator()
         logger.info(f"Smart Searching for artist: {artist_name} to find all IDs...")
         
         candidates = await aggregator.search_artist(artist_name, limit=10)

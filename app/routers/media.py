@@ -103,9 +103,9 @@ async def serve_audio(
 @router.get("/api/play/{source}/{id}")
 async def play_proxy(source: str, id: str):
     """获取直接播放链接"""
-    from app.services.download_service import DownloadService
+    from app.services._singletons import get_download_service
     
-    download_service = DownloadService()
+    download_service = get_download_service()
     url = await download_service.get_play_url(source, id)
     
     if url:

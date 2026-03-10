@@ -11,7 +11,8 @@ export interface Artist {
     source: MusicSource // "database"
     sources?: MusicSource[] // Linked sources
     avatar?: string
-    songCount?: number
+    songCount?: number        // 前端内部使用（camelCase）
+    song_count?: number       // 后端 API 返回（snake_case）
     available_sources?: string[]
     is_monitored?: boolean
 }

@@ -5,7 +5,8 @@
 
 import { NForm, NFormItem, NInput, NButton, useMessage } from 'naive-ui'
 import type { Settings } from '@/types'
-import { saveSettings, triggerScan } from '@/api/system'
+import { saveSettings } from '@/api/system'
+import { scanLibrary } from '@/api/library'
 
 const props = defineProps<{
   settings: Settings
@@ -15,8 +16,8 @@ const message = useMessage()
 
 const handleScan = async () => {
   try {
-    const result = await triggerScan()
-    message.success(`扫描完成：发现 ${result.new_files_found} 个新文件，补全 ${result.metadata_enriched} 条元数据`)
+    const result = await scanLibrary()
+    message.success(`扫描完成：发现 ${result.new_files_found || 0} 个新文件`)
   } catch {
     message.error('扫描失败')
   }

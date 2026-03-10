@@ -26,7 +26,6 @@ from app.services.artist_refresh_service import ArtistRefreshService
 from app.services.favorite_service import FavoriteService
 from app.services.song_management_service import SongManagementService
 from app.services.scan_service import ScanService
-from app.services.scan_service import ScanService
 from app.services.metadata_healer import MetadataHealer
 from app.services.metadata_service import MetadataService
 from app.services.music_providers.aggregator import MusicAggregator
@@ -43,10 +42,11 @@ class LibraryService:
         self.favorite_service = FavoriteService()
         self.song_service = SongManagementService()
         self.scan_service = ScanService()
+        from app.services._singletons import get_aggregator
         self.metadata_healer = MetadataHealer()
-        
-        # 保留聚合器用于兼容性
-        self.aggregator = MusicAggregator()
+        self.song_repo = None
+        self.artist_repo = None
+        self.aggregator = get_aggregator()
     
     # ==================== 收藏管理 ====================
     
@@ -169,12 +169,12 @@ class LibraryService:
         
         委托给 ScraperService
         """
-        # 统一委托给 MetadataHealer
-        # 修正：MetadataHealer 目前通过搜索匹配最佳元数据并写入标签
-        # 虽然 MetadataHealer 目前主要依赖搜集匹配，但我们可以支持它。
-        # 此处为了保持兼容性，直接调用 healer.heal_song
-        # 此处为了保持兼容性，直接调用 healer.heal_song
-        return await self.metadata_healer.heal_song(song_id, force=True)
+        # 统一委托给 MetadataHealer，传入用户指定的数据源和歌曲 ID
+        return await self.metadata_healer.heal_song(
+            song_id, force=True,
+            target_source=target_source,
+            target_song_id=target_song_id
+        )
 
     # ==================== 本地文件专属操作 ====================
     

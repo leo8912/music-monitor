@@ -195,15 +195,14 @@ class MediaService:
         db: AsyncSession = None
     ):
         """下载音频文件"""
-        from app.services.download_service import DownloadService
+        from app.services._singletons import get_download_service, get_metadata_service
         from app.services.download_history_service import DownloadHistoryService
-        from app.services.metadata_service import MetadataService
         from app.models.song import Song, SongSource
         from app.repositories.artist import ArtistRepository
         
-        download_service = DownloadService()
+        download_service = get_download_service()
         history_service = DownloadHistoryService()
-        metadata_service = MetadataService()
+        metadata_service = get_metadata_service()
         
         from core.websocket import manager
         
@@ -372,9 +371,9 @@ class MediaService:
 
 async def find_artist_ids(artist_name: str) -> List[Dict[str, any]]:
     """搜索歌手ID"""
-    from app.services.music_providers import MusicAggregator
+    from app.services._singletons import get_aggregator
     
-    aggregator = MusicAggregator()
+    aggregator = get_aggregator()
     results = await aggregator.search_artist(artist_name, limit=10)
     
     return [artist.to_dict() for artist in results]

@@ -170,6 +170,6 @@ class FavoriteService:
         from sqlalchemy import select
         from app.models.song import Song
         
-        stmt = select(Song).where(Song.is_favorite == True).limit(limit)
+        stmt = select(Song).where(Song.is_favorite.is_(True)).limit(limit)
         result = await db.execute(stmt)
         return result.scalars().all()
