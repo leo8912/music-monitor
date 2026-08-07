@@ -40,6 +40,7 @@ class Song(Base):
     status = Column(String, default="PENDING") # PENDING / DOWNLOADED / ERROR
     local_path = Column(String, nullable=True) # If downloaded locally
     last_enrich_at = Column(DateTime, nullable=True) # Last time enrichment was attempted
+    last_notified_at = Column(DateTime, nullable=True) # Last time a new-release notification was sent
     
     # Relationships
     artist = relationship("Artist", back_populates="songs")

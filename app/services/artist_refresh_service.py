@@ -399,22 +399,34 @@ class ArtistRefreshService:
                     db.add(src_ent)
                     src_map.add((s.source, s_id_str)) # 避免同一批次重复添加
             
-            # 2. 自动化下载与推送 (新特征)
+            # 2. 新歌发现：先发「发现通知」，再入下载队列 (下载成功后另发「试听通知」)
             if getattr(existing_song, '_is_newly_discovered', False):
                 existing_song._is_newly_discovered = False
-                if existing_song.publish_time:
-                    delta = datetime.now() - existing_song.publish_time
-                    if 0 <= delta.days <= 30:
-                        try:
-                            from app.services.auto_download_service import get_auto_download_service
-                            auto_service = get_auto_download_service()
-                            # 补充必要信息供下载参考
-                            existing_song.source = group[0].source if group else "system"
-                            # 触发后台异步下载（下载成功后会自动发送通知）
-                            await auto_service.add_to_queue([existing_song])
-                            logger.info(f"🆕 发现近期新歌，已加入自动下载队列: {existing_song.title}")
-                        except Exception as e:
-                            logger.error(f"⚠️ 自动下载触发失败: {e}")
+                best_src = next((x for x in group if x.source == 'qqmusic'), group[0]) if group else None
+                if best_src:
+                    snapshot = {
+                        "title": existing_song.title,
+                        "artist": artist.name,
+                        "album": existing_song.album,
+                        "source": best_src.source,
+                        "source_id": str(best_src.id),
+                        "cover_url": getattr(existing_song, 'cover', None) or best_src.cover_url,
+                        "publish_time": getattr(existing_song, 'publish_time', None),
+                    }
+                    try:
+                        from app.services.notification import NotificationService
+                        await NotificationService.notify_new_song(snapshot)
+                    except Exception as e:
+                        logger.error(f"⚠️ 新歌发现通知发送失败: {e}", exc_info=True)
+
+                    try:
+                        from app.services.auto_download_service import get_auto_download_service
+                        auto_service = get_auto_download_service()
+                        # 触发后台异步下载（下载成功后会自动发送试听通知）
+                        await auto_service.add_to_queue([snapshot])
+                        logger.info(f"🆕 发现新歌，已加入自动下载队列: {existing_song.title}")
+                    except Exception as e:
+                        logger.error(f"⚠️ 自动下载触发失败: {e}", exc_info=True)
             
             # 进度广播
             if processed % 20 == 0 or processed == total_groups:
@@ -723,8 +735,13 @@ class ArtistRefreshService:
         
         async def heal_worker(song):
             async with semaphore:
-                # 传入 db 会话，避免每个 worker 创建独立会话导致竞争
-                return await self.metadata_healer.heal_song(song.id, force=False, db=db)
+                # 不传入共享 db 会话：heal_song 内部用自己的 AsyncSessionLocal，
+                # 避免 asyncio 并发共享单个异步会话触发 MissingGreenlet/竞态。
+                try:
+                    return await self.metadata_healer.heal_song(song.id, force=False)
+                except Exception as e:
+                    logger.warning(f"治愈歌曲 {song.id} 失败: {e}")
+                    return False
 
         tasks = [heal_worker(s) for s in all_db_songs]
         results = await asyncio.gather(*tasks)

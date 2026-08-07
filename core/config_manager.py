@@ -99,7 +99,7 @@ class ConfigManager:
             },
             "monitor": {
                 "enabled": True,
-                "interval": 60
+                "interval": 360  # 分钟: 新歌增量监控默认每 6 小时
             },
             "metadata": {
                 "enable_lyrics": True,

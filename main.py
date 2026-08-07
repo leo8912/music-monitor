@@ -37,10 +37,10 @@ from urllib.parse import quote
 from core.database import init_db, SessionLocal
 from app.models.media_record import MediaRecord
 from app.services.notification import NotificationService
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from core.scheduler import scheduler  # 全局调度器单例 (供设置页重排共享)
 
 # 创建调度器实例
-scheduler = AsyncIOScheduler()
+# scheduler = AsyncIOScheduler()
 
 from fastapi import Request, Response, Query
 from wechatpy.crypto import WeChatCrypto, PrpCrypto
@@ -127,141 +127,12 @@ async def lifespan(app: FastAPI):
         mon_cfg = config_instance.get('monitor', {})
         # Start Scheduler
         scheduler.start()
-        
-        # Phase 9: Register Library Scan Jobs
-        from app.services.library import LibraryService
-        from core.database import AsyncSessionLocal
-        
-        async def run_library_scan_task(task_type: str = "monitor"):
-            """
-            Scheduled task for library scanning and enrichment.
-            task_type: 'monitor' (frequent, fast) or 'backup' (slow, full)
-            """
-            import logging
-            logger = logging.getLogger("scheduler")
-            
-            try:
-                # We need a synchronous session factory for async context if using run_in_executor
-                # But we are in async scheduler, so we can use AsyncSession if we had an async factory
-                # Or use sync SessionLocal and wrap it?
-                # Actually core/database.py shows SessionLocal is sync? Let's check.
-                # Wait, app uses AsyncSession (get_async_session). 
-                # I should verify if SessionLocal is async or sync.
-                # In media_service imports: from core.database import SessionLocal 
-                # and usages: db = SessionLocal(), db.close(). This looks sync.
-                # But services expect AsyncSession in some methods?
-                # LibraryService methods: async def scan_local_files(self, db: AsyncSession)
-                # So I MUST provide an AsyncSession.
-                
-                from core.database import AsyncSessionLocal 
-                
-                async with AsyncSessionLocal() as db:
-                    service = LibraryService()
-                    
-                    # Scan - 使用 ScanService
-                    scan_res = await service.scan_service.scan_local_files(db)
-                    
-                    added = 0
-                    removed = 0
-                    
-                    if isinstance(scan_res, dict):
-                        added = scan_res.get("new_files_found", 0)
-                        removed = scan_res.get("removed_files_count", 0)
-                    elif isinstance(scan_res, int):
-                        added = scan_res
-                    
-                    if added > 0 or removed > 0:
-                        logger.info(f"[{task_type}] Scan: Found {added} new, removed {removed} records.")
-                    
-                    # Enrich - 使用 EnrichmentService (limit depends on type)
-                    should_enrich = False
-                    if isinstance(scan_res, dict) and scan_res.get("new_files_found", 0) > 0:
-                        should_enrich = True
-                    elif isinstance(scan_res, int) and scan_res > 0:
-                        should_enrich = True
-                        
-                    if should_enrich:
-                        logger.info("Triggering auto-enrichment for new files...")
-                        try:
-                            # 使用新的 heal_all 方法 (无需传 db, 内部管理)
-                            await service.metadata_healer.heal_all(force=False)
-                        except Exception as e:
-                            logger.error(f"Auto enrichment failed: {e}")
-                         
-            except Exception as e:
-                logger.error(f"Error in library scan task ({task_type}): {e}", exc_info=True)
 
-        # Job 1: Pseudo-Monitoring (Every 60s)
-        scheduler.add_job(run_library_scan_task, 'interval', seconds=60, args=['monitor'], id='job_library_monitor')
-        
-        # Job 2: Backup Scan (Every 30m)
-        scheduler.add_job(run_library_scan_task, 'interval', minutes=30, args=['backup'], id='job_library_backup')
-        
-        async def run_artist_refresh_task():
-            import logging
-            logger = logging.getLogger("scheduler")
-            try:
-                from core.database import AsyncSessionLocal
-                from app.services.artist_refresh_service import ArtistRefreshService
-                from app.models.artist import Artist
-                from sqlalchemy import select
-                
-                async with AsyncSessionLocal() as db:
-                    # 获取需要监控的艺人，比如 status == "active"
-                    res = await db.execute(select(Artist).where(Artist.status == "active"))
-                    artists = res.scalars().all()
-                    
-                    if not artists:
-                        logger.info("[Artist Refresh Task] 没有需要监控的活跃艺人。")
-                        return
-                    
-                    logger.info(f"[Artist Refresh Task] 开始后台轮询 {len(artists)} 位歌手的新歌...")
-                    service = ArtistRefreshService()
-                    for artist in artists:
-                        try:
-                            # 传入 session 和 artist.name
-                            await service.refresh(db, artist.name)
-                        except Exception as e:
-                            logger.error(f"[Artist Refresh Task] 刷新 {artist.name} 失败: {e}", exc_info=True)
-                            
-                    logger.info("[Artist Refresh Task] 轮询完成。")
-            except Exception as e:
-                logger.error(f"[Artist Refresh Task] 执行异常: {e}", exc_info=True)
+        # 注册所有循环任务 (新歌增量监控 / 文件完整性 / 自动缓存)
+        from app.services.scheduling import register_recurring_jobs
+        register_recurring_jobs(scheduler)
+        logger.info("周期任务已注册 (新歌监控默认每 6 小时, 可在设置中调整)")
 
-        # Job 3: Artist New Song Monitoring (Every 6 hours)
-        scheduler.add_job(
-            run_artist_refresh_task,
-            'interval',
-            hours=6,
-            id="job_artist_refresh",
-            replace_existing=True
-        )
-        logger.info("已调度歌手定时轮询任务，每 6 小时执行一次")
-        
-        # 已移除: PLUGINS 监控任务 (使用 music_providers 替代)
-                
-        from app.services.media_service import check_file_integrity
-        scheduler.add_job(
-            check_file_integrity,
-            'interval',
-            hours=24,
-            id="job_file_integrity",
-            replace_existing=True
-        )
-        logger.info("已调度文件完整性检查任务，每 24 小时执行一次")
-
-        # 已移除: cleanup_cache 任务
-        
-        from app.services.media_service import auto_cache_recent_songs
-        scheduler.add_job(
-            auto_cache_recent_songs,
-            'interval',
-            minutes=30,
-            id="job_auto_cache",
-            replace_existing=True
-        )
-        logger.info(f"已调度自动缓存任务，每 30 分钟执行一次")
-        
         NotificationService.initialize()
         
         # --- Startup Notification ---

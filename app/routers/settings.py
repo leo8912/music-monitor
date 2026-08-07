@@ -129,6 +129,19 @@ async def update_settings(
         # get_config_manager().reload() uses synchronous engine creation. It should be fine.
         reload_config()
         
+        # 4. 使运行时的周期任务/通知即时生效 (免重启)
+        try:
+            from app.services.scheduling import reschedule_release_job
+            from core.scheduler import scheduler
+            reschedule_release_job(scheduler)
+        except Exception as e:
+            logger.warning(f"Failed to reschedule release job after settings update: {e}")
+        try:
+            from app.services.notification import NotificationService
+            NotificationService.reload()
+        except Exception as e:
+            logger.warning(f"Failed to reload notification config: {e}")
+        
         return get_config_manager()._config
         
     except Exception as e:
