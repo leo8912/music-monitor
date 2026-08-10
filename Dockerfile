@@ -24,6 +24,7 @@ RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debi
 
 # Python dependencies installation
 COPY requirements.txt .
+COPY vendor ./vendor
 RUN pip install --no-cache-dir --index-url https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt && \
     chmod -R a+rX /usr/local/lib/python3.11/site-packages
 
