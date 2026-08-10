@@ -633,7 +633,7 @@ class ArtistRefreshService:
                             cover=best_match.cover_url,
                             duration=best_match.duration,
                             url="",
-                            data_json=json.dumps(best_match.__dict__, default=str)
+                            data_json=json.loads(json.dumps(best_match.__dict__, default=str))
                         )
                         db.add(new_source)
                         logger.info(f"    🔗 关联成功! 源: {best_match.source}")

@@ -50,8 +50,9 @@ async def main():
                 # Re-run quality logic
                 try:
                     new_quality = service._analyze_quality(audio)
-                except:
-                    new_quality = 'PQ'
+                except Exception as e:
+                    print(f"⚠️ 跳过（质量分析失败）{file_path}: {e}")
+                    continue
 
                 # Force FLAC check
                 filename = os.path.basename(file_path).lower()
@@ -64,8 +65,9 @@ async def main():
                 if isinstance(data, str):
                     try: 
                         data = json.loads(data)
-                    except: 
-                        data = {}
+                    except Exception as e:
+                        print(f"⚠️ 跳过（data_json 解析失败）{filename}: {e}")
+                        continue
                         
                 old_quality = data.get('quality')
                 

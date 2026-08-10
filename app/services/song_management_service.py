@@ -18,7 +18,6 @@ from sqlalchemy.orm import selectinload
 from datetime import datetime
 import os
 import re
-import json
 import logging
 import anyio
 import uuid
@@ -408,7 +407,7 @@ class SongManagementService:
                 source=source,
                 source_id=str(source_id),
                 cover=cover_url,
-                data_json=json.dumps({"quality": quality}, default=str)
+                data_json={"quality": quality}
             )
             db.add(src_ent)
         
