@@ -13,7 +13,8 @@ Created: 2026-01-23
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
-from loguru import logger
+# 注意：原先此处的 `from loguru import logger` 已被下方 logging.getLogger 覆盖（死代码），
+# 实际生效的一直是标准库 logger。删除它以消除歧义，运行时行为不变。
 import os
 import logging
 import uuid
@@ -198,7 +199,7 @@ class MediaService:
         from app.services._singletons import get_download_service, get_metadata_service
         from app.services.download_history_service import DownloadHistoryService
         from app.models.song import Song, SongSource
-        from app.repositories.artist import ArtistRepository
+        # (ArtistRepository 已在模块顶部第 22 行导入，此处函数内重复导入已删除)
         
         download_service = get_download_service()
         history_service = DownloadHistoryService()

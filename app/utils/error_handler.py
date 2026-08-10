@@ -10,6 +10,7 @@ Created: 2026-02-02
 from functools import wraps
 from typing import Callable, Any, Optional
 import logging
+import os
 
 from app.exceptions import (
     BaseError,
@@ -22,6 +23,25 @@ from app.exceptions import (
 )
 
 logger = logging.getLogger(__name__)
+
+#: 严格模式开关（C-03）。
+#: 设置环境变量 MM_STRICT_ERRORS=1 (或 true/yes/on) 后，handle_service_errors
+#: 不再吞掉任何异常，一律原样重抛。用途是让 CI / 本地调试能直接暴露被降级逻辑
+#: 掩盖掉的真实缺陷（例如未导入名称导致的 NameError）。
+#: 生产环境默认关闭，不改变任何既有行为。
+_STRICT_ERRORS_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def is_strict_errors_enabled() -> bool:
+    """判断是否开启了严格错误模式。
+
+    每次调用都实时读取环境变量，便于测试用 monkeypatch/setenv 动态切换，
+    无需重新导入模块。
+
+    Returns:
+        True 表示禁止吞异常，装饰器应直接重抛。
+    """
+    return os.getenv("MM_STRICT_ERRORS", "").strip().lower() in _STRICT_ERRORS_TRUTHY
 
 
 def handle_service_errors(
@@ -48,6 +68,9 @@ def handle_service_errors(
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
+            if is_strict_errors_enabled():
+                # [Fix C-03] 严格模式：完全跳过降级逻辑，异常原样上抛，便于 CI 捕获
+                return await func(*args, **kwargs)
             try:
                 return await func(*args, **kwargs)
             
@@ -98,6 +121,9 @@ def handle_service_errors(
         
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
+            if is_strict_errors_enabled():
+                # [Fix C-03] 严格模式：完全跳过降级逻辑，异常原样上抛，便于 CI 捕获
+                return func(*args, **kwargs)
             try:
                 return func(*args, **kwargs)
             

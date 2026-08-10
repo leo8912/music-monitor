@@ -62,9 +62,12 @@ async def test_ws_broadcast(msg: str = "Test Message"):
 
 @router.get("/api/settings")
 async def get_settings():
-    """Get global configuration."""
+    """Get global configuration (敏感字段已脱敏)。"""
     from core.config_manager import get_config_manager
-    return get_config_manager()._config
+    from core.security import sanitize_config
+    # [Fix C-01] 禁止把内部 _config 原样回显：其中含 secret_key / corpsecret /
+    # bot_token / password 等明文凭据。此处返回脱敏副本，不影响持久化写入路径。
+    return sanitize_config(get_config_manager()._config)
 
 @router.post("/api/settings")
 def update_settings(new_config: dict):

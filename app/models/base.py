@@ -6,7 +6,9 @@ Base模型 - 数据库基础配置
 
 Author: music-monitor development team
 """
-from sqlalchemy.ext.declarative import declarative_base
+# 注意：declarative_base 只保留 sqlalchemy.orm 版本（SQLAlchemy 2.0 官方位置）。
+# 原先第 9 行还从已废弃的 sqlalchemy.ext.declarative 重复导入了一次，被本行覆盖，
+# 属死代码且会触发 MovedIn20Warning，已删除。
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
 

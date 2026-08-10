@@ -18,7 +18,16 @@ env:
 
 
 jobs:
+  # ==========================================================================
+  # 测试门禁：复用 .github/workflows/test.yml（该文件已声明 workflow_call 触发器）
+  # 下面的 build job 通过 `needs: pytest` 强依赖本 job —— 测试不过，绝不出镜像。
+  # ==========================================================================
+  pytest:
+    name: Tests
+    uses: ./.github/workflows/test.yml
+
   build:
+    needs: pytest
     environment: dockerhub
     runs-on: ubuntu-latest
     permissions:

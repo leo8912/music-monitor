@@ -3,7 +3,7 @@ import hmac
 import hashlib
 import time
 import logging
-from typing import Optional
+from typing import Any, Optional
 from core.config import config, ensure_security_config
 
 logger = logging.getLogger(__name__)
@@ -80,3 +80,75 @@ def verify_signature(song_id: str, signature: str, expires: str) -> bool:
     except Exception as e:
         logger.error(f"Signature verification error: {e}")
         return False
+
+
+# --- Configuration Sanitization (C-01) -------------------------------------
+
+#: 敏感键关键词。凡是键名（转小写后）**包含**其中任意一项，其值都会被脱敏。
+#: 之所以用 "包含" 而非 "全等"，是为了覆盖 corp_secret / wecom_bot_token / db_password
+#: 这类带前后缀的变体命名。
+SENSITIVE_KEY_MARKERS = (
+    "secret_key",
+    "secret",
+    "token",
+    "password",
+    "corpsecret",
+    "bot_token",
+    "access_token",
+    "refresh_token",
+    "api_key",
+    "client_secret",
+    "cookie",
+    "authorization",
+)
+
+#: 脱敏后的占位值。前端据此判断"该字段已设置但不予回显"。
+REDACTED_PLACEHOLDER = "***redacted***"
+
+
+def is_sensitive_key(key: Any) -> bool:
+    """判断某个配置键名是否属于敏感字段。
+
+    Args:
+        key: 配置字典的键，通常为 str；非字符串键一律视为不敏感。
+
+    Returns:
+        True 表示该键的值需要脱敏。
+    """
+    if not isinstance(key, str):
+        return False
+    lowered = key.lower()
+    return any(marker in lowered for marker in SENSITIVE_KEY_MARKERS)
+
+
+def sanitize_config(cfg: Any) -> Any:
+    """递归深拷贝配置并脱敏所有敏感字段。
+
+    仅用于「读回显」响应，**不得**用于持久化写入路径，否则会把占位符写进配置。
+
+    行为说明：
+        - dict: 逐键递归；命中敏感键的值替换为占位符（值为空/None 时保持空，
+          以便前端正确显示"未配置"状态）。
+        - list / tuple: 逐元素递归，保持原有容器类型（tuple 返回 list 以保证 JSON 可序列化）。
+        - 其它标量: 原样返回。
+
+    Args:
+        cfg: 任意配置片段（通常是 ConfigManager 的 _config 顶层字典）。
+
+    Returns:
+        脱敏后的**新对象**，原始配置不会被修改。
+    """
+    if isinstance(cfg, dict):
+        sanitized: dict = {}
+        for key, value in cfg.items():
+            if is_sensitive_key(key):
+                # 空值保持空，避免前端把占位符当成"已配置"
+                sanitized[key] = REDACTED_PLACEHOLDER if value else value
+            else:
+                sanitized[key] = sanitize_config(value)
+        return sanitized
+
+    if isinstance(cfg, (list, tuple)):
+        return [sanitize_config(item) for item in cfg]
+
+    return cfg

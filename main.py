@@ -106,7 +106,7 @@ from core.logger import api_log_handler
 from app.schemas import LoginRequest, ChangePasswordRequest, UpdateProfileRequest, DownloadRequest, ArtistConfig
 
 # 已移除: event_dispatcher, app_initializer, errors
-from starlette.concurrency import run_in_threadpool
+# (run_in_threadpool 已在文件顶部第 29 行导入，此处重复导入已删除)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -179,7 +179,7 @@ app = FastAPI(lifespan=lifespan)
  
 # 注册全局异常处理
 from app.exceptions import BaseError
-from fastapi import Request
+# (Request 已在文件顶部第 45 行导入，此处重复导入已删除)
 
 @app.exception_handler(BaseError)
 async def business_exception_handler(request: Request, exc: BaseError):
@@ -273,12 +273,17 @@ async def auth_middleware(request: Request, call_next):
 
     path = request.url.path
     if path.startswith("/api/"):
+        # [Fix C-02] 白名单收敛：仅保留登录流程与企业微信回调等"本就必须公开"的端点。
+        # 已移除的放行项及原因：
+        #   - /api/audio/            : 任何人可无鉴权拖走全部音频流（已改为需登录会话）
+        #   - /api/test_notify_card  : 可被当作通知轰炸放大器
+        #   - /api/discovery/probe_qualities : 服务端发起外部请求，存在 SSRF 放大风险
         allowed_paths = [
-            "/api/login", "/api/logout", "/api/check_auth", 
-            "/api/wecom/callback", 
-            "/api/test_ws", "/api/discovery/probe_qualities", "/api/discovery/cover"
+            "/api/login", "/api/logout", "/api/check_auth",
+            "/api/wecom/callback",
+            "/api/test_ws", "/api/discovery/cover",
         ]
-        if path in allowed_paths or path.startswith("/api/test_notify_card") or path.startswith("/api/audio/"):
+        if path in allowed_paths:
             pass 
         else:
              try:

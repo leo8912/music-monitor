@@ -9,10 +9,23 @@ def test_normalize_title():
     assert DeduplicationService._normalize_title("Another [2023 Remix]") == "another"
     # Suffix removal
     assert DeduplicationService._normalize_title("Title | Subtitle") == "title"
+    # [D-3 修复] ASCII 连字符不再被当作截断分隔符，否则 "A-Ha"/"Jay-Z"/"Rock-n-Roll"
+    # 会被截成 "a"/"jay"/"rock" 并被错误合并。结尾的 " - CD1" / " - Disc 2" 分碟后缀
+    # 已由单独的精确规则（\s+-\s+(cd|disc)\s*\d+$）补回剥离（见下方用例）。
     assert DeduplicationService._normalize_title("Title - CD1") == "title"
     # Instrumental preservation
     assert DeduplicationService._normalize_title("Track (Instrumental)") == "track_inst"
     assert DeduplicationService._normalize_title("Song (伴奏)") == "song_inst"
+
+
+def test_disc_suffix_should_be_stripped():
+    """回归守卫：D-3 修复后，结尾的 " - CD1" / " - Disc 2" 分碟后缀仍应被剥离，
+    同时 "A-Ha"/"Jay-Z" 这类含连字符的合法歌名不受影响。"""
+    assert DeduplicationService._normalize_title("Title - CD1") == "title"
+    assert DeduplicationService._normalize_title("专辑名 - Disc 2") == "专辑名"
+    # 连字符歌名不受影响
+    assert DeduplicationService._normalize_title("A-Ha") == "a-ha"
+    assert DeduplicationService._normalize_title("Jay-Z") == "jay-z"
 
 def test_pick_best_song_logic():
     class MockSong:

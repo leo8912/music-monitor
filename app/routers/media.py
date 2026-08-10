@@ -33,6 +33,64 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+def _get_allowed_media_roots() -> list:
+    """返回允许对外提供音频文件的根目录绝对路径列表。
+
+    取自配置的 storage 段，并补上项目默认目录，避免用户未配置时把合法路径判成越权。
+
+    Returns:
+        去重后的绝对路径列表（已 realpath 解析，符号链接被展开）。
+    """
+    from core.config_manager import get_config_manager
+
+    storage_cfg = get_config_manager().get("storage", {}) or {}
+    candidates = [
+        storage_cfg.get("cache_dir", "audio_cache"),
+        storage_cfg.get("favorites_dir", "favorites"),
+        storage_cfg.get("library_dir"),
+        "audio_cache",
+        "favorites",
+        "library",
+    ]
+
+    roots = []
+    for candidate in candidates:
+        if not candidate:
+            continue
+        resolved = os.path.realpath(os.path.abspath(candidate))
+        if resolved not in roots:
+            roots.append(resolved)
+    return roots
+
+
+def _is_path_contained(file_path: str) -> bool:
+    """校验待返回的文件是否落在允许的媒体目录内（防 `../` 目录穿越）。
+
+    使用 realpath 展开符号链接后再比较，并借助 os.path.commonpath 做真正的
+    "父目录包含"判断，避免 `/data/audio_cache_evil` 被 `/data/audio_cache`
+    前缀匹配误放行。
+
+    Args:
+        file_path: 待返回给客户端的文件路径（可能是相对路径）。
+
+    Returns:
+        True 表示路径合法且位于允许目录内。
+    """
+    if not file_path:
+        return False
+
+    resolved = os.path.realpath(os.path.abspath(file_path))
+
+    for root in _get_allowed_media_roots():
+        try:
+            # commonpath 在不同盘符 (Windows) 或不同挂载点时会抛 ValueError
+            if os.path.commonpath([resolved, root]) == root:
+                return True
+        except ValueError:
+            continue
+    return False
+
+
 @router.post("/api/download_audio")
 async def download_audio_endpoint(
     req: DownloadRequest,
@@ -80,6 +138,12 @@ async def serve_audio(
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="音频文件未找到")
 
+        # [Fix C-02] 路径 containment 校验：`{filename:path}` 允许出现 `../`，
+        # 必须确认最终解析出的物理路径仍落在允许的媒体目录内，否则拒绝。
+        if not _is_path_contained(file_path):
+            logger.warning(f"拒绝越权音频路径访问: filename={filename!r} resolved={file_path!r}")
+            raise HTTPException(status_code=403, detail="非法的音频路径")
+
         media_type = "audio/mpeg"
         if filename.endswith(".flac"):
             media_type = "audio/flac"
@@ -90,6 +154,9 @@ async def serve_audio(
             media_type=media_type,
             headers={"Content-Disposition": f"attachment; filename*=utf-8''{filename_encoded}"}
         )
+    except HTTPException:
+        # 上面主动抛出的 403/404 必须原样透传，否则会被下面的兜底分支吞成 500
+        raise
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="音频文件未找到")
     except Exception as e:

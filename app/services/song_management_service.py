@@ -158,7 +158,7 @@ class SongManagementService:
         old_path = song.local_path
         
         # 1. 下载
-        download_service = _get_download_service()
+        download_service = get_download_service()
         
         # [Fix] 如果来源是 local，我们需要先搜索一个在线来源
         if source == 'local':
@@ -305,7 +305,7 @@ class SongManagementService:
                         break
         
         # 2. 下载
-        download_service = _get_download_service()
+        download_service = get_download_service()
         
         # 确保音质默认为高质量
         req_quality = quality if quality and quality > 0 else 999

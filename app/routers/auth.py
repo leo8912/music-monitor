@@ -201,7 +201,7 @@ def check_auth(request: Request):
 @router.get("/api/profile_stats")
 async def profile_stats(db: AsyncSession = Depends(get_async_session)):
     """获取个人中心统计信息"""
-    from sqlalchemy import func
+    from sqlalchemy import func, select
     from app.models.song import Song
     from app.models.artist import Artist
 

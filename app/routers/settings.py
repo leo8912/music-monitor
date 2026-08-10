@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from core.database import get_async_session
 from app.models.settings import SystemSettings
 from core.config_manager import get_config_manager, reload_config
+from core.security import sanitize_config
 import logging
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
@@ -32,13 +33,14 @@ class TestNotifyRequest(BaseModel):
 @router.get("", response_model=Dict[str, Any])
 async def get_settings():
     """
-    获取当前所有配置 (混合了 YAML 和 DB 的最终结果)
+    获取当前所有配置 (混合了 YAML 和 DB 的最终结果，敏感字段已脱敏)
     """
     # 直接返回内存中的 Config，它是已经 Merge 过的最终状态
     manager = get_config_manager()
     # 强制刷新以确保从 DB 获取最新
     manager.reload()
-    return manager._config
+    # [Fix C-01] 回显前脱敏，避免 secret_key / corpsecret / bot_token / password 明文外泄
+    return sanitize_config(manager._config)
 
 @router.patch("", response_model=Dict[str, Any])
 async def update_settings(
@@ -142,7 +144,8 @@ async def update_settings(
         except Exception as e:
             logger.warning(f"Failed to reload notification config: {e}")
         
-        return get_config_manager()._config
+        # [Fix C-01] PATCH 的响应同样是"读回显"，必须脱敏
+        return sanitize_config(get_config_manager()._config)
         
     except Exception as e:
         logger.error(f"Failed to update settings: {e}")

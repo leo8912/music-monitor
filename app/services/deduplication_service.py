@@ -20,7 +20,7 @@ class DeduplicationService:
         # If it's a known instrumental/karaoke tag, we MUST preserve it or map to a distinct suffix
         # Otherwise "Song (Instrumental)" becomes "Song" == "Song" (Original) -> Bad Dedup
         
-        inst_markers = ['test', 'instrumental', 'inst.', '伴奏', 'karaoke', 'off vocal']
+        inst_markers = ['instrumental', 'inst.', '伴奏', 'karaoke', 'off vocal']
         is_inst = False
         for m in inst_markers:
             # Check if marker exists (even inside brackets)
@@ -34,7 +34,14 @@ class DeduplicationService:
         # Strategy: Clean as usual, but append "_inst" if it was instrumental.
         
         t_clean = re.sub(r'[\(\[\{（【].*?[\)\]\}）】]', '', t)
-        t_clean = re.sub(r'[\||－|-].*$', '', t_clean)
+        # [Fix D-3] 仅在出现管道符/全角破折号时截断；ASCII 连字符是艺名/歌名的合法字符
+        # （如 "A-Ha"、"Jay-Z"、"Rock-n-Roll"），截断会导致不同歌曲被错误合并。
+        t_clean = re.sub(r'[|｜－].*$', '', t_clean)
+        # [Fix D-3 follow-up] 剥离结尾的 " - CD1" / " - Disc 2" 等分碟后缀（不区分大小写），
+        # 同时兼容 " -CD1" / "Title-CD1" 这类连字符两侧空格缺失的写法。
+        # 不影响 "A-Ha"/"Jay-Z"/"Blink-182"/"Rock-n-Roll" 这类含连字符的合法歌名
+        # （它们不含 "cd/disc + 数字" 的结尾结构，不会命中本规则）。
+        t_clean = re.sub(r'\s*-\s*(?:cd|disc)\s*\d+\s*$', '', t_clean, flags=re.IGNORECASE)
         t_clean = t_clean.strip()
         
         if is_inst:
@@ -213,6 +220,17 @@ class DeduplicationService:
         for item in group:
             # 添加所有来源
             item_sources = getattr(item, 'sources', [])
+
+            # [Fix D-4] 发布时间补全 (QQ 优先逻辑)：必须遍历组内每个 item，
+            # 而不是复用循环结束后的残留变量（那样只会统计到最后一个元素）。
+            pt = getattr(item, 'publish_time', None)
+            if pt:
+                item_source_names = [s.source for s in item_sources]
+                if 'qqmusic' in item_source_names:
+                    best_publish_time = pt  # QQ 覆盖
+                elif not best_publish_time:
+                    best_publish_time = pt
+
             for src_obj in item_sources:
                 sources_set.add(src_obj.source)
                 # 如果主 source_id 还没填，拿第一个看到的 source_id
@@ -283,14 +301,8 @@ class DeduplicationService:
                 final_dict['cover'] = cv
                 break
             
-        # 发布时间补全 (QQ 优先逻辑)
-        pt = getattr(item, 'publish_time', None)
-        if pt:
-            item_source_names = [s.source for s in item_sources]
-            if 'qqmusic' in item_source_names:
-                best_publish_time = pt # QQ 覆盖
-            elif not best_publish_time:
-                best_publish_time = pt
+        # [Fix D-4] 发布时间补全 (QQ 优先) 已上移至上方 `for item in group` 主循环。
+        # 原实现误用循环残留变量 item / item_sources，只统计了组内最后一个元素。
         
         final_dict['publish_time'] = best_publish_time
         
