@@ -32,7 +32,27 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///config/music_monit
 from app.models.base import Base
 
 # Create async engine
-async_engine = create_async_engine(DATABASE_URL, echo=False)  # [Fix] Enable echo for debugging flicker issue
+# Pool 参数支持通过环境变量覆盖 (默认 30/50, 避免全库并发治愈等任务耗尽连接池)
+_POOL_SIZE = int(os.getenv("DATABASE_POOL_SIZE", "30"))
+_MAX_OVERFLOW = int(os.getenv("DATABASE_MAX_OVERFLOW", "50"))
+_POOL_TIMEOUT = int(os.getenv("DATABASE_POOL_TIMEOUT", "60"))
+_pool_kwargs = {
+    "pool_size": _POOL_SIZE,
+    "max_overflow": _MAX_OVERFLOW,
+    "pool_timeout": _POOL_TIMEOUT,
+    "pool_pre_ping": True,
+}
+# SQLite: 设置 busy timeout, 降低并发写导致的 SQLITE_BUSY
+# 纯内存连接 (无路径或以 :memory: 结尾) 使用 StaticPool, 不接受 pool_size 等池参数
+_is_sqlite_memory = (
+    DATABASE_URL.startswith("sqlite")
+    and (":memory:" in DATABASE_URL or DATABASE_URL.endswith("sqlite://") or DATABASE_URL.endswith("sqlite+aiosqlite://"))
+)
+if DATABASE_URL.startswith("sqlite") and not _is_sqlite_memory:
+    _pool_kwargs["connect_args"] = {"timeout": 30}
+if _is_sqlite_memory:
+    _pool_kwargs = {"pool_pre_ping": True}
+async_engine = create_async_engine(DATABASE_URL, echo=False, **_pool_kwargs)  # [Fix] Enable echo for debugging flicker issue
 AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
@@ -80,9 +100,19 @@ async def async_init_db():
 
 # Create sync engine for backward compatibility where needed
 sync_database_url = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
+_sync_kwargs = {
+    "pool_size": _POOL_SIZE,
+    "max_overflow": _MAX_OVERFLOW,
+    "pool_timeout": _POOL_TIMEOUT,
+    "pool_pre_ping": True,
+}
+if sync_database_url.startswith("sqlite") and not _is_sqlite_memory:
+    _sync_kwargs["connect_args"] = {"timeout": 30}
+if _is_sqlite_memory:
+    _sync_kwargs = {"pool_pre_ping": True}
 if "://" in sync_database_url and sync_database_url != DATABASE_URL:
     from sqlalchemy import create_engine
-    sync_engine = create_engine(sync_database_url, echo=False)
+    sync_engine = create_engine(sync_database_url, echo=False, **_sync_kwargs)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 else:
     # Fallback for non-async URLs or when replacement didn't work
@@ -91,7 +121,7 @@ else:
     sync_url = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
     if sync_url == DATABASE_URL:  # if no replacement happened, try another pattern
         sync_url = DATABASE_URL.replace("aiosqlite", "pysqlite")
-    sync_engine = create_engine(sync_url, echo=False)
+    sync_engine = create_engine(sync_url, echo=False, **_sync_kwargs)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 
 def init_db():
