@@ -20,7 +20,7 @@ class ConnectionManager:
 
     async def broadcast(self, message: dict):
         if not self.active_connections:
-            logger.info(f"No active WS connections (skip broadcast): {message.get('message', 'Unknown')}")
+            logger.debug(f"No active WS connections (skip broadcast): {message.get('type', message)}")
             return
             
         logger.debug(f"Broadcasting to {len(self.active_connections)} clients: {message.get('message', '')}")
