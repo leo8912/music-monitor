@@ -27,6 +27,22 @@ _add_artist_lock = asyncio.Lock()
 # Store active refresh tasks to avoid redundant processing (Shared across services)
 active_refreshes = set()
 
+
+async def _localize_artist_avatar(db: AsyncSession, artist, sources=None, candidate_url: str = "") -> None:
+    """
+    将歌手头像本地化到 /uploads/avatars/（非阻塞式，失败不影响主流程）。
+    首次添加时即下载，前端立即可显示。
+    """
+    try:
+        from app.services.media_asset_service import MediaAssetService
+        svc = MediaAssetService()
+        # 显式传入已加载的 sources，避免异步懒加载 MissingGreenlet
+        ok = await svc.ensure_avatar(artist, candidate_url or None, sources=sources)
+        if ok:
+            await db.commit()
+    except Exception as e:
+        logger.warning(f"🎨 头像本地化失败(非阻塞) {artist.name}: {e}")
+
 class SubscriptionService:
     @staticmethod
     async def get_monitored_artists(db: AsyncSession) -> List[Dict]:
@@ -86,6 +102,11 @@ class SubscriptionService:
                         parent.avatar = avatar
                     db.add(parent)
                     await db.commit()
+                # 头像本地化 (已有来源也可能带远程头像)
+                if parent:
+                    await _localize_artist_avatar(
+                        db, parent, sources=[existing_source], candidate_url=avatar
+                    )
                 logger.info(f"DEBUG: Source exists, returning True for {name}")
                 return True
 
@@ -115,6 +136,11 @@ class SubscriptionService:
             )
             db.add(new_source)
             logger.info(f"Linked source {source}:{artist_id} to artist {artist.name}")
+            
+            # 头像本地化: 首次添加即下载到 /uploads/avatars/ (在 commit 前, 避免异步懒加载)
+            await _localize_artist_avatar(
+                db, artist, sources=[new_source], candidate_url=avatar
+            )
             
             await db.commit()
             logger.info(f"DEBUG: Success, returning True for {name}")

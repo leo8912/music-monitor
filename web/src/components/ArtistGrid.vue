@@ -71,6 +71,7 @@ import { NIcon, NSpin } from 'naive-ui'
 import { RefreshOutline, TrashOutline, AddOutline } from '@vicons/ionicons5'
 import Skeleton from '@/components/common/Skeleton.vue'
 import { useProgressStore } from '@/stores/progress'
+import axios from 'axios'
 
 const router = useRouter()
 const progressStore = useProgressStore()
@@ -86,10 +87,36 @@ const emit = defineEmits(['select', 'add', 'update', 'delete'])
 
 const DEFAULT_AVATAR = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
+// 远程 URL -> 已本地化路径 的缓存，避免重复请求
+const localizedAvatars = new Map<string, string>()
+
 const getArtistAvatar = (artistName: string) => {
     const found = props.artists.find(a => a.name === artistName)
-    if (found && found.avatar) return found.avatar.replace('300x300', '800x800')
+    const avatar = found && found.avatar ? found.avatar : ''
+    // 已是本地 /uploads/ 路径 → 直接显示
+    if (avatar.startsWith('/uploads/')) return avatar.replace('300x300', '800x800')
+    // 空 → 默认头像
+    if (!avatar) return DEFAULT_AVATAR
+    // 远程 URL 或代理 URL → 先显示默认，后台触发本地化，成功后刷新
+    requestAvatarLocalization(artistName)
     return DEFAULT_AVATAR
+}
+
+const requestAvatarLocalization = (artistName: string) => {
+    if (localizedAvatars.has(artistName)) return
+    localizedAvatars.set(artistName, 'pending')
+    axios.post('/api/discovery/localize_artist_avatar', new URLSearchParams({ artist_name: artistName }), {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    }).then((res: any) => {
+        const local = res.data && res.data.avatar
+        if (local && local.startsWith('/uploads/')) {
+            localizedAvatars.set(artistName, local)
+            const idx = props.artists.findIndex(a => a.name === artistName)
+            if (idx !== -1) props.artists[idx].avatar = local
+        }
+    }).catch(() => {
+        localizedAvatars.delete(artistName)
+    })
 }
 
 const getProgress = (artist: any) => {

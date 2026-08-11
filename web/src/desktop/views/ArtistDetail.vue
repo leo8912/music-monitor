@@ -13,6 +13,7 @@ import SongList from '@/components/SongList.vue'
 import { usePlayerStore } from '@/stores/player'
 import { useProgressStore } from '@/stores/progress'
 import { useMessage } from 'naive-ui'
+import axios from 'axios'
 
 const DEFAULT_AVATAR = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
@@ -30,10 +31,27 @@ const pageSize = ref(20)
 
 const getHighResAvatar = (url: string) => {
     if (!url) return DEFAULT_AVATAR
+    if (url.startsWith('/uploads/')) return url
+    // 远程/代理 URL：显示原样（可访问则显示），同时后台触发本地化
+    requestAvatarLocalization()
     if (url.includes('y.gtimg.cn')) {
         return url.replace('300x300', '800x800')
     }
     return url
+}
+
+const requestAvatarLocalization = () => {
+    if (!artist.value || artist.value.avatar?.startsWith('/uploads/')) return
+    axios.post('/api/discovery/localize_artist_avatar', new URLSearchParams({
+        artist_name: artist.value.name
+    }), {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    }).then((res: any) => {
+        const local = res.data && res.data.avatar
+        if (local && local.startsWith('/uploads/') && artist.value) {
+            artist.value.avatar = local
+        }
+    }).catch(() => {})
 }
 
 const fetchDetail = async () => {

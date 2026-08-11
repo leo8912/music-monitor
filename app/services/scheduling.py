@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 JOB_RELEASE_CHECK = "job_new_release_check"
 JOB_FILE_INTEGRITY = "job_file_integrity"
 JOB_AUTO_CACHE = "job_auto_cache"
+JOB_ASSET_LOCALIZE = "job_asset_localize"
 
 # 默认: 6 小时
 DEFAULT_RELEASE_INTERVAL_MINUTES = 360
@@ -59,6 +60,56 @@ async def run_new_release_check():
         logger.error(f"[Scheduler] 新歌增量监控失败: {e}", exc_info=True)
 
 
+async def run_asset_localization():
+    """媒体资源本地化巡检: 全库头像/封面远程 URL 落盘 (低频, 每 24h)。"""
+    try:
+        from core.database import AsyncSessionLocal
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        from app.models.artist import Artist
+        from app.models.song import Song
+        from app.services.media_asset_service import MediaAssetService
+
+        svc = MediaAssetService()
+        async with AsyncSessionLocal() as db:
+            # 1. 歌手头像: 远程 URL 或空 → 补源下载
+            stmt = select(Artist).options(selectinload(Artist.sources))
+            artists = (await db.execute(stmt)).scalars().all()
+            avatar_fixed = 0
+            for artist in artists:
+                av = artist.avatar or ""
+                # 已本地化 → 跳过；空 或 远程/代理 URL → 尝试本地化
+                if av.startswith("/uploads/"):
+                    continue
+                try:
+                    if await svc.ensure_avatar(artist, sources=list(artist.sources)):
+                        avatar_fixed += 1
+                except Exception as e:
+                    logger.warning(f"[Asset] 头像本地化失败 {artist.name}: {e}")
+            if avatar_fixed:
+                await db.commit()
+                logger.info(f"[Asset] 头像本地化巡检完成: 修复 {avatar_fixed} 个")
+
+            # 2. 歌曲封面: 远程 URL → 落盘
+            stmt2 = select(Song).where(
+                (Song.cover.isnot(None)) & (Song.cover != "") &
+                (~Song.cover.like("/uploads/%"))
+            ).limit(200)
+            songs = (await db.execute(stmt2)).scalars().all()
+            cover_fixed = 0
+            for song in songs:
+                try:
+                    if await svc.ensure_cover(song):
+                        cover_fixed += 1
+                except Exception as e:
+                    logger.warning(f"[Asset] 封面本地化失败 {song.title}: {e}")
+            if cover_fixed:
+                await db.commit()
+                logger.info(f"[Asset] 封面本地化巡检完成: 修复 {cover_fixed} 个")
+    except Exception as e:
+        logger.error(f"[Scheduler] 媒体资源本地化巡检失败: {e}", exc_info=True)
+
+
 def register_recurring_jobs(scheduler) -> None:
     """注册所有循环任务。scheduler 为 APScheduler(AsyncIOScheduler/SimpleScheduler) 实例。"""
     scheduler.add_job(
@@ -87,6 +138,15 @@ def register_recurring_jobs(scheduler) -> None:
         id=JOB_AUTO_CACHE,
         replace_existing=True,
     )
+
+    scheduler.add_job(
+        run_asset_localization,
+        "interval",
+        hours=24,
+        id=JOB_ASSET_LOCALIZE,
+        replace_existing=True,
+    )
+    logger.info("[Scheduler] 媒体资源本地化巡检: 每 24 小时")
 
 
 def reschedule_release_job(scheduler) -> None:

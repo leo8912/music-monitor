@@ -96,6 +96,19 @@ class ArtistRefreshService:
         # 8. 全库元数据治愈 (使用 MetadataHealer)
         await self._heal_all_metadata(db, artist)
         
+        # 8.5 歌手头像本地化兜底 (服务内治愈, 替代仅脚本调用)
+        try:
+            from app.models.artist import ArtistSource
+            src_stmt = select(ArtistSource).where(ArtistSource.artist_id == artist.id)
+            srcs = (await db.execute(src_stmt)).scalars().all()
+            if not artist.avatar or str(artist.avatar).startswith("http"):
+                from app.services.media_asset_service import MediaAssetService
+                svc = MediaAssetService()
+                if await svc.ensure_avatar(artist, sources=list(srcs)):
+                    await db.commit()
+        except Exception as e:
+            logger.warning(f"🎨 刷新兜底头像本地化失败: {e}")
+        
         # 9. 完成统计
         total_count = await artist_repo.get_song_count(artist.id)
         logger.info(
@@ -177,14 +190,17 @@ class ArtistRefreshService:
         # 过滤脏数据
         raw_songs = [s for s in raw_songs if self.aggregator._is_valid_song(s)]
         
-        # 补全歌手头像
+        # 补全歌手头像 (本地化)
         if not artist.avatar:
-            for rs in raw_songs:
-                if rs.cover:
-                    artist.avatar = rs.cover
-                    logger.info(f"🎨 已从采集列表自动补全艺人头像: {artist.name}")
+            try:
+                from app.services.media_asset_service import MediaAssetService
+                svc = MediaAssetService()
+                ok = await svc.ensure_avatar(artist, sources=list(sources))
+                if ok:
                     await db.commit()
-                    break
+                    logger.info(f"🎨 已为歌手补全本地头像: {artist.name}")
+            except Exception as e:
+                logger.warning(f"🎨 头像补全失败(非阻塞) {artist.name}: {e}")
         
         await manager.broadcast({
             "type": "artist_progress",
@@ -365,6 +381,15 @@ class ArtistRefreshService:
             await self._smart_merge_metadata(
                 db, existing_song, group, db_song_map, norm_key, artist.name
             )
+            
+            # 新歌创建即下载封面 (本地化)
+            if getattr(existing_song, '_is_newly_discovered', False):
+                try:
+                    from app.services.media_asset_service import MediaAssetService
+                    svc = MediaAssetService()
+                    await svc.ensure_cover(existing_song)
+                except Exception as e:
+                    logger.warning(f"🖼️ 新歌封面下载失败(非阻塞): {existing_song.title}: {e}")
             
             # 获取此歌曲的所有源 - 此处由于已 prefetch 或显式初始化，不会报错
             existing_sources = existing_song.sources

@@ -560,46 +560,10 @@ class MetadataHealer:
         return await self._download_image(url, "covers")
 
     async def _download_image(self, url: str, folder: str = "covers") -> Tuple[Optional[str], Optional[str]]:
-        """下载图片并保存到指定目录"""
-        try:
-            import hashlib
-            import aiohttp
-            ext = "png" if ".png" in url.lower() else "jpg"
-            md5 = hashlib.md5(url.encode()).hexdigest()
-            filename = f"{md5}.{ext}"
-            
-            target_dir = os.path.join(self.upload_root, folder)
-            os.makedirs(target_dir, exist_ok=True)
-            
-            save_path = os.path.join(target_dir, filename)
-            web_url = f"/uploads/{folder}/{filename}"
-            
-            if os.path.exists(save_path):
-                return web_url, save_path
-                
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=15) as resp:
-                    if resp.status == 200:
-                        content = await resp.read()
-                        
-                        # 特殊处理: GDStudio 的 pic 链接可能返回 JSON {"url": "..."}
-                        if b'{"url":' in content[:100]:
-                            import json
-                            try:
-                                data = json.loads(content.decode("utf-8"))
-                                img_real_url = data.get("url")
-                                if img_real_url:
-                                    return await self._download_image(img_real_url, folder)
-                            except:
-                                pass
-                        
-                        with open(save_path, "wb") as f:
-                            f.write(content)
-                        return web_url, save_path
-            return None, None
-        except Exception as e:
-            logger.warning(f"下载图片失败 ({url}): {e}")
-            return None, None
+        """下载图片并保存到指定目录 (委托 MediaAssetService)"""
+        from app.services.media_asset_service import MediaAssetService
+        svc = MediaAssetService()
+        return await svc._download(url, folder)
 
     async def _download_cover_legacy(self, url: str) -> Tuple[Optional[str], Optional[str]]:
         try:

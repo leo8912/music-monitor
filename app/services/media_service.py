@@ -315,6 +315,13 @@ class MediaService:
                 
                 # 4. 智能元数据补全 (非阻塞)
                 try:
+                    from app.services.media_asset_service import MediaAssetService
+                    svc = MediaAssetService()
+                    await svc.ensure_cover(existing_song)
+                except Exception as cover_e:
+                    logger.warning(f"🖼️ 封面本地化失败(非阻塞): {cover_e}")
+
+                try:
                     from app.services.metadata_healer import MetadataHealer
                     healer = MetadataHealer()
                     # 触发单曲治愈

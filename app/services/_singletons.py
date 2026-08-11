@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 _download_service = None
 _metadata_service = None
 _aggregator = None
+_media_asset_service = None
 
 
 def get_download_service():
@@ -47,3 +48,13 @@ def get_aggregator():
         _aggregator = MusicAggregator()
         logger.debug("MusicAggregator 单例已创建")
     return _aggregator
+
+
+def get_media_asset_service():
+    """获取 MediaAssetService 全局单例"""
+    global _media_asset_service
+    if _media_asset_service is None:
+        from app.services.media_asset_service import MediaAssetService
+        _media_asset_service = MediaAssetService()
+        logger.debug("MediaAssetService 单例已创建")
+    return _media_asset_service

@@ -14,6 +14,8 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Query, HTTPException, Depends
 from fastapi.responses import RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.database import get_async_session
 from app.services._singletons import get_download_service, get_aggregator
 
 router = APIRouter(prefix="/api/discovery", tags=["discovery"])
@@ -159,6 +161,43 @@ async def cover_proxy_endpoint(
         raise HTTPException(status_code=404, detail="Cover not found")
     except Exception as e:
         logger.error(f"Cover proxy error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/localize_artist_avatar")
+async def localize_artist_avatar_endpoint(
+    artist_name: str,
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    前端兜底：按歌手名确保头像本地化到 /uploads/avatars/。
+    返回该歌手最终的 avatar 字段（本地路径或空）。
+    """
+    try:
+        from app.models.artist import Artist
+        from app.services.media_asset_service import MediaAssetService
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+
+        stmt = (
+            select(Artist)
+            .options(selectinload(Artist.sources))
+            .where(Artist.name == artist_name)
+        )
+        result = await db.execute(stmt)
+        artist = result.scalars().first()
+        if not artist:
+            raise HTTPException(status_code=404, detail="未找到该艺人")
+
+        svc = MediaAssetService()
+        ok = await svc.ensure_avatar(artist, sources=list(artist.sources))
+        if ok:
+            await db.commit()
+        return {"name": artist.name, "avatar": artist.avatar or ""}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Localize artist avatar error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
