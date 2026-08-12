@@ -313,6 +313,18 @@ class MediaService:
                 
                 await db.commit()
                 
+                # [Fix] 下载完成即广播刷新，让前端主列表立即显示本地歌曲
+                try:
+                    from core.websocket import manager
+                    await manager.broadcast({
+                        "type": "refresh_songs",
+                        "song_id": existing_song.id,
+                        "title": title,
+                        "timestamp": datetime.now().isoformat()
+                    })
+                except Exception as ws_e:
+                    logger.warning(f"⚠️ 广播刷新列表失败(非阻塞): {ws_e}")
+                
                 # 4. 智能元数据补全 (非阻塞)
                 try:
                     from app.services.media_asset_service import MediaAssetService

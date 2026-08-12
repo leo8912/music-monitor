@@ -64,4 +64,5 @@ export interface DownloadResult {
     local_path: string
     quality: number
     has_lyric: boolean
+    song_id?: string | number
 }

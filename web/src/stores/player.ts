@@ -86,6 +86,14 @@ export const usePlayerStore = defineStore('player', () => {
                     if (filename) {
                         audioUrl.value = playerApi.getAudioUrl(filename)
                         song.local_path = result.local_path
+                        song.status = 'DOWNLOADED'
+                    }
+                    // [Fix] 下载完成同步更新主列表对应歌曲，避免必须手动刷新才能显示为本地歌曲
+                    const lib = getLibraryStore()
+                    if (lib.updateSongInList) {
+                        // 优先用后端真实 song_id，搜索结果歌的临时 id 无法与库内记录匹配
+                        const dbId = result.song_id !== undefined ? result.song_id : song.id
+                        lib.updateSongInList({ ...song, id: dbId, local_path: result.local_path, status: 'DOWNLOADED' })
                     }
                 } else {
                     throw new Error('下载未返回有效路径')
