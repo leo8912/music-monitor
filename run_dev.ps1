@@ -101,10 +101,18 @@ Start-Process powershell -ArgumentList $backendArgs -WindowStyle Normal
 
 # 等待后端就绪 (用 .venv python 探测, 规避 PS 5.1 Invoke-WebRequest 的挂起/IPv6 解析问题)
 Write-Host ">> 等待后端就绪..." -ForegroundColor Yellow
-$probeCode = "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/check_auth', timeout=2).status < 400 else 1)"
+$probeCode = @'
+import urllib.request, sys
+try:
+    ok = urllib.request.urlopen('http://127.0.0.1:8000/api/check_auth', timeout=2).status < 400
+except Exception:
+    ok = False
+sys.exit(0 if ok else 1)
+'@
 $ready = $false
 for ($i = 0; $i -lt 30; $i++) {
-    & $venvPy -c $probeCode 2>$null
+    # 2>&1 合并输出并丢弃: PS 5.1 的 2>$null 会误显示 NativeCommandError
+    $null = & $venvPy -c $probeCode 2>&1
     if ($LASTEXITCODE -eq 0) { $ready = $true; break }
     Start-Sleep -Seconds 1
 }
