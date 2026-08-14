@@ -6,19 +6,21 @@ import { onMounted, ref } from 'vue'
 import { NSpin, NIcon, NResult, NButton } from 'naive-ui'
 import { useSettingsStore } from '@/stores'
 import { 
-    SettingsOutline, NotificationsOutline 
+    SettingsOutline, NotificationsOutline, PulseOutline 
 } from '@vicons/ionicons5'
 
 // 设置子组件
 import GeneralSettings from '@/components/settings/GeneralSettings.vue'
 import NotifySettings from '@/components/settings/NotifySettings.vue'
+import ApiStatusSettings from '@/components/settings/ApiStatusSettings.vue'
 
 const settingsStore = useSettingsStore()
 const activeTab = ref('general')
 
 const tabs = [
     { key: 'general', label: '通用设置', icon: SettingsOutline },
-    { key: 'notify', label: '推送通知', icon: NotificationsOutline }
+    { key: 'notify', label: '推送通知', icon: NotificationsOutline },
+    { key: 'api_status', label: '接口状态', icon: PulseOutline }
 ]
 
 onMounted(async () => {
@@ -72,6 +74,9 @@ onMounted(async () => {
                 <NotifySettings 
                     v-if="activeTab === 'notify'" 
                     :settings="settingsStore.settings" 
+                />
+                <ApiStatusSettings 
+                    v-if="activeTab === 'api_status'" 
                 />
             </div>
         </div>

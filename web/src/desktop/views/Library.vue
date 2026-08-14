@@ -89,6 +89,7 @@ import * as libraryApi from '@/api/library'
 import SongList from '@/components/SongList.vue'
 import MetadataMatcher from '@/components/library/MetadataMatcher.vue'
 import TaskIndicator from '@/components/library/TaskIndicator.vue'
+import type { Song } from '@/types'
 
 const message = useMessage()
 const dialog = useDialog()
@@ -96,24 +97,24 @@ const libraryStore = useLibraryStore()
 const playerStore = usePlayerStore()
 
 const props = defineProps({
-  history: { type: Array as () => any[], default: () => [] },
+  history: { type: Array as () => Song[], default: () => [] },
   loading: { type: Boolean, default: false },
   selectedArtistName: { type: String, default: null },
   mode: { type: String, default: 'library' }
 })
 
 const showMatcher = ref(false)
-const matcherTarget = ref<any>(null)
+const matcherTarget = ref<Song | null>(null)
 const matcherMode = ref<'metadata' | 'download'>('metadata')
 
 const emit = defineEmits(['play', 'repair', 'toggleFavorite', 'delete', 'redownload'])
 
-const handlePlay = (song: any) => {
+const handlePlay = (song: Song) => {
   playerStore.setPlaylist(libraryStore.songs)
   playerStore.playSong(song)
 }
 
-const handleDelete = async (song: any) => {
+const handleDelete = async (song: Song) => {
     dialog.warning({
         title: '确认删除',
         content: `确认删除 "${song.title}" 吗？此操作无法撤销。`,
@@ -126,13 +127,13 @@ const handleDelete = async (song: any) => {
     })
 }
 
-const handleRedownload = async (song: any) => {
+const handleRedownload = async (song: Song) => {
     matcherTarget.value = song
     matcherMode.value = 'download'
     showMatcher.value = true
 }
 
-const handleOpenMatcher = (song: any) => {
+const handleOpenMatcher = (song: Song) => {
     matcherTarget.value = song
     matcherMode.value = 'metadata'
     showMatcher.value = true

@@ -56,6 +56,8 @@ instance.interceptors.response.use(
 
 export default instance
 
+export { instance }
+
 // 导出请求方法
 export const get = <T>(url: string, params?: object): Promise<T> => {
     return instance.get(url, { params })

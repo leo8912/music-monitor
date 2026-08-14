@@ -19,10 +19,10 @@ class WeChatSessionService:
             stmt = select(WeChatSession).where(WeChatSession.user_id == user_id)
             result = await db.execute(stmt)
             session = result.scalar_one_or_none()
-            
+
             if session and session.expires_at > datetime.now():
                 return session.session_data
-            
+
             if session:
                 await db.delete(session)
                 await db.commit()
@@ -35,9 +35,9 @@ class WeChatSessionService:
             stmt = select(WeChatSession).where(WeChatSession.user_id == user_id)
             result = await db.execute(stmt)
             session = result.scalar_one_or_none()
-            
+
             expires_at = datetime.now() + timedelta(seconds=expire_seconds)
-            
+
             if session:
                 session.session_data = data
                 session.expires_at = expires_at

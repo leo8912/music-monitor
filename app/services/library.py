@@ -27,29 +27,27 @@ from app.services.favorite_service import FavoriteService
 from app.services.song_management_service import SongManagementService
 from app.services.scan_service import ScanService
 from app.services.metadata_healer import MetadataHealer
-from app.services.metadata_service import MetadataService
-from app.services.music_providers.aggregator import MusicAggregator
+from app.container import get_aggregator
 
 logger = logging.getLogger(__name__)
 
 
 class LibraryService:
     """媒体库服务 (Facade)"""
-    
+
     def __init__(self):
         # 注入各个专用服务
         self.artist_refresh_service = ArtistRefreshService()
         self.favorite_service = FavoriteService()
         self.song_service = SongManagementService()
         self.scan_service = ScanService()
-        from app.services._singletons import get_aggregator
         self.metadata_healer = MetadataHealer()
         self.song_repo = None
         self.artist_repo = None
         self.aggregator = get_aggregator()
-    
+
     # ==================== 收藏管理 ====================
-    
+
     async def toggle_favorite(
         self,
         song_id: int,
@@ -57,13 +55,13 @@ class LibraryService:
     ) -> Optional[Dict]:
         """
         切换歌曲收藏状态
-        
+
         委托给 FavoriteService
         """
         return await self.favorite_service.toggle(db, song_id)
-    
+
     # ==================== 歌曲管理 ====================
-    
+
     async def delete_song(
         self,
         song_id: int,
@@ -71,11 +69,11 @@ class LibraryService:
     ) -> bool:
         """
         删除歌曲
-        
+
         委托给 SongManagementService
         """
         return await self.song_service.delete_song(db, song_id)
-    
+
     async def delete_artist(
         self,
         db: AsyncSession,
@@ -84,11 +82,11 @@ class LibraryService:
     ) -> bool:
         """
         删除歌手及其资源
-        
+
         委托给 SongManagementService
         """
         return await self.song_service.delete_artist(db, artist_id, artist_name)
-    
+
     async def redownload_song(
         self,
         db: AsyncSession,
@@ -101,13 +99,13 @@ class LibraryService:
     ) -> bool:
         """
         重新下载歌曲
-        
+
         委托给 SongManagementService
         """
         return await self.song_service.redownload_song(
             db, song_id, source, source_id, quality, title, artist
         )
-    
+
     async def download_song_from_search(
         self,
         db: AsyncSession,
@@ -121,42 +119,42 @@ class LibraryService:
     ) -> Dict:
         """
         从搜索结果直接下载歌曲并入库
-        
+
         委托给 SongManagementService
         """
         return await self.song_service.download_song_from_search(
             db, title, artist, album, source, source_id, quality, cover_url
         )
-    
+
     async def reset_database(self, db: AsyncSession) -> bool:
         """
         重置数据库
-        
+
         委托给 SongManagementService
         """
         return await self.song_service.reset_database(db)
-    
+
     # ==================== 歌手刷新 ====================
-    
+
     async def refresh_artist(self, db: AsyncSession, artist_name: str) -> int:
         """
         刷新歌手歌曲列表
-        
+
         委托给 ArtistRefreshService
         """
         count = await self.artist_refresh_service.refresh(db, artist_name)
-        
+
         # [Fix] Trigger pending downloads immediately
         try:
             logger.info("Triggering pending download queue after refresh...")
             await self.song_service.process_pending_queue(db)
         except Exception as e:
             logger.error(f"Failed to process pending queue: {e}")
-            
+
         return count
-    
+
     # ==================== 元数据匹配 ====================
-    
+
     async def apply_metadata_match(
         self,
         db: AsyncSession,
@@ -166,18 +164,18 @@ class LibraryService:
     ):
         """
         手动应用元数据匹配
-        
+
         委托给 ScraperService
         """
         # 统一委托给 MetadataHealer，传入用户指定的数据源和歌曲 ID
         return await self.metadata_healer.heal_song(
-            song_id, force=True,
+            db, song_id, force=True,
             target_source=target_source,
             target_song_id=target_song_id
         )
 
     # ==================== 本地文件专属操作 ====================
-    
+
     async def get_local_songs_paginated(
         self,
         db: AsyncSession,
@@ -190,17 +188,45 @@ class LibraryService:
         return await self.song_service.get_local_songs_paginated(
             db, offset, fetch_limit, sort_by, order
         )
-        
+
     async def force_fix_quality(self, db: AsyncSession) -> tuple[int, list]:
         """强制修复质量信息，委托给 SongManagementService"""
         return await self.song_service.force_fix_quality(db)
 
     # ==================== 扫描服务 ====================
-    
+
+    async def scan_local_files(self, db: AsyncSession) -> int:
+        """
+        全量扫描本地资料库并入库新文件
+
+        委托给 ScanService; 返回本次新增入库的文件数。
+
+        Args:
+            db: 数据库会话 (透传给 ScanService)
+        """
+        result = await self.scan_service.scan_local_files(db)
+        if isinstance(result, dict):
+            return int(result.get("new_files_found", 0))
+        return 0
+
+    async def enrich_metadata(self, db: AsyncSession, limit: int = 5) -> int:
+        """
+        小批量元数据补全 (手动触发)
+
+        委托给 MetadataHealer; 返回本次成功修复的歌曲数。
+        注意: heal_all 内部自行管理会话 (AsyncSessionLocal),
+        此处 db 仅用于保持 Facade 接口一致。
+
+        Args:
+            db: 数据库会话 (当前实现不使用, 保持签名兼容)
+            limit: 单次批处理上限
+        """
+        return await self.metadata_healer.heal_all(force=False, limit=limit)
+
     async def scan_single_file(self, file_path: str, db: AsyncSession) -> Optional[any]:
         """
         扫描单个文件 (即时入库)
-        
+
         委托给 ScanService
         """
         return await self.scan_service.scan_single_file(file_path, db)

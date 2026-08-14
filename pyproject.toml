@@ -1,22 +1,46 @@
 [project]
 name = "music-monitor"
 version = "0.1.0"
-description = "A plugin-based monitor system for music/video creators"
+description = "音乐订阅监控服务：追踪关注歌手的新歌发布，自动下载、补全元数据并推送通知"
 authors = [
     {name = "User", email = "user@example.com"},
 ]
 dependencies = [
+    "aiofiles>=23.2.1",
+    "aiohttp>=3.9.5",
+    "aiosqlite>=0.20.0",
+    "alembic>=1.13.1",
+    "APScheduler>=3.10.4",
+    "arq>=0.26.0",
+    "attrs>=23.2.0",
+    "click>=8.1.7",
+    "colorama>=0.4.6",
+    "cryptography>=42.0.7",
+    "fastapi>=0.111.0",
+    "h11>=0.14.0",
+    "httpcore>=1.0.5",
+    "httpx>=0.27.0",
+    "itsdangerous>=2.0.0",
+    "mutagen>=1.47.0",
+    "opencc-python-reimplemented>=0.1.7",
     "pyncm>=1.8.1",
-    "qqmusic-api-python>=0.4.1",
-    "bilibili-api-python>=16.2.0",
-    "SQLAlchemy>=2.0.0",
-    "APScheduler>=3.10.0",
-    "requests>=2.31.0",
-    "pydantic>=2.0.0",
-    "pyyaml>=6.0",
-    "loguru>=0.7.0",
+    "pydantic>=2.7.1",
+    "pydantic-settings>=2.2.1",
+    "python-dateutil>=2.9.0.post0",
+    "python-multipart>=0.0.9",
+    "PyYAML>=6.0.1",
+    "qqmusic-api-python>=0.4.1,<0.5.0",
+    "redis>=5.0.0",
+    "requests>=2.32.3",
+    "SQLAlchemy>=2.0.30",
+    "starlette>=0.37.2",
+    "typing_extensions>=4.12.1",
+    "uvicorn>=0.30.1",
+    "watchfiles>=0.22.0",
+    "wechatpy>=1.8.18",
+    "xmltodict>=0.13.0",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -26,3 +50,24 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = false
+
+[tool.mypy]
+python_version = "3.11"
+files = ["app", "core", "main.py", "version.py"]
+# core/ 没有 __init__.py，需显式指定包根，否则 core/config.py 会被同时识别为
+# 顶层模块 config 与 core.config 而直接中断检查。
+explicit_package_bases = true
+mypy_path = "."
+# 重建期策略：只开"能反映真实缺陷"的检查，不开 strict。
+# 目标是让 R9 类问题（调用不存在的属性、导入不存在的名字）在 CI 就被拦住，
+# 而不是被一堆缺注解的告警淹没。随重构推进逐步收紧下面的开关。
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+disable_error_code = ["var-annotated", "assignment", "arg-type", "index", "union-attr", "operator", "call-overload", "misc", "valid-type", "return-value", "func-returns-value", "has-type", "override", "type-var", "dict-item", "list-item", "call-arg", "no-redef"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "alembic.*", "scripts.*"]
+ignore_errors = true

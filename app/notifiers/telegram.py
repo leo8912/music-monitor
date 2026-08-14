@@ -1,6 +1,5 @@
 import logging
 import aiohttp
-from typing import Optional
 from app.domain.models import MediaInfo
 from app.notifiers.base import BaseNotifier
 
@@ -13,7 +12,7 @@ class TelegramNotifier(BaseNotifier):
         # Initialize proxy to None by default, as it's used in check_connectivity
         # but not provided in the __init__ signature in the original code.
         # This ensures the code is syntactically correct and avoids AttributeError.
-        self.proxy = None 
+        self.proxy = None
 
     async def send(self, media: MediaInfo):
         if not self.bot_token or not self.chat_id:
@@ -22,13 +21,13 @@ class TelegramNotifier(BaseNotifier):
 
         # Prepare message
         # Use MarkdownV2 or HTML. Let's use HTML for easier link handling.
-        
+
         # Helper to get source name
         source_map = {'netease': '网易云音乐', 'qqmusic': 'QQ音乐'}
         source_name = source_map.get(media.source, media.source)
-        
+
         links_part = ""
-            
+
         # Standard Link
         links_part += f"\n🔗 <a href='{media.url}'>前往 {source_name} 收听</a>"
 
@@ -37,7 +36,7 @@ class TelegramNotifier(BaseNotifier):
         # 👤 Artist
         # 💿 Album
         # ...
-        
+
         date_str = media.publish_time
         if hasattr(media.publish_time, 'strftime'):
             date_str = media.publish_time.strftime('%Y-%m-%d')
@@ -73,7 +72,7 @@ class TelegramNotifier(BaseNotifier):
         """Send a test message to verify config."""
         if not self.bot_token or not self.chat_id:
              raise ValueError("Missing Token or Chat ID")
-             
+
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
         payload = {
             "chat_id": self.chat_id,

@@ -19,18 +19,18 @@ T = TypeVar('T')
 class PaginationParams(BaseModel):
     """
     统一分页请求参数
-    
+
     Attributes:
         page: 页码,从1开始
         page_size: 每页数量,默认20,最大100
     """
     page: int = Field(1, ge=1, description="页码,从1开始")
     page_size: int = Field(20, ge=1, le=100, description="每页数量")
-    
+
     def to_offset_limit(self) -> tuple[int, int]:
         """
         转换为 offset/limit 格式 (用于数据库查询)
-        
+
         Returns:
             (offset, limit) 元组
         """
@@ -42,7 +42,7 @@ class PaginationParams(BaseModel):
 class PaginatedResponse(BaseModel, Generic[T]):
     """
     统一分页响应格式
-    
+
     Attributes:
         items: 数据列表
         total: 总记录数
@@ -55,7 +55,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     page: int
     page_size: int
     total_pages: int
-    
+
     @classmethod
     def create(
         cls,
@@ -66,18 +66,18 @@ class PaginatedResponse(BaseModel, Generic[T]):
     ) -> "PaginatedResponse[T]":
         """
         创建分页响应
-        
+
         Args:
             items: 数据列表
             total: 总记录数
             page: 当前页码
             page_size: 每页数量
-            
+
         Returns:
             PaginatedResponse 实例
         """
         total_pages = ceil(total / page_size) if page_size > 0 else 0
-        
+
         return cls(
             items=items,
             total=total,
@@ -87,15 +87,16 @@ class PaginatedResponse(BaseModel, Generic[T]):
         )
 
 
-# 兼容旧格式的辅助函数
+# [4.5] 已废弃：所有列表端点已统一为 page/page_size (D7)。
+# 保留函数体仅为兼容历史导入；新代码一律使用 PaginationParams。
 def convert_skip_limit_to_page(skip: int, limit: int) -> tuple[int, int]:
     """
-    将旧的 skip/limit 参数转换为新的 page/page_size 参数
-    
+    [DEPRECATED] 将旧的 skip/limit 参数转换为新的 page/page_size 参数
+
     Args:
         skip: 跳过的记录数
         limit: 每页数量
-        
+
     Returns:
         (page, page_size) 元组
     """

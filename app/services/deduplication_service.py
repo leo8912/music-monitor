@@ -1,25 +1,26 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from datetime import datetime
 import functools
+import re
 
 class DeduplicationService:
     """
     负责多源歌曲去重与合并
     """
-    
+
     @staticmethod
     @functools.lru_cache(maxsize=4096)
     def _normalize_title(title: str) -> str:
         """归一化标题用于去重建议：转小写、去空格、移除括号内的备注"""
-        if not title: return ""
-        import re
+        if not title:
+            return ""
         # 1. 转小写并去空格
         t = title.lower().strip()
-        
+
         # [Crucial Fix] Detect Instrumental BEFORE removing brackets
         # If it's a known instrumental/karaoke tag, we MUST preserve it or map to a distinct suffix
         # Otherwise "Song (Instrumental)" becomes "Song" == "Song" (Original) -> Bad Dedup
-        
+
         inst_markers = ['instrumental', 'inst.', '伴奏', 'karaoke', 'off vocal']
         is_inst = False
         for m in inst_markers:
@@ -27,12 +28,12 @@ class DeduplicationService:
             if m in t:
                 is_inst = True
                 break
-        
-        # 2. 移除常见的后缀备注 (现场版), (remix), [2023...] 
+
+        # 2. 移除常见的后缀备注 (现场版), (remix), [2023...]
         # 以及 | 之后的内容, - 之后的部分内容
         # [Adjusted] If it's instrumental, we still want to remove OTHER junk, but keep the distinction.
         # Strategy: Clean as usual, but append "_inst" if it was instrumental.
-        
+
         t_clean = re.sub(r'[\(\[\{（【].*?[\)\]\}）】]', '', t)
         # [Fix D-3] 仅在出现管道符/全角破折号时截断；ASCII 连字符是艺名/歌名的合法字符
         # （如 "A-Ha"、"Jay-Z"、"Rock-n-Roll"），截断会导致不同歌曲被错误合并。
@@ -43,10 +44,10 @@ class DeduplicationService:
         # （它们不含 "cd/disc + 数字" 的结尾结构，不会命中本规则）。
         t_clean = re.sub(r'\s*-\s*(?:cd|disc)\s*\d+\s*$', '', t_clean, flags=re.IGNORECASE)
         t_clean = t_clean.strip()
-        
+
         if is_inst:
             return f"{t_clean}_inst"
-            
+
         return t_clean
 
     @staticmethod
@@ -56,44 +57,43 @@ class DeduplicationService:
         """
         if not songs:
             return []
-            
+
         grouped_songs = {}
-        
+
         for song in songs:
             # [Security] 使用 getattr 防止在异步模式下触发懒加载报错 (MissingGreenlet)
             title = getattr(song, 'title', None) or (song.get('title', '') if isinstance(song, dict) else '')
             artist_val = getattr(song, 'artist', None)
-            
+
             artist_name = ""
             if artist_val:
                 # 安全获取关联对象的属性
                 artist_name = getattr(artist_val, 'name', "")
             elif isinstance(song, dict):
                 artist_name = song.get('artist', '')
-                
+
             if not title:
                 continue
-                
+
             # 使用归一化后的标题作为粗略 Key
             norm_title = DeduplicationService._normalize_title(title)
-            
+
             # 改进: 尝试模糊匹配 Artist (解决 "Artist A" vs "Artist A feat. B" 无法合并的问题)
-            # 这里我们先只用 Title 分组，然后在组内再拆分? 
+            # 这里我们先只用 Title 分组，然后在组内再拆分?
             # 为了性能和简单，我们保持 Key 结构，但在生成 Key 之前做一次 Artist 归一化
-            
+
             # Simple normalization for artist: Use the first part of the artist name (before & / feat)
-            import re
             norm_artist = artist_name.lower().strip()
             # 移除常见的合作标识之后的内容，为了更大概率合并
             # 注意: 这可能会导致翻唱歌曲被合并，但通常 title 决定了一切
             # 如果是翻唱，Title 通常会有 (Cover xxx) -> 被 _normalize_title 移除了 -> 冲突风险
             # 但用户更想要的是 "合并"，所以我们激进一点
-            
+
             # 仅仅保留第一位歌手的名称用于分组 Key
             # 仅仅保留第一位歌手的名称用于分组 Key
-            
+
             # Stage 1: Split by separators that require spaces (protects AC/DC, Earth, Wind & Fire)
-            space_split_chars = [' & ', ' / '] 
+            space_split_chars = [' & ', ' / ']
             for char in space_split_chars:
                  if char in norm_artist:
                       norm_artist = norm_artist.split(char)[0].strip()
@@ -104,40 +104,40 @@ class DeduplicationService:
             for char in strict_split_chars:
                  if char in norm_artist:
                       norm_artist = norm_artist.split(char)[0].strip()
-            
+
             key = f"{norm_title}_{norm_artist}"
-            
+
             if key not in grouped_songs:
                 grouped_songs[key] = []
             grouped_songs[key].append(song)
-            
+
         # 2. 组内优选与合并
         result = []
         for key, group in grouped_songs.items():
             best_song = DeduplicationService._pick_best_song(group)
             if best_song:
                 result.append(best_song)
-                
+
         # 3. 排序逻辑：
         # 优先按发布日期 (从新到旧)，如果发布日期一致或缺失，按创建时间 (最新入库在前)
         def sort_key(s):
             pt = s.get('publish_time')
             # 尝试处理各种格式的发布时间
-            if not pt or pt == "" or pt == "今天":
-                pt_val = "0000-00-00" 
+            if not pt or pt in ("", "今天"):
+                pt_val = "0000-00-00"
             else:
                 pt_val = str(pt)
-                
+
             ct = s.get('created_at')
             if isinstance(ct, datetime):
                 ct_val = ct.isoformat()
             else:
                 ct_val = str(ct or "0000-00-00")
-                
+
             return (pt_val, ct_val)
 
         result.sort(key=sort_key, reverse=True)
-        
+
         return result
 
     @staticmethod
@@ -145,36 +145,36 @@ class DeduplicationService:
         """从一组重复歌曲中选出最佳版本，并尝试合并额外信息"""
         if not group:
             return None
-            
+
         # 评分函数
         def get_score(s):
             score = 0
-            
+
             # 检查是否已本地化 (有 local_path 说明后端已确认存在物理文件)
             local_path = getattr(s, 'local_path', None)
             status = getattr(s, 'status', '')
-            
+
             # 检查来源集合
             sources_list = getattr(s, 'sources', [])
             source_names = [src.source for src in sources_list] if sources_list else []
-            
+
             if local_path:
                 score += 1000
             if 'local' in source_names:
                 score += 800
             if status == 'DOWNLOADED':
                 score += 500
-            
+
             # QQ 音乐数据作为主元数据通常更准确
             if 'qqmusic' in source_names:
                 score += 100
-                
+
             return score
 
         # 按分数选出 Best
         sorted_group = sorted(group, key=get_score, reverse=True)
         best_obj = sorted_group[0]
-        
+
         # 提取歌手名 (安全访问)
         artist_val = getattr(best_obj, 'artist', None)
         artist_name = ""
@@ -211,12 +211,12 @@ class DeduplicationService:
             "local_files": [],
             "quality": "HQ" # Default to HQ
         }
-        
+
         # 合并来源和发布时间
         sources_set = set()
         best_publish_time = final_dict['publish_time']
         local_files_list = []
-        
+
         for item in group:
             # 添加所有来源
             item_sources = getattr(item, 'sources', [])
@@ -236,7 +236,7 @@ class DeduplicationService:
                 # 如果主 source_id 还没填，拿第一个看到的 source_id
                 if not final_dict['source_id']:
                     final_dict['source_id'] = src_obj.source_id
-                    
+
                 # [New]: Collect local file details
                 if src_obj.source == 'local':
                     data = src_obj.data_json or {}
@@ -247,17 +247,17 @@ class DeduplicationService:
                         "quality": data.get('quality', 'PQ'),
                         "format": data.get('format', 'UNK')
                     })
-            
+
             # 如果是本地下载状态，添加一个标识（供前端显示绿点等）
             local_path_val = getattr(item, 'local_path', None)
             if local_path_val and not final_dict.get('local_path'):
                 final_dict['local_path'] = local_path_val
-                
+
             if getattr(item, 'status', '') == 'DOWNLOADED' or local_path_val:
                 sources_set.add('downloaded')
-                
+
         final_dict['local_files'] = local_files_list
-        
+
         # Calculate best quality from local files
         best_quality = "HQ"
         if local_files_list:
@@ -271,24 +271,24 @@ class DeduplicationService:
                 "UNK": 10
             }
             max_score = -1
-            
+
             for f in local_files_list:
                 # Normalize quality string (handling cases)
                 q_str = str(f.get('quality', 'PQ')).upper()
-                
+
                 # [Hotfix] Force SQ for flac/wav if marked as PQ or UNK
                 path_lower = str(f.get('path', '')).lower()
-                if (q_str == 'PQ' or q_str == 'UNK' or q_str == 'UNKNOWN') and \
+                if q_str in ('PQ', 'UNK', 'UNKNOWN') and \
                    (path_lower.endswith('.flac') or path_lower.endswith('.wav') or path_lower.endswith('.alac')):
                     q_str = 'SQ'
 
                 score = quality_score.get(q_str, 10) # Default to PQ level if unknown
-                
+
                 # Update if better
                 if score > max_score:
                     max_score = score
                     best_quality = q_str
-            
+
             final_dict['quality'] = best_quality
         elif hasattr(best_obj, 'quality'):
              final_dict['quality'] = best_obj.quality
@@ -300,12 +300,12 @@ class DeduplicationService:
             if cv and cv.startswith("/uploads/"):
                 final_dict['cover'] = cv
                 break
-            
+
         # [Fix D-4] 发布时间补全 (QQ 优先) 已上移至上方 `for item in group` 主循环。
         # 原实现误用循环残留变量 item / item_sources，只统计了组内最后一个元素。
-        
+
         final_dict['publish_time'] = best_publish_time
-        
+
         # 提取音质信息
         # [Fix] 如果是本地文件，上面的 local_files_list 逻辑已经计算了最佳音质 (HR/SQ > PQ)
         # 不要让下面的通用逻辑覆盖它，因为下面的逻辑可能比较笨拙 (只取第一个 source 的 data)
@@ -321,10 +321,13 @@ class DeduplicationService:
                                 data = src.data_json or {}
                                 if isinstance(data, dict):
                                      q = data.get('quality')
-                                     if q: best_quality = q
-                           if best_quality: break
-                      if best_quality: break
-            
+                                     if q:
+                                         best_quality = q
+                           if best_quality:
+                               break
+                      if best_quality:
+                          break
+
             # 如果主来源没取到，尝试取任何一个
             if not best_quality:
                  for item in group:
@@ -332,27 +335,31 @@ class DeduplicationService:
                            data = src.data_json or {}
                            if isinstance(data, dict):
                                 q = data.get('quality')
-                                if q: 
+                                if q:
                                      best_quality = q
                                      break
-                      if best_quality: break
-                      
+                      if best_quality:
+                          break
+
             if best_quality:
                 final_dict['quality'] = best_quality
-                    
-        # 标签排序
+
+        # 标签排序 (与 GDStudio API 当前可用源一致: netease/joox/bilibili;
+        # kugou/migu 为历史数据保留低优先级)
         def source_sort_key(s):
             keys = {
-                'local': 0, 
-                'downloaded': 1, 
-                'qqmusic': 2, 
-                'netease': 3, 
-                'kuwo': 4, 
-                'kugou': 5, 
-                'migu': 6
+                'local': 0,
+                'downloaded': 1,
+                'netease': 2,
+                'joox': 3,
+                'bilibili': 4,
+                'qqmusic': 5,
+                'kuwo': 6,
+                'kugou': 7,
+                'migu': 8
             }
             return keys.get(s, 99)
-            
+
         if 'local' in sources_set and 'downloaded' in sources_set:
             sources_set.remove('downloaded')
 

@@ -9,11 +9,12 @@ import { NIcon, NAvatar, NTabs, NTabPane, NGrid, NGridItem, NCard, NSpace, NSpin
 import { PlayCircleOutline, HeartOutline, ShareSocialOutline, RefreshOutline } from '@vicons/ionicons5'
 import { getArtistDetail } from '@/api/subscription'
 import { refreshArtist } from '@/api/library'
+import { localizeArtistAvatar } from '@/api/discovery'
 import SongList from '@/components/SongList.vue'
 import { usePlayerStore } from '@/stores/player'
 import { useProgressStore } from '@/stores/progress'
 import { useMessage } from 'naive-ui'
-import axios from 'axios'
+import type { ArtistDetail, Song } from '@/types'
 
 const DEFAULT_AVATAR = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
@@ -24,7 +25,7 @@ const progressStore = useProgressStore()
 const message = useMessage()
 const loading = ref(true)
 const refreshing = ref(false)
-const artist = ref<any>(null)
+const artist = ref<ArtistDetail | null>(null)
 const activeTab = ref('songs')
 const currentPage = ref(1)
 const pageSize = ref(20)
@@ -42,12 +43,8 @@ const getHighResAvatar = (url: string) => {
 
 const requestAvatarLocalization = () => {
     if (!artist.value || artist.value.avatar?.startsWith('/uploads/')) return
-    axios.post('/api/discovery/localize_artist_avatar', new URLSearchParams({
-        artist_name: artist.value.name
-    }), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    }).then((res: any) => {
-        const local = res.data && res.data.avatar
+    localizeArtistAvatar(artist.value.name).then((res: { avatar: string }) => {
+        const local = res && res.avatar
         if (local && local.startsWith('/uploads/') && artist.value) {
             artist.value.avatar = local
         }
@@ -78,7 +75,7 @@ const getProgress = () => {
    return progressStore.getProgress(Number(artist.value.id))
 }
 
-const playSong = (song: any) => {
+const playSong = (song: Song) => {
     if (!artist.value?.songs) return
     // 设置播放列表为艺人的所有歌曲
     playerStore.setPlaylist(artist.value.songs)
@@ -134,10 +131,10 @@ onMounted(() => {
              </svg>
              
              <img 
-                :src="getHighResAvatar(artist.avatar)" 
+                :src="getHighResAvatar(artist.avatar || '')" 
                 class="artist-avatar-large"
                 :class="{ 'dimmed': getProgress() }"
-                @error="(e: any) => e.target.src = DEFAULT_AVATAR"
+                @error="(e: Event) => (e.target as HTMLImageElement).src = DEFAULT_AVATAR"
              />
           </div>
 

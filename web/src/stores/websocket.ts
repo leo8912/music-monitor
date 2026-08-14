@@ -44,13 +44,11 @@ export const useWebSocketStore = defineStore('websocket', {
                             console.log(`[Notification ${level}] ${msg}`)
                         }
                     } else if (data.type === 'artist_progress') {
-                        const progressStore = await import('./progress')
-                        progressStore.useProgressStore().updateProgress(data)
+                        useProgressStore().updateProgress(data)
 
                         // Sync artist song count immediately when finished
                         if (data.state === 'complete' && data.song_count !== undefined) {
-                            const libraryStore = await import('./library')
-                            const artist = libraryStore.useLibraryStore().artists.find(a => String(a.id) === String(data.artist_id))
+                            const artist = useLibraryStore().artists.find(a => String(a.id) === String(data.artist_id))
                             if (artist) {
                                 artist.song_count = data.song_count
                             }
@@ -60,13 +58,11 @@ export const useWebSocketStore = defineStore('websocket', {
                         const playerStore = await import('./player')
                         playerStore.usePlayerStore().updateDownloadStatus(data)
                     } else if (data.type === 'task_progress') {
-                        const progressStore = await import('./progress')
-                        progressStore.useProgressStore().updateGlobalTask(data.data)
+                        useProgressStore().updateGlobalTask(data.data)
                     } else if (data.type === 'refresh_songs' || data.type === 'refresh_list') {
                         // Trigger UI refresh
                         console.log('[WebSocket] Refresh triggered by server')
-                        const libraryStore = await import('./library')
-                        libraryStore.useLibraryStore().refresh()
+                        useLibraryStore().refresh()
                     }
                 } catch (e) {
                     // ignore

@@ -23,25 +23,26 @@ class Song(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     unique_key = Column(String, unique=True, index=True, nullable=False) # UUID-based unique key
-    artist_id = Column(Integer, ForeignKey("artists.id"), nullable=True)
-    
+    # ondelete='CASCADE': 删除歌手时由数据库层级联删除其歌曲 (配合 PRAGMA foreign_keys=ON)
+    artist_id = Column(Integer, ForeignKey("artists.id", ondelete="CASCADE"), nullable=True)
+
     # Display Information (Prioritized)
     title = Column(String, index=True, nullable=False)
     album = Column(String)
-    
+
     # 优先展示用的封面和时间 (QQ > Netease)
     cover = Column(String, nullable=True)
     publish_time = Column(DateTime, nullable=True)
-    
+
     created_at = Column(DateTime, default=datetime.now)
-    
+
     # Status
     is_favorite = Column(Boolean, default=False)
     status = Column(String, default="PENDING") # PENDING / DOWNLOADED / ERROR
     local_path = Column(String, nullable=True) # If downloaded locally
     last_enrich_at = Column(DateTime, nullable=True) # Last time enrichment was attempted
     last_notified_at = Column(DateTime, nullable=True) # Last time a new-release notification was sent
-    
+
     # Relationships
     artist = relationship("Artist", back_populates="songs")
     sources = relationship("SongSource", back_populates="song", cascade="all, delete-orphan")
@@ -88,19 +89,20 @@ class SongSource(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    song_id = Column(Integer, ForeignKey("songs.id"), nullable=False, index=True)
-    
+    # ondelete='CASCADE': 删除歌曲时由数据库层级联删除其来源 (配合 PRAGMA foreign_keys=ON)
+    song_id = Column(Integer, ForeignKey("songs.id", ondelete="CASCADE"), nullable=False, index=True)
+
     source = Column(String, nullable=False)    # 'qqmusic', 'netease', 'local'
     source_id = Column(String, nullable=False) # mid / filename
-    
+
     # Source Specific Meta
     cover = Column(String, nullable=True)
     duration = Column(Integer, default=0)
     url = Column(String, nullable=True)  # Playback URL if available
-    
+
     # Flexible Data (Quality, Lyric, etc.)
     data_json = Column(JSON, nullable=True)
-    
+
     song = relationship("Song", back_populates="sources")
 
     def __repr__(self):

@@ -181,6 +181,12 @@ def _isolate_global_state():
             cm_mod._config_manager = manager_before
             if manager_config_snapshot is not None:
                 manager_before._config = manager_config_snapshot
+            # 同步配置引擎 (懒创建缓存) 同样是进程级全局态:
+            # 测试间释放连接, 避免 SQLite 连接跨测试滞留
+            sync_engine = getattr(manager_before, "_sync_engine", None)
+            if sync_engine is not None:
+                sync_engine.dispose()
+                manager_before._sync_engine = None
         else:
             # 单例是在本测试期间被创建的 -> 丢弃，别留给下一个测试
             cm_mod._config_manager = None

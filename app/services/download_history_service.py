@@ -11,19 +11,20 @@ Author: music-monitor development team
 更新日志:
 2026-01-21 - 创建DownloadHistoryService，实现下载历史记录与查询功能
 """
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from typing import List, Optional
-from datetime import datetime
-import time
 
 from app.models.download_history import DownloadHistory
+
+logger = logging.getLogger(__name__)
 
 
 class DownloadHistoryService:
     def __init__(self):
         pass
-    
+
     async def log_download_attempt(
         self,
         db: AsyncSession,
@@ -56,12 +57,36 @@ class DownloadHistoryService:
             file_size=file_size,
             quality=quality
         )
-        
+
         db.add(history_record)
-        await db.commit()
-        await db.refresh(history_record)
-        
+        await self._safe_commit(db, history_record)
         return history_record
+
+    @staticmethod
+    async def _safe_commit(db: AsyncSession, obj=None) -> None:
+        """
+        失败安全的提交: 当调用方事务已处于失败状态 (如 SQLite 写锁冲突
+        导致 rollback-only) 时, 直接 commit 会抛 PendingRollbackError,
+        从而屏蔽 core.queue 的 locked 重试逻辑。
+
+        做法: 先回滚清理失败事务, 再以独立小事务重新写入挂起的对象
+        (rollback 会丢弃 pending 对象, 因此必须重新 add), 保证失败路径
+        (如 FAILED 记录) 也能落盘且不抛异常。
+        """
+        if obj is not None:
+            db.add(obj)
+        try:
+            await db.commit()
+        except Exception:
+            logger.exception("提交失败, 回滚后以独立事务重试写入")
+            await db.rollback()
+            if obj is not None:
+                db.add(obj)
+            try:
+                await db.commit()
+            except Exception:
+                logger.exception("独立事务提交仍失败, 丢弃本次写入")
+                await db.rollback()
 
     async def check_exists(self, db: AsyncSession, source: str, source_id: str) -> bool:
         """检查特定歌曲的下载历史是否存在"""
@@ -71,7 +96,7 @@ class DownloadHistoryService:
         )
         result = await db.execute(query)
         return result.scalar_one_or_none() is not None
-    
+
     async def get_download_history(
         self,
         db: AsyncSession,
@@ -83,29 +108,29 @@ class DownloadHistoryService:
     ) -> List[DownloadHistory]:
         """获取下载历史列表"""
         query = select(DownloadHistory).order_by(desc(DownloadHistory.download_time))
-        
+
         if source:
             query = query.where(DownloadHistory.source == source)
         if status:
             query = query.where(DownloadHistory.download_status == status)
         if artist:
             query = query.where(DownloadHistory.artist.ilike(f'%{artist}%'))
-        
+
         query = query.offset(skip).limit(limit)
-        
+
         result = await db.execute(query)
         return result.scalars().all()
-    
+
     async def get_download_stats(self, db: AsyncSession) -> dict:
         """获取下载统计信息"""
         query = select(DownloadHistory)
         result = await db.execute(query)
         all_records = result.scalars().all()
-        
+
         total_downloads = len(all_records)
         success_count = sum(1 for r in all_records if r.download_status == 'SUCCESS')
         failed_count = sum(1 for r in all_records if r.download_status == 'FAILED')
-        
+
         return {
             "total_downloads": total_downloads,
             "successful_downloads": success_count,

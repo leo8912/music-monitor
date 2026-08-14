@@ -31,7 +31,12 @@ def upgrade() -> None:
         if 'ix_media_records_unique_key' in indexes:
             op.drop_index(op.f('ix_media_records_unique_key'), table_name='media_records')
         op.drop_table('media_records')
-    op.add_column('songs', sa.Column('last_enrich_at', sa.DateTime(), nullable=True))
+    # [Fix] Guard against duplicate column when Base.metadata.create_all
+    # has already created the column (async_init_db runs create_all first).
+    if 'songs' in tables:
+        cols = [c['name'] for c in inspector.get_columns('songs')]
+        if 'last_enrich_at' not in cols:
+            op.add_column('songs', sa.Column('last_enrich_at', sa.DateTime(), nullable=True))
     # ### end Alembic commands ###
 
 

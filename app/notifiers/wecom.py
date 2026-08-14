@@ -22,7 +22,7 @@ class WeComNotifier(BaseNotifier):
             corp_id = corp_id or wc.get('corpid') or wc.get('corp_id')
             secret = secret or wc.get('corpsecret') or wc.get('secret')
             agent_id = agent_id or wc.get('agentid') or wc.get('agent_id')
-            
+
         self.corp_id = corp_id
         self.secret = secret
         self.agent_id = agent_id
@@ -39,9 +39,9 @@ class WeComNotifier(BaseNotifier):
              raise ValueError("Failed to obtain WeCom access token")
 
         url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
-        
+
         touser = "|".join(user_ids) if user_ids else "@all"
-        
+
         payload = {
             "touser": touser,
             "msgtype": "text",
@@ -50,7 +50,7 @@ class WeComNotifier(BaseNotifier):
                 "content": content
             }
         }
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=payload) as resp:
                 res = await resp.json()
@@ -94,40 +94,40 @@ class WeComNotifier(BaseNotifier):
             return
 
         url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
-        
+
         # Helper to get source name
         source_map = {'netease': '网易云音乐', 'qqmusic': 'QQ音乐'}
         source_name = source_map.get(media.source, media.source)
-        
+
         # New "Card + Emoji" Style
         # Title: 🎉 新歌发布 | Song Name
         card_title = f"🎉 新歌发布 | {media.title}"
-        
+
         # Description:
         # 🎙️ 歌手: Artist
         # 💿 专辑: Album
         # 🗓️ 时间: Date
         # 📺 来源: Source
-        
+
         desc_lines = [
             f"🎙️ 歌手: <div class=\"highlight\">{media.author}</div>",
             f"💿 专辑: {media.album or '单曲'}",
             f"🗓️ 时间: {media.publish_time.strftime('%Y-%m-%d') if hasattr(media.publish_time, 'strftime') else media.publish_time}",
             f"📺 来源: {source_name}"
         ]
-        
+
         if media.trial_url:
-             desc_lines.append(f"\n✨ <b>已匹配试听，点击直达</b>")
-        
+             desc_lines.append("\n✨ <b>已匹配试听，点击直达</b>")
+
         description = "\n".join(desc_lines)
-        
+
         if media.trial_url:
             main_url = media.trial_url
         else:
             main_url = media.url
-            
+
         btn_txt = "▶️ 立即播放"
-        
+
         payload = {
             "touser": "@all",
             "msgtype": "textcard",
@@ -135,11 +135,11 @@ class WeComNotifier(BaseNotifier):
             "textcard": {
                 "title": card_title,
                 "description": description,
-                "url": main_url, 
+                "url": main_url,
                 "btntxt": btn_txt
             }
         }
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=payload) as resp:
                 res = await resp.json()
@@ -152,11 +152,11 @@ class WeComNotifier(BaseNotifier):
         """Send a test message to verify config."""
         if not self.corp_id or not self.secret:
              raise ValueError("WeCom config missing")
-        
+
         token = await self._get_token()
         if not token:
              raise ValueError("Failed to get Access Token")
-             
+
         url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
         payload = {
             "touser": "@all",
@@ -166,7 +166,7 @@ class WeComNotifier(BaseNotifier):
                 "content": "👋 嗨！Music Monitor 通知服务连接正常 🚀\nMusic Monitor: Notification service connected."
             }
         }
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=payload) as resp:
                 res = await resp.json()
@@ -186,7 +186,7 @@ class WeComNotifier(BaseNotifier):
             return
 
         api_url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
-        
+
         payload = {
             "touser": "@all",
             "msgtype": "textcard",
@@ -194,11 +194,11 @@ class WeComNotifier(BaseNotifier):
             "textcard": {
                 "title": title,
                 "description": description,
-                "url": url, 
+                "url": url,
                 "btntxt": btntxt
             }
         }
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(api_url, json=payload) as resp:
                 res = await resp.json()
@@ -219,7 +219,7 @@ class WeComNotifier(BaseNotifier):
             return
 
         api_url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={token}"
-        
+
         # Fallback to default image if empty
         if not pic_url:
             pic_url = "https://p2.music.126.net/tGHU62DTszbTsM7vzNgHjw==/109951165631226326.jpg"
@@ -242,7 +242,7 @@ class WeComNotifier(BaseNotifier):
                 ]
             }
         }
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(api_url, json=payload) as resp:
                 res = await resp.json()

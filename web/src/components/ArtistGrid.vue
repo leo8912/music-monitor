@@ -71,13 +71,14 @@ import { NIcon, NSpin } from 'naive-ui'
 import { RefreshOutline, TrashOutline, AddOutline } from '@vicons/ionicons5'
 import Skeleton from '@/components/common/Skeleton.vue'
 import { useProgressStore } from '@/stores/progress'
-import axios from 'axios'
+import { localizeArtistAvatar } from '@/api/discovery'
+import type { MergedArtist } from '@/types'
 
 const router = useRouter()
 const progressStore = useProgressStore()
 
 const props = defineProps({
-  artists: { type: Array as () => any[], default: () => [] },
+  artists: { type: Array as () => MergedArtist[], default: () => [] },
   selectedArtistName: { type: String, default: null },
   loading: { type: Boolean, default: false },
   refreshingArtistName: { type: String, default: null }
@@ -105,10 +106,8 @@ const getArtistAvatar = (artistName: string) => {
 const requestAvatarLocalization = (artistName: string) => {
     if (localizedAvatars.has(artistName)) return
     localizedAvatars.set(artistName, 'pending')
-    axios.post('/api/discovery/localize_artist_avatar', new URLSearchParams({ artist_name: artistName }), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    }).then((res: any) => {
-        const local = res.data && res.data.avatar
+    localizeArtistAvatar(artistName).then((res: { avatar: string }) => {
+        const local = res && res.avatar
         if (local && local.startsWith('/uploads/')) {
             localizedAvatars.set(artistName, local)
             const idx = props.artists.findIndex(a => a.name === artistName)
@@ -119,32 +118,28 @@ const requestAvatarLocalization = (artistName: string) => {
     })
 }
 
-const getProgress = (artist: any) => {
-    const id = artist.id || (artist.ids && artist.ids[0]?.id)
-    return progressStore.getProgress(id)
+const getProgress = (artist: MergedArtist) => {
+    const id = artist.ids[0]?.id
+    return id !== undefined ? progressStore.getProgress(Number(id)) : undefined
 }
 
-const isUpdating = (artist: any) => {
+const isUpdating = (artist: MergedArtist) => {
     return !!getProgress(artist) || props.refreshingArtistName === artist.name
 }
 
-const getStatusText = (artist: any) => {
+const getStatusText = (artist: MergedArtist) => {
     const p = getProgress(artist)
     if (p) return p.message || "更新中..."
     return "准备中..."
 }
 
-const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-
-const handleArtistClick = (artist: any) => {
-    const artistId = artist.id || (artist.ids && artist.ids[0]?.id)
+const handleArtistClick = (artist: MergedArtist) => {
+    const artistId = artist.ids[0]?.id
     if (!artistId) return
     
-    if (isMobile()) {
-        router.push(`/mobile/artist/${artistId}`)
-    } else {
-        router.push(`/artist/${artistId}`)
-    }
+    // 注: 桌面端与移动端共用 /artist/:id (ArtistDetail.vue 响应式布局),
+    // /mobile/artist/:id 路由不存在 (旧实现跳转空白页)。
+    router.push(`/artist/${artistId}`)
 }
 </script>
 

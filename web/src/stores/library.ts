@@ -4,7 +4,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Song, Artist, MergedArtist, MusicSource } from '@/types'
+import type { Song, Artist, MergedArtist, MusicSource, SongStatus, SongPayload, DirectDownloadRequest } from '@/types'
 import * as libraryApi from '@/api/library'
 
 export const useLibraryStore = defineStore('library', () => {
@@ -90,17 +90,17 @@ export const useLibraryStore = defineStore('library', () => {
             // result is SongListResponse which has 'items'
             // @ts-ignore
             const items = result.items || result.songs || []
-            songs.value = items.map((s: any) => ({
+            songs.value = items.map((s: SongPayload) => ({
                 id: s.id,
                 title: s.title,
                 artist: s.artist,
                 album: s.album || '',
-                source: s.source || 'local',
-                source_id: s.source_id,
+                source: (s.source || 'local') as MusicSource,
+                source_id: s.source_id || '',
                 cover: s.cover,
                 local_path: s.local_path,
                 is_favorite: s.is_favorite || false,
-                status: s.status || 'DOWNLOADED',
+                status: (s.status || 'DOWNLOADED') as SongStatus,
                 publish_time: s.publish_time,
                 created_at: s.created_at,
                 found_at: s.found_at,
@@ -139,17 +139,17 @@ export const useLibraryStore = defineStore('library', () => {
 
             // @ts-ignore
             const items = result.items || []
-            songs.value = items.map((s: any) => ({
+            songs.value = items.map((s: SongPayload) => ({
                 id: s.id,
                 title: s.title,
                 artist: s.artist,
                 album: s.album || '',
-                source: s.source || 'local',
-                source_id: s.source_id,
+                source: (s.source || 'local') as MusicSource,
+                source_id: s.source_id || '',
                 cover: s.cover || s.pic_url,
                 local_path: s.local_path,
                 is_favorite: s.is_favorite || false,
-                status: s.status,
+                status: (s.status || 'DOWNLOADED') as SongStatus,
                 publish_time: s.publish_time,
                 created_at: s.created_at,
                 available_sources: s.available_sources || [],
@@ -177,20 +177,21 @@ export const useLibraryStore = defineStore('library', () => {
 
             // @ts-ignore
             const items = result.items || []
-            historySongs.value = items.map((s: any) => ({
-                id: s.id || s.media_id,
+            historySongs.value = items.map((s: SongPayload) => ({
+                id: s.id,
                 title: s.title,
                 artist: s.artist,
                 album: s.album || '',
-                source: s.source || 'local',
-                source_id: s.source_id || s.media_id,
+                source: (s.source || 'local') as MusicSource,
+                source_id: s.source_id || (typeof s.media_id === 'string' ? s.media_id : '') || '',
                 cover: s.cover || s.cover_url || s.pic_url,
                 local_path: s.local_path || s.local_audio_path,
                 is_favorite: s.is_favorite || false,
-                status: s.status || 'DOWNLOADED',
+                status: (s.status || 'DOWNLOADED') as SongStatus,
                 publish_time: s.publish_time,
                 created_at: s.created_at,
                 found_at: s.found_at,
+                played_at: s.played_at || s.found_at,
                 available_sources: s.available_sources || [],
                 quality: s.quality
             }))
@@ -305,19 +306,19 @@ export const useLibraryStore = defineStore('library', () => {
         }
     }
 
-    const updateSongInList = (updatedData: any) => {
+    const updateSongInList = (updatedData: SongPayload) => {
         // Map backend fields to frontend fields
         const mappedSong: Song = {
             id: updatedData.id,
             title: updatedData.title,
             artist: updatedData.artist,
             album: updatedData.album || '',
-            source: updatedData.source || 'local',
-            source_id: updatedData.source_id || updatedData.media_id || updatedData.id,
+            source: (updatedData.source || 'local') as MusicSource,
+            source_id: updatedData.source_id || (typeof updatedData.media_id === 'string' ? updatedData.media_id : String(updatedData.id)),
             cover: updatedData.cover || updatedData.pic_url,
             local_path: updatedData.local_path,
             is_favorite: updatedData.is_favorite || false,
-            status: updatedData.status || 'DOWNLOADED',
+            status: (updatedData.status || 'DOWNLOADED') as SongStatus,
             publish_time: updatedData.publish_time,
             created_at: updatedData.created_at,
             found_at: updatedData.found_at,
@@ -369,7 +370,7 @@ export const useLibraryStore = defineStore('library', () => {
         toggleFavorite,
         refresh,
         refreshArtist,
-        downloadSong: async (data: any) => {
+        downloadSong: async (data: DirectDownloadRequest) => {
             try {
                 const res = await libraryApi.downloadSong(data)
                 if (res.success && res.song) {

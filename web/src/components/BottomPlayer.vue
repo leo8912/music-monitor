@@ -91,7 +91,7 @@ watch(() => playerStore.audioUrl, async (newUrl) => {
 })
 
 // Quality helpers
-const getQualityLabel = (q: any) => {
+const getQualityLabel = (q: string | number | null | undefined) => {
     if (!q) return ''
     const s = String(q).toUpperCase()
     // HR / Hi-Res
@@ -106,7 +106,7 @@ const getQualityLabel = (q: any) => {
     return s // Return original if unknown
 }
 
-const getQualityClass = (q: any) => {
+const getQualityClass = (q: string | number | null | undefined) => {
     const label = getQualityLabel(q)
     if (label === 'HR') return 'quality-gold' 
     if (label === 'SQ') return 'quality-green'
@@ -143,7 +143,7 @@ const toggleFullscreen = () => {
       <!-- 左侧：歌曲信息 (30%) -->
       <div class="song-info">
         <div class="cover-art hover-scale clickable" @click="toggleFullscreen">
-          <img :src="playerStore.currentSong?.cover || 'public/pwa-192x192.png'" alt="Cover" v-if="playerStore.currentSong">
+          <img :src="playerStore.currentSong?.cover || '/default-cover.png'" alt="Cover" v-if="playerStore.currentSong">
           <div class="placeholder-cover" v-else>
             <n-icon :component="MusicalNotesOutline" />
           </div>

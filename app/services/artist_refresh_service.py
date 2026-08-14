@@ -11,7 +11,7 @@ ArtistRefreshService - 歌手刷新服务
 Author: google
 Created: 2026-02-02 (从 LibraryService 拆分)
 """
-from typing import List, Dict, Optional
+from typing import List, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -21,50 +21,60 @@ import logging
 import re
 import json
 import uuid
+import asyncio
+import os
 
 from app.models.artist import Artist, ArtistSource
 from app.models.song import Song, SongSource
 from app.repositories.artist import ArtistRepository
-from app.repositories.song import SongRepository
-from app.services.music_providers.aggregator import MusicAggregator
 from app.services.scan_service import ScanService
 from app.services.metadata_healer import MetadataHealer
+from app.container import get_aggregator
+from app.services.media_asset_service import MediaAssetService
+from app.services.notification import NotificationService
+from app.services.auto_download_service import get_auto_download_service
 from app.utils.error_handler import handle_service_errors
+from core.database import AsyncSessionLocal
+from core.websocket import manager
 
 logger = logging.getLogger(__name__)
+
+# 元数据治愈/挽救逻辑中用于判断“异常时间”的年份边界。
+# 硬编码固定年份会在该年份结束时把所有当年新歌误判为脏数据,
+# 因此以当前年份动态计算, 进程重启后自动更新。
+_CURRENT_YEAR = datetime.now().year
 
 
 class ArtistRefreshService:
     """歌手刷新服务 - 负责从在线源同步歌曲列表"""
-    
+
     def __init__(self):
-        from app.services._singletons import get_aggregator
         self.aggregator = get_aggregator()
-        self.scan_service = ScanService()
         self.metadata_healer = MetadataHealer()
         self._refresh_enrich_count = 0
         self._refresh_heal_count = 0
-    
+        # 保护 enrich 计数检查-递增的原子性 (并发专项):
+        # 原实现 `if count < 15: ... count += 1` 非原子, 并发协程可同时通过检查
+        self._refresh_enrich_lock = asyncio.Lock()
+
     @handle_service_errors(fallback_value=0)
     async def refresh(self, db: AsyncSession, artist_name: str) -> int:
         """
         全量刷新一名歌手的歌曲资料。
         """
         logger.info(f"Refreshing artist: {artist_name}")
-        
+
+        # 每次刷新独立 15 次全网补全预算 (原实现从不重置, 同实例多次刷新会累计)
+        self._refresh_enrich_count = 0
+
         # 1. 获取歌手信息
         artist_repo = ArtistRepository(db)
         artist = await artist_repo.get_by_name(artist_name)
         if not artist:
             logger.warning(f"Artist {artist_name} not found in DB")
             return 0
-        
-        # 2. 预扫描本地文件
-        logger.info(f"📁 [Pre-refresh] Scanning local files for {artist_name}...")
-        await self.scan_service.scan_local_files(db)
-        
-        # 3. 广播开始状态
-        from core.websocket import manager
+
+        # 2. 广播开始状态
         await manager.broadcast({
             "type": "artist_progress",
             "artistId": str(artist.id),
@@ -74,49 +84,47 @@ class ArtistRefreshService:
             "message": "📥 正在拉取全网歌曲...",
             "song_count": await artist_repo.get_song_count(artist.id)
         })
-        
-        # 4. 获取在线歌曲
+
+        # 3. 获取在线歌曲
         raw_songs = await self._fetch_online_songs(db, artist, manager)
         if not raw_songs:
             return 0
-        
-        # 5. 反向查找缺失的原版歌曲
+
+        # 4. 反向查找缺失的原版歌曲
         raw_songs = await self._reverse_lookup_originals(
             raw_songs, artist, manager
         )
-        
-        # 6. 合并在线和本地歌曲
+
+        # 5. 合并在线和本地歌曲
         new_count = await self._merge_with_local(
             db, artist, raw_songs, manager
         )
-        
-        # 7. 挽救孤儿歌曲
+
+        # 6. 挽救孤儿歌曲
         await self._rescue_orphan_songs(db, artist, raw_songs, manager)
-        
-        # 8. 全库元数据治愈 (使用 MetadataHealer)
+
+        # 7. 全库元数据治愈 (使用 MetadataHealer)
         await self._heal_all_metadata(db, artist)
-        
-        # 8.5 歌手头像本地化兜底 (服务内治愈, 替代仅脚本调用)
+
+        # 7.5 歌手头像本地化兜底 (服务内治愈, 替代仅脚本调用)
         try:
-            from app.models.artist import ArtistSource
             src_stmt = select(ArtistSource).where(ArtistSource.artist_id == artist.id)
             srcs = (await db.execute(src_stmt)).scalars().all()
             if not artist.avatar or str(artist.avatar).startswith("http"):
-                from app.services.media_asset_service import MediaAssetService
                 svc = MediaAssetService()
                 if await svc.ensure_avatar(artist, sources=list(srcs)):
                     await db.commit()
         except Exception as e:
             logger.warning(f"🎨 刷新兜底头像本地化失败: {e}")
-        
-        # 9. 完成统计
+
+        # 8. 完成统计
         total_count = await artist_repo.get_song_count(artist.id)
         logger.info(
             f"Artist {artist_name} refresh complete. "
             f"Added {new_count} new songs. Total {total_count}."
         )
-        
-        # 10. 广播完成状态
+
+        # 9. 广播完成状态
         await manager.broadcast({
             "type": "artist_progress",
             "artistId": str(artist.id),
@@ -126,20 +134,20 @@ class ArtistRefreshService:
             "message": f"✅ 刷新完成 (新增 {new_count} 首, 总计 {total_count} 首)",
             "song_count": total_count
         })
-        
+
         # 触发前端刷新
         await manager.broadcast({
             "type": "refresh_list",
             "artistId": str(artist.id),
             "artistName": artist.name
         })
-        
+
         return new_count
-    
+
     @handle_service_errors(fallback_value=[])
     async def _fetch_online_songs(
-        self, 
-        db: AsyncSession, 
+        self,
+        db: AsyncSession,
         artist: Artist,
         manager
     ) -> List:
@@ -148,13 +156,13 @@ class ArtistRefreshService:
         stmt = select(ArtistSource).where(ArtistSource.artist_id == artist.id)
         sources = (await db.execute(stmt)).scalars().all()
         artist_ids = {s.source: s.source_id for s in sources}
-        
+
         if not artist_ids:
             logger.info("No source IDs found for artist")
             return []
-        
+
         raw_songs = []
-        
+
         # QQ音乐
         if 'qqmusic' in artist_ids:
             await manager.broadcast({
@@ -165,12 +173,14 @@ class ArtistRefreshService:
                 "progress": 20,
                 "message": "📥 正在拉取 QQ 音乐歌曲列表..."
             })
-            qq_songs = await self.aggregator.providers[1].get_artist_songs(
-                artist_ids['qqmusic'], limit=1000
-            )
-            raw_songs.extend(qq_songs)
-            logger.info(f"Fetched {len(qq_songs)} songs from QQ Music")
-        
+            qqmusic_provider = self.aggregator.get_provider("qqmusic")
+            if qqmusic_provider:
+                qq_songs = await qqmusic_provider.get_artist_songs(
+                    artist_ids['qqmusic'], limit=1000
+                )
+                raw_songs.extend(qq_songs)
+                logger.info(f"Fetched {len(qq_songs)} songs from QQ Music")
+
         # 网易云
         if 'netease' in artist_ids:
             await manager.broadcast({
@@ -181,19 +191,20 @@ class ArtistRefreshService:
                 "progress": 30,
                 "message": "📥 正在拉取网易云音乐歌曲列表..."
             })
-            netease_songs = await self.aggregator.providers[0].get_artist_songs(
-                artist_ids['netease'], limit=1000
-            )
-            raw_songs.extend(netease_songs)
-            logger.info(f"Fetched {len(netease_songs)} songs from Netease")
-        
+            netease_provider = self.aggregator.get_provider("netease")
+            if netease_provider:
+                netease_songs = await netease_provider.get_artist_songs(
+                    artist_ids['netease'], limit=1000
+                )
+                raw_songs.extend(netease_songs)
+                logger.info(f"Fetched {len(netease_songs)} songs from Netease")
+
         # 过滤脏数据
         raw_songs = [s for s in raw_songs if self.aggregator._is_valid_song(s)]
-        
+
         # 补全歌手头像 (本地化)
         if not artist.avatar:
             try:
-                from app.services.media_asset_service import MediaAssetService
                 svc = MediaAssetService()
                 ok = await svc.ensure_avatar(artist, sources=list(sources))
                 if ok:
@@ -201,7 +212,7 @@ class ArtistRefreshService:
                     logger.info(f"🎨 已为歌手补全本地头像: {artist.name}")
             except Exception as e:
                 logger.warning(f"🎨 头像补全失败(非阻塞) {artist.name}: {e}")
-        
+
         await manager.broadcast({
             "type": "artist_progress",
             "artistId": str(artist.id),
@@ -210,9 +221,9 @@ class ArtistRefreshService:
             "progress": 40,
             "message": f"获取到 {len(raw_songs)} 首歌曲，正在聚合..."
         })
-        
+
         return raw_songs
-    
+
     @handle_service_errors(fallback_value=[])
     async def _reverse_lookup_originals(
         self,
@@ -222,19 +233,19 @@ class ArtistRefreshService:
     ) -> List:
         """反向查找缺失的原版歌曲（针对伴奏）"""
         existing_titles_norm = {
-            ScanService._normalize_cn_brackets(s.title).lower().strip() 
+            ScanService._normalize_cn_brackets(s.title).lower().strip()
             for s in raw_songs
         }
-        
+
         extra_songs = []
         checked_inst_titles = set()
         inst_keywords = ['(伴奏)', '(inst)', 'instrumental', '伴奏', 'inst.']
-        
+
         for s in raw_songs:
             title_lower = s.title.lower()
             is_inst = False
             clean_title = s.title
-            
+
             # 检测伴奏
             for kw in inst_keywords:
                 if kw in title_lower:
@@ -242,14 +253,14 @@ class ArtistRefreshService:
                     clean_title = s.title.lower().replace(kw, '').strip()
                     clean_title = clean_title.replace('()', '').replace('（）', '').strip()
                     break
-            
+
             if is_inst:
                 norm_clean = ScanService._normalize_cn_brackets(clean_title).lower().strip()
-                
+
                 if norm_clean not in existing_titles_norm and norm_clean not in checked_inst_titles:
                     checked_inst_titles.add(norm_clean)
                     logger.info(f"🔍 发现孤立伴奏 '{s.title}', 尝试反查原版: '{clean_title}'")
-                    
+
                     await manager.broadcast({
                         "type": "artist_progress",
                         "artistId": str(artist.id),
@@ -258,31 +269,35 @@ class ArtistRefreshService:
                         "progress": 40,
                         "message": f"正在补全原版: {clean_title}..."
                     })
-                    
+
                     try:
                         query = f"{clean_title} {artist.name}"
-                        search_res = await self.aggregator.providers[0].search_song(query, limit=3)
-                        
+                        netease_provider = self.aggregator.get_provider("netease")
+                        if netease_provider:
+                            search_res = await netease_provider.search_song(query, limit=3)
+                        else:
+                            search_res = []
+
                         found_target = None
                         for cand in search_res:
                             cand_norm = ScanService._normalize_cn_brackets(cand.title).lower().strip()
                             if cand_norm == norm_clean:
                                 found_target = cand
                                 break
-                        
+
                         if found_target:
                             logger.info(f"  ✅ 成功找回原版: {found_target.title}")
                             extra_songs.append(found_target)
                             existing_titles_norm.add(norm_clean)
                     except Exception as e:
                         logger.warning(f"  ❌ 反查失败: {e}")
-        
+
         if extra_songs:
             raw_songs.extend(extra_songs)
             logger.info(f"✨ 反向补全了 {len(extra_songs)} 首缺失的原版歌曲")
-        
+
         return raw_songs
-    
+
     async def _merge_with_local(
         self,
         db: AsyncSession,
@@ -299,27 +314,27 @@ class ArtistRefreshService:
             "progress": 50,
             "message": "🔍 正在与本地库匹配..."
         })
-        
+
         # 按标题分组
         grouped_songs = defaultdict(list)
         for s in raw_songs:
             clean_title = ScanService._normalize_cn_brackets(s.title).lower().strip()
             grouped_songs[clean_title].append(s)
-        
+
         # 排序（按发布时间倒序）
         def get_group_date(group):
             dates = [
-                str(getattr(s, 'publish_time', '0000-00-00')) 
+                str(getattr(s, 'publish_time', '0000-00-00'))
                 for s in group if getattr(s, 'publish_time', None)
             ]
             return max(dates) if dates else '0000-00-00'
-        
+
         sorted_groups = sorted(
-            grouped_songs.items(), 
-            key=lambda x: get_group_date(x[1]), 
+            grouped_songs.items(),
+            key=lambda x: get_group_date(x[1]),
             reverse=True
         )
-        
+
         # 获取现有歌曲及其所有的源（通过 selectinload 预加载，避免 N+1 问题和 MissingGreenlet 错误）
         res = await db.execute(
             select(Song)
@@ -330,37 +345,40 @@ class ArtistRefreshService:
             .where(Song.artist_id == artist.id)
         )
         all_db_songs = res.scalars().all()
-        
+
         db_song_map = {
-            ScanService._normalize_cn_brackets(s.title).lower().strip(): s 
+            ScanService._normalize_cn_brackets(s.title).lower().strip(): s
             for s in all_db_songs
         }
         logger.info(f"  🔍 已缓存 {len(all_db_songs)} 首现有歌曲（带源信息）用于模糊匹配")
-        
+
         new_count = 0
         processed = 0
         total_groups = len(sorted_groups)
-        
+        # 收集新歌下载快照, 在事务 commit 后统一入队 (避免后台任务
+        # 与未提交主事务竞争 SQLite 写锁 -> database is locked)
+        pending_snapshots = []
+
         for title_key, group in sorted_groups:
             processed += 1
-            
+
             # 选择最佳元数据（优先QQ音乐）
             best_meta = group[0]
             qq_ver = next((x for x in group if x.source == 'qqmusic'), None)
             if qq_ver:
                 best_meta = qq_ver
-            
+
             # 噪声过滤
             noise_keywords = ["#", "巡演", "最后一站", "预告"]
-            if (any(k in best_meta.title for k in noise_keywords) and 
+            if (any(k in best_meta.title for k in noise_keywords) and
                 not best_meta.album and len(best_meta.title) > 30):
                 logger.info(f"🧹 过滤噪声动态: {best_meta.title}")
                 continue
-            
+
             # 查找或创建歌曲
             norm_key = ScanService._normalize_cn_brackets(best_meta.title).lower().strip()
             existing_song = db_song_map.get(norm_key)
-            
+
             if not existing_song:
                 existing_song = Song(
                     artist_id=artist.id,
@@ -376,28 +394,27 @@ class ArtistRefreshService:
                 new_count += 1
                 db_song_map[norm_key] = existing_song
                 existing_song._is_newly_discovered = True
-            
+
             # 智能合并元数据
             await self._smart_merge_metadata(
                 db, existing_song, group, db_song_map, norm_key, artist.name
             )
-            
+
             # 新歌创建即下载封面 (本地化)
             if getattr(existing_song, '_is_newly_discovered', False):
                 try:
-                    from app.services.media_asset_service import MediaAssetService
                     svc = MediaAssetService()
                     await svc.ensure_cover(existing_song)
                 except Exception as e:
                     logger.warning(f"🖼️ 新歌封面下载失败(非阻塞): {existing_song.title}: {e}")
-            
+
             # 获取此歌曲的所有源 - 此处由于已 prefetch 或显式初始化，不会报错
             existing_sources = existing_song.sources
             if not existing_sources:
                 pass
-            
+
             src_map = {(src.source, str(src.source_id)) for src in existing_sources}
-            
+
             # 更新源
             for s in group:
                 s_id_str = str(s.id)
@@ -423,7 +440,7 @@ class ArtistRefreshService:
                     )
                     db.add(src_ent)
                     src_map.add((s.source, s_id_str)) # 避免同一批次重复添加
-            
+
             # 2. 新歌发现：先发「发现通知」，再入下载队列 (下载成功后另发「试听通知」)
             if getattr(existing_song, '_is_newly_discovered', False):
                 existing_song._is_newly_discovered = False
@@ -439,20 +456,14 @@ class ArtistRefreshService:
                         "publish_time": getattr(existing_song, 'publish_time', None),
                     }
                     try:
-                        from app.services.notification import NotificationService
                         await NotificationService.notify_new_song(snapshot)
                     except Exception as e:
                         logger.error(f"⚠️ 新歌发现通知发送失败: {e}", exc_info=True)
 
-                    try:
-                        from app.services.auto_download_service import get_auto_download_service
-                        auto_service = get_auto_download_service()
-                        # 触发后台异步下载（下载成功后会自动发送试听通知）
-                        await auto_service.add_to_queue([snapshot])
-                        logger.info(f"🆕 发现新歌，已加入自动下载队列: {existing_song.title}")
-                    except Exception as e:
-                        logger.error(f"⚠️ 自动下载触发失败: {e}", exc_info=True)
-            
+                    # 不在此处直接触发下载: 主事务尚未提交, 后台任务写库会
+                    # 与主事务竞争 SQLite 写锁。统一收集, commit 后统一入队。
+                    pending_snapshots.append(snapshot)
+
             # 进度广播
             if processed % 20 == 0 or processed == total_groups:
                 await manager.broadcast({
@@ -463,10 +474,20 @@ class ArtistRefreshService:
                     "progress": int(40 + (processed / total_groups) * 35),
                     "message": f"⏳ 匹配进度 ({processed}/{total_groups})"
                 })
-        
+
         await db.commit()
+
+        # 主事务已提交, 此时再统一触发后台自动下载, 避免并发写锁冲突
+        for snap in pending_snapshots:
+            try:
+                auto_service = get_auto_download_service()
+                await auto_service.add_to_queue([snap])
+                logger.info(f"🆕 发现新歌，已加入自动下载队列: {snap.get('title')}")
+            except Exception as e:
+                logger.error(f"⚠️ 自动下载触发失败 ({snap.get('title')}): {e}", exc_info=True)
+
         return new_count
-    
+
     async def _smart_merge_metadata(
         self,
         db: AsyncSession,
@@ -480,40 +501,47 @@ class ArtistRefreshService:
         candidate_covers = []
         candidate_dates = []
         candidate_albums = []
-        
+
         for s in group:
             c_url = getattr(s, 'cover_url', None) or getattr(s, 'pic_url', None)
             if c_url:
                 candidate_covers.append(c_url)
-            
+
             p_raw = getattr(s, 'publish_time', None)
             if p_raw:
                 p_parsed = self.metadata_healer._parse_date(str(p_raw))
                 if p_parsed:
                     candidate_dates.append(p_parsed.strftime("%Y-%m-%d"))
-            
+
             alb = getattr(s, 'album', None)
             if alb:
                 candidate_albums.append(alb)
-        
+
         # 判断是否需要治愈
         needs_healing = False
         if not existing_song.cover or 'gtimg.cn' in str(existing_song.cover):
             needs_healing = True
-        if (not existing_song.publish_time or 
-            existing_song.publish_time.year >= 2026 or 
+        if (not existing_song.publish_time or
+            existing_song.publish_time.year >= _CURRENT_YEAR or
             existing_song.publish_time.year <= 1970):
             needs_healing = True
         if not existing_song.album:
             needs_healing = True
-        
+
         # 全网补全
         if needs_healing and (not candidate_covers or not candidate_dates):
-            if self._refresh_enrich_count < 15:
+            # 锁内检查-预占名额, 避免并发协程同时通过 <15 检查导致超发
+            async with self._refresh_enrich_lock:
+                if self._refresh_enrich_count < 15:
+                    self._refresh_enrich_count += 1
+                    enrich_budget_ok = True
+                else:
+                    enrich_budget_ok = False
+            if enrich_budget_ok:
                 logger.info(f"  🔍 正在为 [旧曲] 尝试全网补全元数据: {existing_song.title}")
                 try:
                     enriched = await self.aggregator.get_song_metadata_from_best_source(
-                        existing_song.title, 
+                        existing_song.title,
                         artist_name
                     )
                     if enriched:
@@ -527,38 +555,37 @@ class ArtistRefreshService:
                                 candidate_dates.insert(0, p_enrich.strftime("%Y-%m-%d"))
                         if enriched.get('album') and not candidate_albums:
                             candidate_albums.append(enriched['album'])
-                        self._refresh_enrich_count += 1
                 except Exception as e:
                     logger.warning(f"Metadata healing failed: {e}")
-        
+
         # 应用更新
         if candidate_covers:
             if not existing_song.cover or 'gtimg.cn' in str(existing_song.cover):
                 existing_song.cover = candidate_covers[0]
-        
+
         if candidate_albums and not existing_song.album:
             existing_song.album = candidate_albums[0]
-        
+
         # 更新日期
         new_date = None
         if candidate_dates:
             new_date = self.metadata_healer._parse_date(candidate_dates[0])
-        
+
         # 伴奏版本回退策略
         if not new_date and "_inst" in norm_key:
             orig_key = norm_key.replace("_inst", "")
             if orig_key in db_song_map:
                 orig_song = db_song_map[orig_key]
-                if orig_song.publish_time and 1970 < orig_song.publish_time.year < 2026:
+                if orig_song.publish_time and 1970 < orig_song.publish_time.year < _CURRENT_YEAR:
                     new_date = orig_song.publish_time
                     logger.info(
                         f"    🎹 伴奏日期回退: {existing_song.title} -> "
                         f"继承原版 ({new_date.strftime('%Y-%m-%d')})"
                     )
-        
+
         if new_date:
             curr_date = existing_song.publish_time
-            if not curr_date or curr_date.year >= 2026 or curr_date.year <= 1970:
+            if not curr_date or curr_date.year >= _CURRENT_YEAR or curr_date.year <= 1970:
                 existing_song.publish_time = new_date
                 logger.info(
                     f"    📅 日期修正: {existing_song.title} -> "
@@ -566,7 +593,7 @@ class ArtistRefreshService:
                 )
             elif abs((curr_date - new_date).days) > 1:
                 existing_song.publish_time = new_date
-    
+
     @handle_service_errors(raise_on_critical=False)
     async def _rescue_orphan_songs(
         self,
@@ -579,12 +606,12 @@ class ArtistRefreshService:
         try:
             stmt = select(Song).options(selectinload(Song.sources)).where(
                 Song.artist_id == artist.id,
-                Song.local_path != None
+                Song.local_path.isnot(None)
             )
             local_songs = (await db.execute(stmt)).scalars().all()
-            
+
             logger.info(f"🚑 [挽救模式] 开始检查 {len(local_songs)} 首本地歌曲...")
-            
+
             await manager.broadcast({
                 "type": "artist_progress",
                 "artistId": str(artist.id),
@@ -593,22 +620,21 @@ class ArtistRefreshService:
                 "progress": 80,
                 "message": f"正在检查 {len(local_songs)} 首本地孤儿歌曲..."
             })
-            
+
             rescue_count = 0
-            
+
             for song in local_songs:
                 # 检查是否已有在线源
                 has_online = any(s.source in ['qqmusic', 'netease'] for s in song.sources)
                 if has_online and song.publish_time:
                     continue
-                
+
                 logger.info(f"  👉 正在尝试挽救: {song.title}")
-                
+
                 # 尝试从内嵌标签获取标题
                 if song.local_path:
                     try:
                         from tinytag import TinyTag
-                        import os
                         if os.path.exists(song.local_path):
                             tag = TinyTag.get(song.local_path)
                             if tag and tag.title:
@@ -621,17 +647,17 @@ class ArtistRefreshService:
                                 if t_clean and t_clean != match_title:
                                     logger.info(f"    🏷️ 使用内嵌标签标题: {tag.title}")
                                     song.title = tag.title
-                    except:
+                    except Exception:
                         pass
-                
+
                 # 查找匹配
                 best_match = self._find_match(raw_songs, song)
-                
+
                 if not best_match:
                     search_key = f"{song.title} {artist.name}"
                     search_results = await self.aggregator.search_song(search_key, limit=5)
                     best_match = self._find_match(search_results, song)
-                
+
                 # 尝试去括号搜索
                 if not best_match:
                     clean_title = re.sub(r"[\(\[【（].*?[\)\]】）]", "", song.title).strip()
@@ -640,7 +666,7 @@ class ArtistRefreshService:
                         clean_key = f"{clean_title} {artist.name}"
                         relaxed_results = await self.aggregator.search_song(clean_key, limit=5)
                         best_match = self._find_match(relaxed_results, song)
-                
+
                 if best_match:
                     # 检查源是否已存在
                     chk = select(SongSource).where(
@@ -649,7 +675,7 @@ class ArtistRefreshService:
                         SongSource.source_id == str(best_match.id)
                     )
                     existing_src = (await db.execute(chk)).scalars().first()
-                    
+
                     if not existing_src:
                         new_source = SongSource(
                             song_id=song.id,
@@ -662,85 +688,84 @@ class ArtistRefreshService:
                         )
                         db.add(new_source)
                         logger.info(f"    🔗 关联成功! 源: {best_match.source}")
-                    
+
                     # 补全元数据
                     if not song.cover and best_match.cover_url:
                         song.cover = best_match.cover_url
-                        logger.info(f"    🖼️ 补全封面")
-                    
+                        logger.info("    🖼️ 补全封面")
+
                     if not song.album and best_match.album:
                         song.album = best_match.album
                         logger.info(f"    💽 补全专辑: {song.album}")
-                    
+
                     if not song.publish_time and best_match.publish_time:
                         try:
                             pt_str = str(best_match.publish_time).strip()
-                            from datetime import datetime as dt
                             if pt_str.replace('-', '').isdigit() and len(pt_str) >= 10:
                                 ts = int(pt_str)
                                 if len(pt_str) == 13:
                                     ts = ts / 1000
                                 if ts > 0:
-                                    song.publish_time = dt.fromtimestamp(ts)
+                                    song.publish_time = datetime.fromtimestamp(ts)
                             elif len(pt_str) == 4 and pt_str.isdigit():
-                                song.publish_time = dt.strptime(pt_str, "%Y")
+                                song.publish_time = datetime.strptime(pt_str, "%Y")
                             elif len(pt_str) >= 10:
-                                dt_obj = dt.strptime(pt_str[:10], "%Y-%m-%d")
+                                dt_obj = datetime.strptime(pt_str[:10], "%Y-%m-%d")
                                 if dt_obj.year > 1970:
                                     song.publish_time = dt_obj
                             if song.publish_time:
                                 logger.info(f"    📅 补全日期: {song.publish_time}")
                         except Exception as e:
                             logger.warning(f"Date parse failed: {e}")
-                    
+
                     rescue_count += 1
-            
+
             if rescue_count > 0:
                 await db.commit()
                 logger.info(f"✨ 挽救行动结束: 成功修复 {rescue_count} 首歌曲")
-        
+
         except Exception as e:
             logger.error(f"❌ 挽救模式发生意外错误: {e}", exc_info=True)
-    
+
     def _find_match(self, candidates: List, local_song: Song):
         """查找匹配的歌曲"""
         norm_local = ScanService._normalize_cn_brackets(local_song.title).lower().strip()
-        
+
         variant_keywords = [
-            "(伴奏)", " 伴奏", "inst.", "instrumental", 
+            "(伴奏)", " 伴奏", "inst.", "instrumental",
             "demo", "(live)", " live", "（伴奏）"
         ]
         is_local_variant = any(k in local_song.title.lower() for k in variant_keywords)
-        
+
         for res in candidates:
             norm_res = ScanService._normalize_cn_brackets(res.title).lower().strip()
             is_remote_variant = any(k in res.title.lower() for k in variant_keywords)
-            
+
             # 精确匹配
             if norm_local == norm_res:
                 logger.info(f"      -> ✅ 精确匹配成功: '{res.title}'")
                 return res
-            
+
             # 模糊匹配（Remote在Local中）
             if norm_res in norm_local:
                 if is_local_variant and not is_remote_variant:
                     logger.info(
-                        f"      ⛔ 拒绝模糊匹配: 本地是变体但远程是原版"
+                        "      ⛔ 拒绝模糊匹配: 本地是变体但远程是原版"
                     )
                     continue
-                logger.info(f"      -> ⚠️ 模糊匹配成功(Remote在Local中)")
+                logger.info("      -> ⚠️ 模糊匹配成功(Remote在Local中)")
                 return res
-            
+
             # 反向模糊匹配（Local在Remote中）
             if len(norm_local) > 1 and norm_local in norm_res:
                 if not is_local_variant and is_remote_variant:
-                    logger.info(f"      ⚠️ 允许反向模糊匹配(可能是Live版)")
+                    logger.info("      ⚠️ 允许反向模糊匹配(可能是Live版)")
                     return res
-                logger.info(f"      -> ⚠️ 模糊匹配成功(Local在Remote中)")
+                logger.info("      -> ⚠️ 模糊匹配成功(Local在Remote中)")
                 return res
-        
+
         return None
-    
+
     @handle_service_errors(raise_on_critical=False)
     async def _heal_all_metadata(self, db: AsyncSession, artist: Artist):
         """
@@ -748,22 +773,23 @@ class ArtistRefreshService:
         Delegates to MetadataHealer.heal_song.
         """
         logger.info(f"🏥 启动歌手 [{artist.name}] 专属元数据治愈...")
-        
+
         # Get all songs
         res = await db.execute(
             select(Song).where(Song.artist_id == artist.id)
         )
         all_db_songs = res.scalars().all()
-        
-        import asyncio
+
         semaphore = asyncio.Semaphore(5)
-        
+
         async def heal_worker(song):
             async with semaphore:
-                # 不传入共享 db 会话：heal_song 内部用自己的 AsyncSessionLocal，
-                # 避免 asyncio 并发共享单个异步会话触发 MissingGreenlet/竞态。
+                # 并发治愈时每个任务使用独立 session：
+                # heal_song 要求调用方传入会话，且 asyncio 并发共享单个
+                # 异步会话会触发 MissingGreenlet/竞态。
                 try:
-                    return await self.metadata_healer.heal_song(song.id, force=False)
+                    async with AsyncSessionLocal() as sess:
+                        return await self.metadata_healer.heal_song(sess, song.id, force=False)
                 except Exception as e:
                     logger.warning(f"治愈歌曲 {song.id} 失败: {e}")
                     return False
@@ -771,7 +797,7 @@ class ArtistRefreshService:
         tasks = [heal_worker(s) for s in all_db_songs]
         results = await asyncio.gather(*tasks)
         heal_count = sum(1 for r in results if r)
-        
+
         if heal_count > 0:
             logger.info(f"✨ 歌手治愈完成: 修复了 {heal_count} 首歌曲")
         else:

@@ -1,7 +1,7 @@
 """Initial tables - CORRECTED & ALIGNED
 
 Revision ID: da25a5e33b66
-Revises: 
+Revises:
 Create Date: 2026-01-21 12:00:48.013798
 Last Updated: 2026-02-04 (Fixed SystemSettings schema mismatch)
 
@@ -9,7 +9,6 @@ Last Updated: 2026-02-04 (Fixed SystemSettings schema mismatch)
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import sqlite
 
 revision: str = 'da25a5e33b66'
 down_revision: Union[str, Sequence[str], None] = None
@@ -30,7 +29,7 @@ def upgrade() -> None:
             sa.Column('avatar', sa.String(), nullable=True),
             sa.Column('status', sa.String(), nullable=True, server_default="active"),
             sa.Column('last_sync', sa.DateTime(), nullable=True),
-            sa.Column('is_monitored', sa.Boolean(), nullable=True, server_default="0"), 
+            sa.Column('is_monitored', sa.Boolean(), nullable=True, server_default="0"),
             sa.PrimaryKeyConstraint('id')
         )
         op.create_index(op.f('ix_artists_id'), 'artists', ['id'], unique=False)
@@ -73,7 +72,7 @@ def upgrade() -> None:
         op.create_index(op.f('ix_songs_id'), 'songs', ['id'], unique=False)
         op.create_index(op.f('ix_songs_title'), 'songs', ['title'], unique=False)
         op.create_index(op.f('ix_songs_unique_key'), 'songs', ['unique_key'], unique=True)
-    
+
     # 4. Song Sources
     if 'song_sources' not in tables:
         op.create_table('song_sources',
@@ -89,7 +88,7 @@ def upgrade() -> None:
             sa.PrimaryKeyConstraint('id')
         )
         op.create_index(op.f('ix_song_sources_song_id'), 'song_sources', ['song_id'], unique=False)
-    
+
     # 5. System Settings
     if 'system_settings' not in tables:
         op.create_table('system_settings',
@@ -103,7 +102,7 @@ def upgrade() -> None:
             sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
             sa.PrimaryKeyConstraint('id')
         )
-    
+
     # Cleanup legacy
     if 'media_records' in tables:
         op.drop_table('media_records')

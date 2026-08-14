@@ -1,4 +1,3 @@
-import pytest
 from app.services.deduplication_service import DeduplicationService
 
 def test_normalize_title():
@@ -50,10 +49,10 @@ def test_pick_best_song_logic():
 
     s1 = MockSong(1, "Song", sources=[MockSource("netease", "123")])
     s2 = MockSong(2, "Song", local_path="/path/to/file", status="DOWNLOADED", sources=[MockSource("local", "xxx")])
-    
+
     group = [s1, s2]
     best = DeduplicationService._pick_best_song(group)
-    
+
     assert best["id"] == 2
     assert "local" in best["available_sources"]
     assert "netease" in best["available_sources"]
@@ -81,7 +80,7 @@ def test_deduplicate_songs_merging():
         MockSong(2, "Hello (Live)", "Adele"),
         MockSong(3, "Rolling in the Deep", "Adele")
     ]
-    
+
     result = DeduplicationService.deduplicate_songs(songs)
     # Hello and Hello (Live) should merge
     assert len(result) == 2

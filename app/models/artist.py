@@ -25,8 +25,8 @@ class Artist(Base):
     avatar = Column(String, nullable=True)     # Priority Avatar (e.g. QQ)
     status = Column(String, default="active")  # active/paused
     last_sync = Column(DateTime, default=datetime.now)
-    is_monitored = Column(Boolean, default=False) 
-    
+    is_monitored = Column(Boolean, default=False)
+
     # Relationships
     sources = relationship("ArtistSource", back_populates="artist", cascade="all, delete-orphan")
     songs = relationship("Song", back_populates="artist", cascade="all, delete-orphan")
@@ -41,16 +41,17 @@ class ArtistSource(Base):
     __tablename__ = "artist_sources"
 
     id = Column(Integer, primary_key=True, index=True)
-    artist_id = Column(Integer, ForeignKey("artists.id"), nullable=False, index=True)
-    
+    # ondelete='CASCADE': 删除歌手时由数据库层级联删除其平台来源 (配合 PRAGMA foreign_keys=ON)
+    artist_id = Column(Integer, ForeignKey("artists.id", ondelete="CASCADE"), nullable=False, index=True)
+
     source = Column(String, nullable=False)    # e.g. 'qqmusic', 'netease'
     source_id = Column(String, nullable=False) # e.g. 'mid_123'
     avatar = Column(String, nullable=True)     # Source specific avatar
     url = Column(String, nullable=True)
-    
+
     # 完整原始数据 (可选)
     raw_data = Column(JSON, nullable=True) # Full API Response
-    
+
     artist = relationship("Artist", back_populates="sources")
 
     def __repr__(self):

@@ -61,6 +61,14 @@ storage:
 system:
     external_url: "http://localhost:8000" # 用于生成分享链接
 
+# --- 7. Redis / 任务队列 (Redis & Queue) ---
+# 生产 Docker 镜像内置 Redis (同容器) 并默认启用 (MM_REDIS__ENABLED=true)。
+# 本地开发/测试默认关闭 → 任务队列降级为进程内执行，功能等价。
+redis:
+  enabled: false            # 是否启用 Redis + arq 任务队列
+  unix_socket: "/tmp/redis.sock"  # Docker 内置 Redis unixsocket
+  url: "redis://127.0.0.1:6379/0" # 备选 TCP 地址
+
 # ==============================================================================
 # 🚀 迁移辅助 (Migration Helper)
 # 

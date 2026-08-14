@@ -37,7 +37,7 @@ class NotificationService:
     def initialize(cls):
         """初始化 notifiers from current config."""
         notify_cfg = cls._read_config()
-        
+
         # WeCom
         wecom_cfg = notify_cfg.get('wecom', {})
         if not wecom_cfg:
@@ -159,25 +159,27 @@ class NotificationService:
             f"🔗 链接: {media.url}\n"
             f"📅 时间: {media.publish_time}"
         )
-        
+
         # Custom description support (for batch summaries)
         if hasattr(media, 'custom_description') and media.custom_description:
             message_text = media.custom_description
-            
+
         # 2. Determine Target URL
         target_url = media.url
         external_url = get_config_manager().get('system', {}).get('external_url', '')
-        
+
         if external_url and external_url.startswith('http'):
             external_url = external_url.rstrip('/')
             try:
                 # Try generating mobile play link
-                # Media object might be MediaInfo or Song. 
+                # Media object might be MediaInfo or Song.
                 # MediaInfo has unique_key(). Song has unique_key attribute.
                 u_key = getattr(media, 'unique_key', None)
-                if callable(u_key): u_key = u_key() # Handle method
-                if not u_key: u_key = f"{media.source}:{media.id}" # Fallback
-                
+                if callable(u_key):
+                    u_key = u_key()  # Handle method
+                if not u_key:
+                    u_key = f"{media.source}:{media.id}"  # Fallback
+
                 sign_params = generate_signed_url_params(u_key)
                 target_url = f"{external_url}/#/mobile/play?id={quote(sign_params['id'])}&sign={sign_params['sign']}&expires={sign_params['expires']}"
             except Exception as e:
@@ -194,7 +196,7 @@ class NotificationService:
                 enhanced_description = message_text
                 if not (hasattr(media, 'custom_description') and media.custom_description):
                     enhanced_description += f"\n\n💡 想要离线听？发送“下载 {media.title}”即可开始下载。"
-                
+
                 # Use News Message for rich display
                 await cls._wecom.send_news_message(
                     title=f"🎵 新歌发布: {media.title}",
@@ -222,7 +224,7 @@ class NotificationService:
         # 如果未配置企业微信，直接返回
         if not cls._wecom:
             return
-            
+
         try:
             # 构造链接
             external_url = get_config_manager().get('system', {}).get('external_url', '')

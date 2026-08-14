@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   build:
-    needs: pytest
+    needs: [pytest, frontend]
     environment: dockerhub
     runs-on: ubuntu-latest
     permissions:

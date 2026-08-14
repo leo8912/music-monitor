@@ -6,7 +6,7 @@ Service层 - 业务逻辑处理层
 
 主要服务:
 - MediaService: 媒体播放/下载业务
-- LibraryService: 本地媒体库管理  
+- LibraryService: 本地媒体库管理
 - DownloadService: GDStudio API 下载
 - MetadataService: 歌词/封面获取
 - DownloadHistoryService: 下载历史记录
@@ -30,7 +30,7 @@ from .subscription import SubscriptionService
 
 __all__ = [
     "MediaService",
-    "LibraryService", 
+    "LibraryService",
     "DownloadService",
     "DownloadHistoryService",
     "MetadataService",

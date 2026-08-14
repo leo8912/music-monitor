@@ -4,8 +4,8 @@
  * 专注于列表的视觉张力、排版和交互响应。
  */
 
-import { computed, h, ref, nextTick } from 'vue'
-import { NButton, NIcon, NEmpty, NDropdown, NPopover, NInput, useMessage, NSpin } from 'naive-ui'
+import { computed, h, ref, nextTick, type Component } from 'vue'
+import { NButton, NIcon, NEmpty, NDropdown, NPopover, NInput, useMessage } from 'naive-ui'
 import { 
     PlayCircleOutline, 
     HeartOutline, 
@@ -23,9 +23,11 @@ import {
 } from '@vicons/ionicons5'
 import Skeleton from '@/components/common/Skeleton.vue'
 import { usePlayerStore } from '@/stores/player'
+import { bitrateToQuality } from '@/utils/quality'
+import type { Song } from '@/types'
 
 const props = defineProps({
-    history: { type: Array as () => any[], default: () => [] },
+    history: { type: Array as () => Song[], default: () => [] },
     loading: { type: Boolean, default: false },
     mode: { type: String as () => 'library' | 'history' | 'discovery' | 'artist', default: 'library' },
     sortField: { type: String, default: 'publish_time' }, // Changed sortBy to sortField for consistency with Home.vue
@@ -48,7 +50,7 @@ const dateLabel = computed(() => {
 })
 
 // Correctly identify which field to use for the date column
-const getDateValue = (song: any) => {
+const getDateValue = (song: Song) => {
     let rawDate = ''
     if (props.mode === 'history') rawDate = song.played_at || '-'
     else if (props.mode === 'library') rawDate = song.created_at || '-'
@@ -72,14 +74,18 @@ const searchQuery = ref('')
 const filteredHistory = computed(() => {
     if (!searchQuery.value) return props.history
     const lower = searchQuery.value.toLowerCase()
+    const artistName = (song: Song) => {
+        const name = formatArtist(song.artist)
+        return name && name.toLowerCase()
+    }
     return props.history.filter(song => 
         (song.title && song.title.toLowerCase().includes(lower)) ||
-        (song.artist && song.artist.name && song.artist.name.toLowerCase().includes(lower)) ||
+        (artistName(song) && artistName(song)!.includes(lower)) ||
         (song.album && song.album.toLowerCase().includes(lower))
     )
 })
 
-const handlePlay = (song: any) => {
+const handlePlay = (song: Song) => {
   emit('play', song)
 }
 
@@ -97,9 +103,9 @@ const getSourceName = (source: string) => {
 const showDropdown = ref(false)
 const x = ref(0)
 const y = ref(0)
-const currentSong = ref<any>(null)
+const currentSong = ref<Song | null>(null)
 
-const handleContextMenu = (e: MouseEvent, song: any) => {
+const handleContextMenu = (e: MouseEvent, song: Song) => {
     e.preventDefault()
     showDropdown.value = false
     nextTick().then(() => {
@@ -115,12 +121,13 @@ const onClickoutside = () => {
 }
 
 // Action Menu Options
-const renderIcon = (icon: any) => {
+const renderIcon = (icon: Component) => {
   return () => h(NIcon, null, { default: () => h(icon) })
 }
 
 const dropdownOptions = computed(() => {
     if (!currentSong.value) return []
+    const isFav = currentSong.value.is_favorite
     return [
         {
             label: '播放',
@@ -130,7 +137,7 @@ const dropdownOptions = computed(() => {
         {
             label: '收藏 / 取消收藏',
             key: 'toggleFavorite',
-            icon: renderIcon(currentSong.value.liked ? Heart : HeartOutline)
+            icon: renderIcon(isFav ? Heart : HeartOutline)
         },
         {
             type: 'divider',
@@ -187,21 +194,19 @@ const getSortIcon = (field: string) => {
     return props.sortOrder === 'desc' ? ChevronDown : ChevronUp
 }
 
-const getQualityLabel = (quality: any) => {
+const getQualityLabel = (quality: string | number | null | undefined) => {
     if (!quality) return ''
     if (String(quality).match(/^(SQ|HQ|HR|PQ)$/i)) return String(quality).toUpperCase()
     
     const q = parseInt(String(quality))
     if (!isNaN(q)) {
-        if (q >= 2000) return 'HR'
-        if (q >= 900) return 'SQ'
-        if (q >= 320) return 'HQ'
-        return 'PQ'
+        // 统一音质阈值 (M4): 见 utils/quality.ts —— 2000+ HR / 900+ SQ / 320+ HQ
+        return bitrateToQuality(q)
     }
     return String(quality)
 }
 
-const getQualityClass = (quality: any) => {
+const getQualityClass = (quality: string | number | null | undefined) => {
     const label = getQualityLabel(quality)
     if (label === 'HR' || label === 'HI-RES') return 'quality-gold-hires' 
     if (label === 'SQ' || label === 'FLAC') return 'quality-sq-green' // Classic Green for Lossless
@@ -242,7 +247,7 @@ const formatShortPath = (path: string | null | undefined) => {
     return normalizedPath.split('/').pop() || normalizedPath
 }
 
-const formatArtist = (artist: any) => {
+const formatArtist = (artist: string | Array<{ name: string }> | { name?: string } | null | undefined) => {
   if (!artist) return '未知歌手'
   if (typeof artist === 'string') return artist
   if (Array.isArray(artist)) return artist.map(a => a.name).join(', ')
@@ -357,9 +362,6 @@ const getPlatformLabel = (source: string) => {
             <div class="title-with-cover">
               <div class="cover-container card-touch" :class="{ 'discovery-cover': mode === 'discovery' }">
                 <img :src="song.cover || '/default-cover.png'" class="song-cover" loading="lazy">
-                <div v-if="song.status === 'PENDING'" class="loading-overlay">
-                    <n-spin size="small" stroke="var(--sp-green)" />
-                </div>
               </div>
               <div class="title-info">
                 <div class="song-name truncate" :class="{ 'text-green': playerStore.currentSong?.id === song.id }">
@@ -675,15 +677,6 @@ const getPlatformLabel = (source: string) => {
 
 .text-green {
     color: var(--sp-green) !important;
-}
-
-.loading-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .hover-white:hover {

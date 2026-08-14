@@ -11,9 +11,9 @@ SongManagementService - 歌曲管理服务
 Author: google
 Created: 2026-02-02 (从 LibraryService 拆分)
 """
-from typing import Dict, Optional
+from typing import Dict
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func, desc, asc
 from sqlalchemy.orm import selectinload
 from datetime import datetime
 import os
@@ -27,8 +27,8 @@ from app.models.song import Song, SongSource
 from app.models.artist import Artist, ArtistSource
 from app.repositories.song import SongRepository
 from app.repositories.artist import ArtistRepository
-from app.services.download_service import DownloadService
-from app.services._singletons import get_download_service, get_aggregator, get_metadata_service
+from app.services.deduplication_service import DeduplicationService
+from app.container import get_download_service, get_aggregator, get_metadata_service
 from app.services.metadata_healer import MetadataHealer
 from app.services.scan_service import ScanService
 from app.utils.error_handler import handle_service_errors
@@ -38,48 +38,48 @@ logger = logging.getLogger(__name__)
 
 class SongManagementService:
     """歌曲增删改服务"""
-    
+
     def __init__(self):
         self.aggregator = get_aggregator()
         self.metadata_service = get_metadata_service()
-    
+
     @handle_service_errors(fallback_value=False)
     async def delete_song(
-        self, 
-        db: AsyncSession, 
+        self,
+        db: AsyncSession,
         song_id: int
     ) -> bool:
         """
         彻底删除一首歌曲。
-        
+
         流程:
         1. 检查歌曲在数据库中是否存在。
         2. 如果存在本地音频文件，则从磁盘删除。
         3. 从数据库中移除歌曲及其所有关联的源 (Cascade Delete)。
-        
+
         Args:
             db (AsyncSession): 异步数据库会话。
             song_id (int): 待删除的歌曲ID。
-            
+
         Returns:
             bool: 删除成功返回 True，歌曲不存在或删除失败返回 False。
         """
         song_repo = SongRepository(db)
         song = await song_repo.get(song_id)
-        
+
         if not song:
             return False
-        
+
         # 删除本地文件
         if song.local_path:
             exists = await anyio.to_thread.run_sync(os.path.exists, song.local_path)
             if exists:
                 await anyio.to_thread.run_sync(os.remove, song.local_path)
-        
+
         # 从数据库删除
         success = await song_repo.delete(song_id)
         return success
-    
+
     @handle_service_errors(fallback_value=False)
     async def delete_artist(
         self,
@@ -89,17 +89,17 @@ class SongManagementService:
     ) -> bool:
         """
         删除歌手及其所有资源
-        
+
         Args:
             db: 数据库会话
             artist_id: 歌手ID（可选）
             artist_name: 歌手名称（可选）
-            
+
         Returns:
             是否删除成功
         """
         artist_repo = ArtistRepository(db)
-        
+
         if artist_id:
             success = await artist_repo.delete(artist_id)
         elif artist_name:
@@ -110,9 +110,9 @@ class SongManagementService:
                 success = False
         else:
             success = False
-        
+
         return success
-    
+
     @handle_service_errors(fallback_value=False)
     async def redownload_song(
         self,
@@ -126,14 +126,14 @@ class SongManagementService:
     ) -> bool:
         """
         重新下载指定的歌曲。
-        
+
         该功能用于当本地文件损坏、品质不理想或丢失时，从指定源重新抓取：
         1. 调用 DownloadService 获取新的音频 URL。
         2. 下载并保存新的音频文件至 'audio_cache/'。
         3. 更新数据库中的 local_path 和状态。
         4. (可选) 删除旧的本地文件。
         5. 调用 ScraperService 重新抓取并嵌入元数据（封面、歌词等）。
-        
+
         Args:
             db (AsyncSession): 异步数据库会话。
             song_id (int): 目标歌曲ID。
@@ -142,30 +142,30 @@ class SongManagementService:
             quality (int): 目标音质级别 (默认 999 最佳音质)。
             title (str, optional): 辅助定位的标题。
             artist (str, optional): 辅助定位的歌手名。
-            
+
         Returns:
             bool: 重新下载并成功处理后返回 True。
         """
         logger.info(f"Redownload requested for song {song_id} from {source}:{source_id}")
-        
+
         song_repo = SongRepository(db)
         song = await song_repo.get(song_id)
         if not song:
             logger.error(f"Song {song_id} not found")
             return False
-        
+
         old_path = song.local_path
-        
+
         # 1. 下载
         download_service = get_download_service()
-        
+
         # [Fix] 如果来源是 local，我们需要先搜索一个在线来源
         if source == 'local':
             logger.info(f"Source is local, searching for online source for {song.title} - {song.artist.name if song.artist else 'Unknown'}")
             search_title = title or song.title
             search_artist = artist or (song.artist.name if song.artist else "Unknown")
             best_match = await download_service.find_best_match(search_title, search_artist)
-            
+
             if best_match:
                 source = best_match.source
                 source_id = best_match.id
@@ -179,16 +179,16 @@ class SongManagementService:
         if not audio_info or not audio_info.get("url"):
             logger.error(f"Failed to get audio url for {source}:{source_id}")
             return False
-        
+
         # 构造文件名
         target_title = audio_info.get("title") or title or song.title
         target_artist = audio_info.get("artist") or artist or (
             song.artist.name if song.artist else "Unknown"
         )
-        
+
         safe_title = re.sub(r'[<>:"/\\|?*]', '_', target_title)
         safe_artist = re.sub(r'[<>:"/\\|?*]', '_', target_artist)
-        
+
         # 解析扩展名
         url = audio_info.get("url", "")
         ext = "mp3"
@@ -200,22 +200,22 @@ class SongManagementService:
             ext = "m4a"
         else:
             ext = "flac" if audio_info.get("br", 0) >= 740 else "mp3"
-        
+
         filename = f"{safe_artist} - {safe_title}.{ext}"
         filepath = os.path.join(download_service.cache_dir, filename)
-        
+
         # 下载文件
         success = await download_service.download_file(audio_info["url"], filepath)
         if not success:
             logger.error(f"Failed to download file to {filepath}")
             return False
-        
+
         # 2. 更新数据库
         logger.info(f"Download successful: {filepath}")
         song.local_path = filepath
         song.status = "DOWNLOADED"
         await db.commit()
-        
+
         # 3. 清理旧文件
         if old_path and old_path != filepath:
             if old_path and await anyio.to_thread.run_sync(os.path.exists, old_path):
@@ -224,17 +224,17 @@ class SongManagementService:
                     logger.info(f"Deleted old file: {old_path}")
                 except Exception as e:
                     logger.warning(f"Failed to delete old file: {e}")
-        
+
         # 4. 统一调用 MetadataHealer 进行补全和物理嵌入
         try:
             healer = MetadataHealer()
-            await healer.heal_song(song.id, force=True)
+            await healer.heal_song(db, song.id, force=True)
             logger.info("Metadata healed and embedded via MetadataHealer.")
         except Exception as e:
             logger.error(f"Failed to heal metadata after redownload: {e}")
-        
+
         return True
-    
+
     @handle_service_errors(fallback_value={"success": False, "message": "Error occurred during download"})
     async def download_song_from_search(
         self,
@@ -249,14 +249,14 @@ class SongManagementService:
     ) -> Dict:
         """
         直接从搜索结果中下载新歌曲并入库。
-        
+
         流程:
         1. 检查目标歌曲是否已存在于库中（通过 source_id 或标题模糊匹配）。
         2. 如果需要，自动创建对应的歌手记录。
         3. 调用 DownloadService 执行文件下载。
         4. 将扫描到的或新建的 Song 记录关联新的本地文件，并更新 Source。
         5. 触发元数据刮削。
-        
+
         Args:
             db (AsyncSession): 异步数据库会话。
             title (str): 歌曲名称。
@@ -266,58 +266,58 @@ class SongManagementService:
             source_id (str): 来源ID。
             quality (int): 音质等级。
             cover_url (str, optional): 封面图链接。
-            
+
         Returns:
             Dict: 包含成功标志和处理后的歌曲数据对象 (去重后)。
         """
         logger.info(f"Direct download requested: {title} - {artist} [{source}:{source_id}]")
-        
+
         # 1. 检查歌曲是否已存在（通过源ID匹配）
         stmt = select(SongSource).where(
             SongSource.source == source,
             SongSource.source_id == str(source_id)
         )
         existing_source = (await db.execute(stmt)).scalars().first()
-        
+
         song = None
         if existing_source:
             song_repo = SongRepository(db)
             song = await song_repo.get(existing_source.song_id)
             if song:
                 logger.info(f"Found existing song by source_id: {song.title} (ID: {song.id})")
-        
+
         if not song:
             # 通过歌手+标题模糊匹配
             artist_repo = ArtistRepository(db)
             db_artist = await artist_repo.get_by_name(artist)
-            
+
             if db_artist:
                 norm_target = ScanService._normalize_cn_brackets(title).lower().strip()
                 song_repo = SongRepository(db)
                 artist_songs = await song_repo.get_by_artist(db_artist.id)
-                
+
                 for s in artist_songs:
                     norm_curr = ScanService._normalize_cn_brackets(s.title).lower().strip()
                     if norm_curr == norm_target:
                         song = s
                         logger.info(f"Found existing song by title match: {song.title}")
                         break
-        
+
         # 2. 下载
         download_service = get_download_service()
-        
+
         # 确保音质默认为高质量
         req_quality = quality if quality and quality > 0 else 999
         logger.info(f"Using quality: {req_quality} (requested: {quality})")
-        
+
         audio_info = await download_service.get_audio_url(source, source_id, req_quality)
         if not audio_info or not audio_info.get("url"):
             logger.error(f"Failed to get audio url for {source}:{source_id}")
             return {"success": False, "message": "Failed to get audio URL"}
-        
+
         safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
         safe_artist = re.sub(r'[<>:"/\\|?*]', '_', artist)
-        
+
         # 扩展名
         url = audio_info.get("url", "")
         ext = "flac" if audio_info.get("br", 0) >= 740 else "mp3"
@@ -329,15 +329,15 @@ class SongManagementService:
             ext = "m4a"
         if ".mp3" in url.lower():
             ext = "mp3"
-        
+
         filename = f"{safe_artist} - {safe_title}.{ext}"
         filepath = os.path.join(download_service.cache_dir, filename)
-        
+
         # 执行下载
         dl_success = await download_service.download_file(audio_info["url"], filepath)
         if not dl_success:
             return {"success": False, "message": "Download failed"}
-        
+
         # 3. 创建或更新数据库记录
         if not song:
             # 创建歌手（如果需要）
@@ -347,7 +347,7 @@ class SongManagementService:
                 db_artist = Artist(name=artist, avatar=cover_url)
                 db.add(db_artist)
                 await db.flush()
-                
+
                 # 创建歌手源
                 if source and source_id:
                     new_as = ArtistSource(
@@ -357,11 +357,10 @@ class SongManagementService:
                         avatar=cover_url
                     )
                     db.add(new_as)
-            else:
-                # 更新头像（如果缺失）
-                if not db_artist.avatar and cover_url:
-                    db_artist.avatar = cover_url
-            
+            # 更新头像（如果缺失）
+            elif not db_artist.avatar and cover_url:
+                db_artist.avatar = cover_url
+
             # 创建歌曲
             song = Song(
                 title=title,
@@ -381,18 +380,18 @@ class SongManagementService:
             if song.local_path and song.local_path != filepath and os.path.exists(song.local_path):
                 try:
                     os.remove(song.local_path)
-                except:
+                except Exception:
                     pass
-            
+
             song.local_path = filepath
             song.status = "DOWNLOADED"
-            
+
             # 更新缺失的元数据
             if not song.cover and cover_url:
                 song.cover = cover_url
             if not song.album and album:
                 song.album = album
-        
+
         # 4. 添加/更新源
         chk = select(SongSource).where(
             SongSource.song_id == song.id,
@@ -400,7 +399,7 @@ class SongManagementService:
             SongSource.source_id == str(source_id)
         )
         src_ent = (await db.execute(chk)).scalars().first()
-        
+
         if not src_ent:
             src_ent = SongSource(
                 song_id=song.id,
@@ -410,27 +409,26 @@ class SongManagementService:
                 data_json={"quality": quality}
             )
             db.add(src_ent)
-        
+
         await db.commit()
-        
+
         # 重新获取歌曲（带关系）
         stmt = select(Song).options(
             selectinload(Song.sources),
             selectinload(Song.artist)
         ).where(Song.id == song.id)
         song = (await db.execute(stmt)).scalars().first()
-        
+
         # 5. 统一调用 MetadataHealer 进行补全和物理嵌入
         try:
-            await MetadataHealer().heal_song(song.id, force=True)
+            await MetadataHealer().heal_song(db, song.id, force=True)
         except Exception as e:
             logger.warning(f"Metadata healing failed: {e}")
-        
+
         # 返回去重后的结果
-        from app.services.deduplication_service import DeduplicationService
         items = DeduplicationService.deduplicate_songs([song])
         return {"success": True, "song": items[0] if items else None}
-    
+
     async def process_pending_queue(self, db: AsyncSession, limit: int = 50):
         """
         处理处于 PENDING 状态的歌曲：仅获取元数据，不下载音频
@@ -440,23 +438,23 @@ class SongManagementService:
             selectinload(Song.sources),
             selectinload(Song.artist)
         ).where(Song.status == 'PENDING').limit(limit)
-        
+
         songs = (await db.execute(stmt)).scalars().all()
         count = 0
         for song in songs:
             try:
                 logger.debug(f"Healing metadata for: {song.title}")
-                
+
                 # 统一调用 MetadataHealer
-                success = await MetadataHealer().heal_song(song.id, force=True)
-                
+                success = await MetadataHealer().heal_song(db, song.id, force=True)
+
                 if success:
-                    song.status = "METADATA_FETCHED" 
+                    song.status = "METADATA_FETCHED"
                     count += 1
-                    
+
             except Exception as e:
                 logger.error(f"Failed to enrich pending song {song.title}: {e}")
-        
+
         await db.commit()
         logger.info(f"Metadata enrichment complete. Updated {count}/{len(songs)} songs.")
         return count
@@ -475,7 +473,7 @@ class SongManagementService:
             await db.execute(delete(ArtistSource))
             await db.execute(delete(Song))
             await db.execute(delete(Artist))
-            
+
             await db.commit()
             logger.info("✅ Database reset complete")
             return True
@@ -496,15 +494,12 @@ class SongManagementService:
         专门获取所有本地歌曲 (有 local_path 的歌曲)
         无视是否关注歌手,按入库时间倒序排列
         """
-        from sqlalchemy import func, desc, asc
-        from app.models.artist import Artist
-
         stmt = select(Song).options(
             selectinload(Song.artist),
             selectinload(Song.sources)
         )
         stmt = stmt.where(Song.local_path.isnot(None))
-        
+
         # 排序处理
         order_func = desc if order.lower() == "desc" else asc
         if sort_by == "created_at":
@@ -519,38 +514,38 @@ class SongManagementService:
             stmt = stmt.order_by(order_func(Song.album))
         else:
              stmt = stmt.order_by(Song.created_at.desc())
-        
+
         # 分页
         count_stmt = select(func.count()).select_from(stmt.subquery())
         total = (await db.execute(count_stmt)).scalar() or 0
-        
+
         stmt = stmt.offset(offset).limit(fetch_limit)
-        
+
         result = await db.execute(stmt)
         songs = result.scalars().all()
-        
+
         # 序列化
         items = []
         for s in songs:
             artist_name = s.artist.name if s.artist else "Unknown"
             quality = None
             local_cover = None
-            
+
             q_priority = {"HR": 5, "SQ": 4, "HQ": 3, "PQ": 2, "ERR": 1, None: 0}
             local_files_list = []
-            
+
             for src in s.sources:
                 if src.source == 'local':
                     data = src.data_json or {}
                     new_q = data.get('quality')
-                    
+
                     if q_priority.get(new_q, 0) > q_priority.get(quality, 0):
                         quality = new_q
-                        
+
                     src_cover = getattr(src, 'cover', None) or data.get('cover')
                     if src_cover and str(src_cover).startswith('/uploads/'):
                         local_cover = src_cover
-                        
+
                     local_files_list.append({
                         "id": src.id,
                         "source_id": src.source_id,
@@ -558,9 +553,9 @@ class SongManagementService:
                         "quality": new_q or 'PQ',
                         "format": data.get('format', 'UNK')
                     })
-            
+
             final_cover = local_cover if local_cover else s.cover
-            
+
             q_details = None
             if quality:
                  for src in s.sources:
@@ -569,12 +564,12 @@ class SongManagementService:
                          if d.get('quality') == quality:
                              fmt = d.get('format', 'UNK')
                              q_val = quality
-                             
+
                              if q_val == 'PQ' and s.local_path:
                                  path_ext = os.path.splitext(s.local_path)[1].lower()
                                  if path_ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
                                      q_val = 'SQ'
-                                     
+
                                      try:
                                          from mutagen import File as MutagenFile
                                          if await anyio.to_thread.run_sync(os.path.exists, s.local_path):
@@ -584,12 +579,12 @@ class SongManagementService:
                                                  bits = getattr(audio.info, 'bits_per_sample', 0)
                                                  if rate > 48000 or bits > 16:
                                                      q_val = 'HR'
-                                     except:
+                                     except Exception:
                                          pass
-                                     
+
                                      quality = q_val
                                      fmt = path_ext.replace('.', '').upper()
-                             
+
                              q_details = f"{fmt} | {q_val}"
                              if d.get('quality_details'):
                                  q_details = d.get('quality_details')
@@ -603,7 +598,7 @@ class SongManagementService:
                 "artist": artist_name,
                 "album": s.album,
                 "cover_url": final_cover,
-                "cover": final_cover, 
+                "cover": final_cover,
                 "local_audio_path": s.local_path,
                 "local_path": s.local_path,
                 "is_favorite": s.is_favorite,
@@ -625,38 +620,41 @@ class SongManagementService:
         stmt = select(SongSource).where(SongSource.source == 'local')
         result = await db.execute(stmt)
         sources = result.scalars().all()
-        
+
         updated = 0
         logs = []
-        
+
         for src in sources:
-            if not src.url: continue
-            
+            if not src.url:
+                continue
+
             target_q = None
             ext = os.path.splitext(src.url)[1].lower()
-            
+
             if ext in ['.flac', '.wav', '.ape', '.alac', '.aiff']:
                 target_q = 'SQ'
-            
+
             if target_q:
                 data = src.data_json or {}
-                if data is None: data = {}
-                else: data = dict(data)
-                
+                if data is None:
+                    data = {}
+                else:
+                    data = dict(data)
+
                 current_q = data.get('quality')
-                
+
                 if current_q != target_q:
                     data['quality'] = target_q
                     data['format'] = ext.replace('.', '').upper()
                     data['quality_details'] = f"{data['format']} | {target_q}"
-                    
+
                     src.data_json = data
-                    
+
                     logs.append(f"Fixed {src.id}: {current_q}->{target_q}")
                     updated += 1
-        
+
         if updated > 0:
             await db.commit()
             logger.info(f"Fixed {updated} songs internally.")
-            
+
         return updated, logs

@@ -8,7 +8,7 @@ class APILogHandler(logging.Handler):
         super().__init__()
         self.capacity = capacity
         self.buffer = collections.deque(maxlen=capacity)
-    
+
     def emit(self, record):
         try:
             msg = self.format(record)

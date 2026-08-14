@@ -44,9 +44,9 @@ export const useSettingsStore = defineStore('settings', () => {
 
         try {
             settings.value = await systemApi.getSettings()
-        } catch (err: any) {
+        } catch (err) {
             console.error('获取设置失败:', err)
-            error.value = err.message || '加载设置失败，请检查网络或后端状态'
+            error.value = (err instanceof Error && err.message) || '加载设置失败，请检查网络或后端状态'
         } finally {
             isLoading.value = false
         }

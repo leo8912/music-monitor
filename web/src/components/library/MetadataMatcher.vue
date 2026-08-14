@@ -6,10 +6,16 @@ import { searchSongs, searchDownload, probeQualities } from '@/api/discovery'
 import { matchMetadata, redownloadSong } from '@/api/library'
 import { usePlayerStore } from '@/stores/player'
 import { useLibraryStore } from '@/stores/library'
+import { bitrateToQualityLabel } from '@/utils/quality'
+import type { Song, SearchSong, SearchDownloadItem, ProbeQuality } from '@/types'
+
+// 搜索结果条目: 元数据模式返回 SearchSong, 下载模式返回 SearchDownloadItem
+// 两者都含 id/source/title/artist/album/cover_url/quality, 可直接统一处理
+type MatchItem = SearchSong | SearchDownloadItem
 
 const props = defineProps({
   show: Boolean,
-  song: { type: Object, default: null },
+  song: { type: Object as () => Song | null, default: null },
   mode: { type: String, default: 'metadata' } // 'metadata' | 'download'
 })
 
@@ -17,7 +23,7 @@ const emit = defineEmits(['update:show', 'success'])
 
 const keyword = ref('')
 const loading = ref(false)
-const results = ref<any[]>([])
+const results = ref<MatchItem[]>([])
 const stats = ref({ netease: 0, qqmusic: 0, total: 0 })
 const message = useMessage()
 const processing = ref(false)
@@ -25,9 +31,9 @@ const hasSearched = ref(false)
 const playerStore = usePlayerStore()
 const libraryStore = useLibraryStore()
 const currentStep = ref(1) // 1: Search List, 2: Quality Selection
-const selectedResult = ref<any>(null)
+const selectedResult = ref<MatchItem | null>(null)
 const selectedQuality = ref(999)
-const probedQualities = ref<any[]>([])
+const probedQualities = ref<ProbeQuality[]>([])
 const probing = ref(false)
 
 // Init keyword when song changes
@@ -52,7 +58,7 @@ const handleSearch = async () => {
     hasSearched.value = true
     currentStep.value = 1 // Reset to list
     try {
-        let res: any[] = []
+        let res: MatchItem[] = []
         if (props.mode === 'download') {
             res = await searchDownload({
                 keyword: keyword.value,
@@ -80,7 +86,7 @@ const handleSearch = async () => {
             // For metadata mode (Netease/QQ), interleave as before
             const netease = res.filter(i => i.source === 'netease')
             const qqmusic = res.filter(i => i.source === 'qqmusic')
-            const combined = []
+            const combined: MatchItem[] = []
             const maxLen = Math.max(netease.length, qqmusic.length)
             for (let i = 0; i < maxLen; i++) {
                 if (i < qqmusic.length) combined.push(qqmusic[i])
@@ -95,7 +101,7 @@ const handleSearch = async () => {
     }
 }
 
-const handleMatch = async (target: any) => {
+const handleMatch = async (target: MatchItem) => {
     if (props.mode === 'download' && currentStep.value === 1) {
         // Step 1 -> 2: Select item and move to quality selection
         selectedResult.value = target
@@ -122,17 +128,28 @@ const handleMatch = async (target: any) => {
         return
     }
 
+    const song = props.song
+    if (!song) {
+        message.error('缺少歌曲信息')
+        return
+    }
+
     if (processing.value) return
     processing.value = true
     try {
         if (props.mode === 'download') {
+            const sel = selectedResult.value
+            if (!sel) {
+                message.error('请先选择匹配条目')
+                return
+            }
             const res = await redownloadSong({
-                song_id: props.song.id,
-                source: selectedResult.value.source,
-                track_id: selectedResult.value.id,
+                song_id: song.id,
+                source: sel.source,
+                track_id: sel.id,
                 quality: selectedQuality.value,
-                title: selectedResult.value.title,
-                artist: selectedResult.value.artist
+                title: sel.title,
+                artist: sel.artist
             })
             
             if (res.success && res.song) {
@@ -140,7 +157,7 @@ const handleMatch = async (target: any) => {
                 const updatedSong = libraryStore.updateSongInList(res.song)
                 
                 // 2. 如果当前正在播放这首歌，自动重载
-                if (playerStore.currentSong && playerStore.currentSong.id === props.song.id && updatedSong) {
+                if (playerStore.currentSong && playerStore.currentSong.id === song.id && updatedSong) {
                     const oldTime = playerStore.currentTime
                     const wasPlaying = playerStore.isPlaying
                     
@@ -163,7 +180,7 @@ const handleMatch = async (target: any) => {
             }
         } else {
             const payload = {
-                song_id: props.song.id,
+                song_id: song.id,
                 target_source: target.source,
                 target_song_id: target.id
             }
@@ -186,19 +203,23 @@ const getSourceParams = (s: string) => {
     return { label: s, color: '#888' }
 }
 
-const formatQuality = (br: number) => {
+const formatQuality = (br: number | null | undefined) => {
     if (!br) return ''
-    if (br >= 999) return 'FLAC'
-    if (br >= 740) return 'SQ'
-    if (br >= 320) return '320K'
-    if (br >= 192) return '192K'
-    return br + 'K'
+    // 统一音质文案 (M4): 见 utils/quality.ts —— 2000+ HR / 900+ FLAC / 320+ 320K
+    return bitrateToQualityLabel(br)
 }
 
-const formatSize = (bytes: number) => {
+const formatSize = (bytes: number | null | undefined) => {
     if (!bytes) return ''
     if (bytes > 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + 'MB'
     return (bytes / 1024).toFixed(1) + 'KB'
+}
+
+// 封面地址: SearchSong 用 cover, SearchDownloadItem 用 cover_url
+const getCover = (item: MatchItem): string => {
+    if ('cover' in item && item.cover) return item.cover
+    if (item.cover_url) return item.cover_url
+    return '/default-cover.png'
 }
 </script>
 
@@ -254,7 +275,7 @@ const formatSize = (bytes: number) => {
                             @click="handleMatch(item)"
                         >
                             <div class="track-img-col">
-                                <img :src="item.cover_url || item.cover || '/default-cover.png'" class="track-cover" referrerpolicy="no-referrer" />
+                                <img :src="getCover(item)" class="track-cover" referrerpolicy="no-referrer" />
                                 <div class="play-overlay">
                                     <n-icon :component="CheckmarkCircle" color="#fff" size="24" />
                                 </div>

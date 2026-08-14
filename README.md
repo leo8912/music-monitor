@@ -49,11 +49,13 @@ Music Monitor 是一个集成了 **多平台音乐监控、自动下载、智能
 mkdir -p music-monitor/config
 mkdir -p music-monitor/cache
 mkdir -p music-monitor/favorites
+mkdir -p music-monitor/library
 cd music-monitor
 ```
 
 ### 2. 配置文件
-在 `music-monitor/config` 目录中创建 `config.yaml` 配置文件：
+在 `music-monitor/config` 目录中创建 `config.yaml` 配置文件
+（首次启动若不存在，容器会从镜像内置的 `config.example.yaml` 自动生成一份）：
 ```yaml
 # config.yaml
 global:
@@ -83,18 +85,24 @@ notify:
     encoding_aes_key: "..."
 ```
 
-### 3. 启动容器
+### 3. 启动容器（方式一：docker compose，推荐）
+```bash
+docker compose up -d
+```
+
+### 3'. 启动容器（方式二：docker run）
 ```bash
 docker run -d \
   --name music-monitor \
   --restart always \
   -p 18000:8000 \
-  -v $(pwd)/config.yaml:/app/config.yaml \
-  -v $(pwd)/data:/data \
+  -v $(pwd)/config:/config \
   -v $(pwd)/cache:/audio_cache \
   -v $(pwd)/favorites:/favorites \
-  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/library:/library \
   -e TZ=Asia/Shanghai \
+  -e PUID=1000 \
+  -e PGID=1000 \
   lbh1230/music-monitor:latest
 ```
 
@@ -102,11 +110,17 @@ docker run -d \
 
 | 容器内路径 | 宿主机路径 (示例) | 说明 |
 | :--- | :--- | :--- |
-| `/app/config.yaml` | `./config.yaml` | **配置文件** (必须) |
-| `/data` | `./data` | **数据库** (SQLite) |
+| `/config` | `./config` | **配置 + 数据库 + 上传 + 内置 Redis**：`config.yaml`、`music_monitor.db`（含 WAL 伴随文件）、`uploads/`、`redis/` |
 | `/audio_cache` | `./cache` | **缓存目录** (存放临时试听文件) |
 | `/favorites` | `./favorites` | **收藏目录** (存放永久保存的红心歌曲) |
-| `/app/uploads` | `./uploads` | **上传目录** (用户头像等) |
+| `/library` | `./library` | **资料库目录** (本地化媒体资源) |
+
+> **注意（SQLite WAL）**：数据库使用 WAL 模式，会产生 `music_monitor.db-wal` /
+> `music_monitor.db-shm` 伴随文件，它们与主库同目录（`/config`），必须整体持久化，
+> 不要只映射单个 db 文件。
+>
+> **注意（内置 Redis）**：任务队列使用容器内置 Redis（不新增容器），其 AOF 数据
+> 持久化在 `/config/redis`，已包含在上述 `/config` 卷中。
 
 ---
 

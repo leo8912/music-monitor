@@ -6,8 +6,7 @@ import {
   SearchOutline, 
   LibraryOutline, 
   TimeOutline, 
-  SettingsOutline,
-  PersonOutline
+  SettingsOutline
 } from '@vicons/ionicons5'
 import { NIcon } from 'naive-ui'
 
@@ -23,7 +22,6 @@ const menuItems = [
 
 const bottomItems = [
   { key: 'settings', label: '设置', icon: SettingsOutline, path: '/settings' },
-  { key: 'profile', label: '个人中心', icon: PersonOutline, path: '/profile' },
 ]
 
 const isActive = (path: string) => route.path === path

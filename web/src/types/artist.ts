@@ -2,7 +2,7 @@
  * 歌手相关类型定义
  */
 
-import type { MusicSource } from './song'
+import type { MusicSource, Song } from './song'
 
 // 歌手基础信息
 export interface Artist {
@@ -17,6 +17,23 @@ export interface Artist {
     is_monitored?: boolean
 }
 
+// 专辑信息 (后端 ArtistDetailResponse.albums 元素)
+export interface ArtistAlbum {
+    name: string
+    cover?: string
+    publish_time?: string
+}
+
+// 歌手详情 (后端 ArtistDetailResponse)
+export interface ArtistDetail {
+    id: number
+    name: string
+    avatar?: string
+    sources: string[]
+    songs: Song[]
+    albums: ArtistAlbum[]
+}
+
 // 合并后的歌手（跨平台）
 export interface MergedArtist {
     name: string
@@ -26,12 +43,14 @@ export interface MergedArtist {
     songCount?: number
 }
 
-// 搜索结果中的歌手
+// 搜索结果中的歌手 (后端 ArtistInfoResponse)
 export interface SearchArtist {
     id: string
     name: string
     source: MusicSource
     avatar?: string
+    songCount?: number
+    extra_ids?: Record<string, string>
     netease_id?: string
     qqmusic_id?: string
 }

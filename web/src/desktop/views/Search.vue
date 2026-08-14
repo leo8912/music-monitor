@@ -57,11 +57,12 @@ import { SearchOutline, CloseCircleOutline } from '@vicons/ionicons5'
 import { searchDownload } from '@/api/discovery'
 import { usePlayerStore, useLibraryStore } from '@/stores'
 import DownloadList from '@/components/DownloadList.vue'
+import type { SearchDownloadItem } from '@/types'
 
 const keyword = ref('')
 const activeType = ref('resource') // 默认为资源模式
 const isLoading = ref(false)
-const results = ref<any[]>([])
+const results = ref<SearchDownloadItem[]>([])
 
 const playerStore = usePlayerStore()
 const libraryStore = useLibraryStore()
@@ -81,7 +82,7 @@ const handleSearch = async () => {
   }
 }
 
-const handleDirectDownload = async (item: any) => {
+const handleDirectDownload = async (item: SearchDownloadItem) => {
     // 设置局部 loading 状态
     item._loading = true
     message.loading(`正在开始下载: ${item.title}...`)
@@ -90,10 +91,10 @@ const handleDirectDownload = async (item: any) => {
         const success = await libraryStore.downloadSong({
             title: item.title,
             artist: item.artist,
-            album: item.album,
+            album: item.album || '',
             source: item.source,
             source_id: item.id,
-            quality: item.quality,
+            quality: item.quality ?? undefined,
             cover_url: item.cover_url
         })
         

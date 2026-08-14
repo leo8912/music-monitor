@@ -8,12 +8,10 @@ Author: google
 Created: 2026-01-26
 """
 import logging
-from typing import Optional, Callable, List
-from datetime import datetime
+from typing import Callable, List
 
 try:
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
-    from apscheduler.triggers.interval import IntervalTrigger
     HAS_APSCHEDULER = True
 except ImportError:
     HAS_APSCHEDULER = False
@@ -23,40 +21,43 @@ logger = logging.getLogger(__name__)
 
 
 class DummyScheduler:
-    """当 APScheduler 不可用时的占位调度器"""
-    
+    """当 APScheduler 不可用时的占位调度器 (fail-fast: 启动即报错)。"""
+
     def start(self):
-        logger.warning("APScheduler 未安装，调度功能不可用")
-    
+        # 阶段 3.5: 不再静默降级 — 调度器是核心依赖, 缺失时应立即暴露问题。
+        raise RuntimeError(
+            "APScheduler 未安装，调度功能不可用。请安装依赖: pip install APScheduler"
+        )
+
     def shutdown(self, wait: bool = True):
         pass
-    
+
     def add_job(self, func, trigger=None, **kwargs):
         pass
-    
+
     def get_jobs(self) -> List:
         return []
-    
+
     def get_job(self, job_id: str):
         return None
-    
+
     def modify_job(self, job_id: str, **kwargs):
         pass
-    
+
     def remove_job(self, job_id: str):
         pass
 
 
 class SimpleScheduler:
     """简化的调度器封装"""
-    
+
     def __init__(self):
         if HAS_APSCHEDULER:
             self._scheduler = AsyncIOScheduler()
         else:
             self._scheduler = DummyScheduler()
         self._started = False
-    
+
     def start(self):
         """启动调度器"""
         if not self._started:
@@ -66,7 +67,7 @@ class SimpleScheduler:
                 logger.info("调度器已启动")
             except Exception as e:
                 logger.error(f"调度器启动失败: {e}")
-    
+
     def shutdown(self, wait: bool = True):
         """关闭调度器"""
         if self._started:
@@ -76,23 +77,23 @@ class SimpleScheduler:
                 logger.info("调度器已关闭")
             except Exception as e:
                 logger.error(f"调度器关闭失败: {e}")
-    
+
     def add_job(self, func: Callable, trigger=None, id: str = None, **kwargs):
         """添加定时任务"""
         return self._scheduler.add_job(func, trigger=trigger, id=id, **kwargs)
-    
+
     def get_jobs(self) -> List:
         """获取所有任务"""
         return self._scheduler.get_jobs()
-    
+
     def get_job(self, job_id: str):
         """获取指定任务"""
         return self._scheduler.get_job(job_id)
-    
+
     def modify_job(self, job_id: str, **kwargs):
         """修改任务"""
         return self._scheduler.modify_job(job_id, **kwargs)
-    
+
     def remove_job(self, job_id: str):
         """移除任务"""
         return self._scheduler.remove_job(job_id)

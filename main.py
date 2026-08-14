@@ -16,40 +16,21 @@ Author: music-monitor development team
 from core.config import config as global_config, load_config
 global_config.update(load_config())
 import logging
-import yaml
 import os
-import sys
 
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.concurrency import run_in_threadpool
-import httpx
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy.orm import Session
 from datetime import datetime
-import collections
-from urllib.parse import quote
 
-from core.database import init_db, SessionLocal
-from app.models.media_record import MediaRecord
+from core.database import async_init_db
 from app.services.notification import NotificationService
 from core.scheduler import scheduler  # 全局调度器单例 (供设置页重排共享)
 
-# 创建调度器实例
-# scheduler = AsyncIOScheduler()
-
-from fastapi import Request, Response, Query
-from wechatpy.crypto import WeChatCrypto, PrpCrypto
-from wechatpy import parse_message, create_reply
-from wechatpy.exceptions import InvalidSignatureException
-import xmltodict
 from starlette.middleware.sessions import SessionMiddleware
-from typing import Optional
-from pydantic import BaseModel
 
 
 def setup_logging():
@@ -62,17 +43,17 @@ def setup_logging():
 
     # Basic Config (Console)
     file_handler = TimedRotatingFileHandler(
-        LOG_FILE, 
-        when='midnight', 
-        interval=1, 
-        backupCount=10, 
+        LOG_FILE,
+        when='midnight',
+        interval=1,
+        backupCount=10,
         encoding='utf-8'
     )
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
 
     logging.basicConfig(
-        level=logging.INFO, 
+        level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.StreamHandler(),
@@ -89,24 +70,20 @@ def setup_logging():
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("qqmusic_api").setLevel(logging.WARNING)
     logging.getLogger("watchfiles").setLevel(logging.WARNING)
-    
+
 setup_logging()
 logger = logging.getLogger(__name__)
 
 from core.config import CONFIG_FILE_PATH
-logger.info(f"--------------------------------------------------")
-logger.info(f"System Starting...")
+logger.info("--------------------------------------------------")
+logger.info("System Starting...")
 logger.info(f"Using Configuration File: {CONFIG_FILE_PATH}")
-logger.info(f"--------------------------------------------------")
+logger.info("--------------------------------------------------")
 
 
-from core.config_manager import get_config_manager, reload_config
+from core.config_manager import get_config_manager
 from core.config import load_config, ensure_security_config, migrate_and_save_config, CONFIG_FILE_PATH
 from core.logger import api_log_handler
-from app.schemas import LoginRequest, ChangePasswordRequest, UpdateProfileRequest, DownloadRequest, ArtistConfig
-
-# 已移除: event_dispatcher, app_initializer, errors
-# (run_in_threadpool 已在文件顶部第 29 行导入，此处重复导入已删除)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -114,9 +91,9 @@ async def lifespan(app: FastAPI):
         migrate_and_save_config()
         config_instance = get_config_manager()
         config_instance.reload()
-        
-        init_db()
-        
+
+        await async_init_db()
+
         # Restore logging config (Alembic might have clobbered it)
         setup_logging()
         logger.info("Logging configuration restored after DB migration.")
@@ -124,7 +101,6 @@ async def lifespan(app: FastAPI):
         # Reload config again now that DB is ready (to load SystemSettings and Normalize YAML)
         config_instance.reload()
 
-        mon_cfg = config_instance.get('monitor', {})
         # Start Scheduler
         scheduler.start()
 
@@ -134,7 +110,7 @@ async def lifespan(app: FastAPI):
         logger.info("周期任务已注册 (新歌监控默认每 6 小时, 可在设置中调整)")
 
         NotificationService.initialize()
-        
+
         # --- Startup Notification ---
         try:
             from version import get_version_info
@@ -143,7 +119,7 @@ async def lifespan(app: FastAPI):
                 start_url = config_instance.get('system', {}).get('external_url')
                 if not start_url:
                     start_url = "http://localhost:8000"
-                
+
                 await NotificationService._wecom.send_text_card(
                     title="🚀 Music Monitor 已启动",
                     description=(
@@ -176,10 +152,9 @@ async def lifespan(app: FastAPI):
         raise e
 
 app = FastAPI(lifespan=lifespan)
- 
+
 # 注册全局异常处理
 from app.exceptions import BaseError
-# (Request 已在文件顶部第 45 行导入，此处重复导入已删除)
 
 @app.exception_handler(BaseError)
 async def business_exception_handler(request: Request, exc: BaseError):
@@ -188,10 +163,10 @@ async def business_exception_handler(request: Request, exc: BaseError):
     """
     status_code = 400
     from app.exceptions import (
-        NotFoundError, ValidationError, AuthenticationError, 
+        NotFoundError, ValidationError, AuthenticationError,
         AuthorizationError, RateLimitError
     )
-    
+
     if isinstance(exc, NotFoundError):
         status_code = 404
     elif isinstance(exc, ValidationError):
@@ -200,7 +175,7 @@ async def business_exception_handler(request: Request, exc: BaseError):
         status_code = 401
     elif isinstance(exc, RateLimitError):
         status_code = 429
-        
+
     return JSONResponse(
         status_code=status_code,
         content={
@@ -217,94 +192,77 @@ async def general_exception_handler(request: Request, exc: Exception):
     """
     # 记录错误堆栈
     logger.error(f"Unprocessed error: {str(exc)}", exc_info=True)
-    
+
     return JSONResponse(
         status_code=500,
         content={
             "success": False,
             "message": "服务器内部错误，请查看日志",
-            "details": {"type": type(exc).__name__, "error": str(exc)}
+            "details": {"type": type(exc).__name__}
         }
     )
 
-# 已移除: error_handlers 和 service_container
-
 # Restore Router Imports
-from app.routers import auth, media, system, wechat, version
-from app.routers.download_history import router as download_history_router
-from app.routers.download import router as download_router
-from app.routers.metadata import router as metadata_router
+from app.api.v1 import auth, wechat, version
+from app.api.v1.download_history import router as download_history_router
+from app.api.v1.metadata import router as metadata_router
 
 app.include_router(auth.router)
-# app.include_router(media.router) # Deprecated fully? Wait, media.py still handles playback/download logic.
-# We agreed to clean up media.py but keep it for core media operations. 
-# Plan says "Clean up and streamline media.py".
-# Discovery & Library take over listing/searching.
-# Media takes over playback/download.
-app.include_router(media.router) 
-app.include_router(system.router)
+
+# --- media.py 拆分: download / player / history / mobile ---
+from app.api.v1.download import router as download_router
+from app.api.v1.player import router as player_router
+from app.api.v1.history import router as history_router
+from app.api.v1.mobile import router as mobile_router
+app.include_router(download_router)
+app.include_router(player_router)
+app.include_router(history_router)
+app.include_router(mobile_router)
+
+# --- system.py 拆分: status / logs / scan / notify / misc ---
+from app.api.v1.status import router as status_router
+from app.api.v1.logs import router as logs_router
+from app.api.v1.scan import router as scan_router
+from app.api.v1.notify import router as notify_router
+from app.api.v1.misc import router as misc_router
+app.include_router(status_router)
+app.include_router(logs_router)
+app.include_router(scan_router)
+app.include_router(notify_router)
+app.include_router(misc_router)
+
 app.include_router(wechat.router)
 app.include_router(version.router)
 app.include_router(download_history_router)
-# app.include_router(download_router) # Redundant with media.py
 app.include_router(metadata_router)  # 歌词/封面等元数据 API
 
 # New Routers
-from app.routers import discovery, library, subscription, settings
+from app.api.v1 import discovery, library, subscription, settings
 app.include_router(discovery.router)
 app.include_router(library.router)
 app.include_router(subscription.router)
 app.include_router(settings.router)
 
-from app.routers import task_control, websocket
-# app.include_router(debug_tasks.router) # Removed
-
+from app.api.v1 import task_control, websocket
 app.include_router(task_control.router)
 app.include_router(websocket.router)
 
 # --- Middleware & Static Files Setup ---
 
-# 1. Custom Auth Middleware (Inner)
-@app.middleware("http")
-async def auth_middleware(request: Request, call_next):
-    auth_cfg = get_config_manager().get('auth', {})
-    if not auth_cfg.get('enabled', False):
-        return await call_next(request)
+# 鉴权已迁移到路由级依赖 (app.dependencies.require_auth)：
+#   纯鉴权 router 使用 router 级 dependencies=[Depends(require_auth)]；
+#   混合 router (auth/system/discovery) 在需鉴权端点上显式声明。
+# 仅保留 SessionMiddleware 提供会话支持 (auth.enabled=False 时全部放行)。
 
-    path = request.url.path
-    if path.startswith("/api/"):
-        # [Fix C-02] 白名单收敛：仅保留登录流程与企业微信回调等"本就必须公开"的端点。
-        # 已移除的放行项及原因：
-        #   - /api/audio/            : 任何人可无鉴权拖走全部音频流（已改为需登录会话）
-        #   - /api/test_notify_card  : 可被当作通知轰炸放大器
-        #   - /api/discovery/probe_qualities : 服务端发起外部请求，存在 SSRF 放大风险
-        allowed_paths = [
-            "/api/login", "/api/logout", "/api/check_auth",
-            "/api/wecom/callback",
-            "/api/test_ws", "/api/discovery/cover",
-        ]
-        if path in allowed_paths:
-            pass 
-        else:
-             try:
-                 user = request.session.get("user")
-                 if not user:
-                     return JSONResponse({"detail": "未授权，请先登录"}, status_code=401)
-             except AssertionError:
-                 logger.error("Session Middleware not active in auth_middleware scope")
-                 return JSONResponse({"detail": "鉴权系统初始化异常"}, status_code=500)
-    
-    return await call_next(request)
-
-# 2. SessionMiddleware (Outer - added last)
+# 1. SessionMiddleware
 _secret, _updated = ensure_security_config()
 if _updated:
     try:
-        from core.config import load_config
         get_config_manager().update(load_config())
-    except: pass
+    except Exception:
+        pass
 
-app.add_middleware(SessionMiddleware, secret_key=_secret, max_age=86400*30) 
+app.add_middleware(SessionMiddleware, secret_key=_secret, max_age=86400*30)
 
 # 3. Static Files & Logging
 UPLOAD_DIR = "/config/uploads" if CONFIG_FILE_PATH.startswith("/config") else "uploads"
@@ -317,9 +275,21 @@ logging.getLogger("uvicorn").addHandler(api_log_handler)
 
 if os.path.exists("web/dist"):
     app.mount("/assets", StaticFiles(directory="web/dist/assets"), name="assets")
-    
+
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
+        # 排除 /api/ 路径，返回 404 JSON 错误而不是 SPA index.html
+        if full_path.startswith("api/"):
+            from app.error_codes import ErrorCode
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "code": ErrorCode.NOT_FOUND,
+                    "message": "API endpoint not found",
+                    "detail": f"The API endpoint /{full_path} does not exist"
+                }
+            )
+
         file_path = f"web/dist/{full_path}"
         if os.path.isfile(file_path):
             return FileResponse(file_path)

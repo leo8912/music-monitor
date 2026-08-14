@@ -4,18 +4,13 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed, nextTick } from 'vue'
-import type { Song, PlayMode, LyricLine } from '@/types'
+import type { Song, PlayMode, LyricLine, DownloadStatusPayload } from '@/types'
 import * as playerApi from '@/api/player'
-
-import { useLibraryStore, usePlayerStore as useSelfStore } from '@/stores'
+import { useLibraryStore } from './library'
 
 export const usePlayerStore = defineStore('player', () => {
-    // [New] Lazy load library store to avoid circular dependency
-    let libraryStore: any = null
-    const getLibraryStore = () => {
-        if (!libraryStore) libraryStore = useLibraryStore()
-        return libraryStore
-    }
+    // [阶段5.6] 直接依赖 library store（顶层导入），避免经 index.ts 的循环引用
+    const getLibraryStore = () => useLibraryStore()
     // 状态
     const currentSong = ref<Song | null>(null)
     const playlist = ref<Song[]>([])
@@ -92,7 +87,7 @@ export const usePlayerStore = defineStore('player', () => {
                     const lib = getLibraryStore()
                     if (lib.updateSongInList) {
                         // 优先用后端真实 song_id，搜索结果歌的临时 id 无法与库内记录匹配
-                        const dbId = result.song_id !== undefined ? result.song_id : song.id
+                        const dbId = result.song_id !== undefined ? Number(result.song_id) : song.id
                         lib.updateSongInList({ ...song, id: dbId, local_path: result.local_path, status: 'DOWNLOADED' })
                     }
                 } else {
@@ -154,12 +149,12 @@ export const usePlayerStore = defineStore('player', () => {
         }
     }
 
-    const updateDownloadStatus = (data: any) => {
+    const updateDownloadStatus = (data: DownloadStatusPayload) => {
         // Only update if it's the current song
         if (currentSong.value &&
             currentSong.value.title === data.title &&
             currentSong.value.artist === data.artist) {
-            downloadMessage.value = data.message
+            downloadMessage.value = data.message || ''
 
             // If download complete is implied by message (backend sends "✅ 下载完成！")
             // it doesn't hurt to wait for play() to finalize.

@@ -13,7 +13,7 @@ Author: music-monitor development team
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,8 +21,11 @@ from sqlalchemy.orm import selectinload
 
 from app.models.artist import Artist
 from app.models.song import Song, SongSource
-from app.services._singletons import get_aggregator
+from app.container import get_aggregator
 from app.services.scan_service import ScanService
+from app.services.metadata_healer import MetadataHealer
+from app.services.notification import NotificationService
+from app.services.auto_download_service import get_auto_download_service
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +71,8 @@ class NewReleaseMonitorService:
         }
 
         new_count = 0
+        # 收集新歌下载快照, 在 commit 后统一入队 (避免与主事务竞争写锁)
+        pending_snapshots: List[Dict] = []
         for src in artist.sources:
             if src.source not in ("qqmusic", "netease"):
                 continue
@@ -125,18 +130,27 @@ class NewReleaseMonitorService:
                     )
 
                 if is_new_song:
-                    await self._handle_new_song(db, song, cand)
+                    snap = await self._handle_new_song(db, song, cand)
+                    if snap:
+                        pending_snapshots.append(snap)
                     new_count += 1
 
         if new_count > 0:
             await db.commit()
+            # 主事务提交后再统一入下载队列, 避免后台任务与未提交事务
+            # 竞争 SQLite 写锁 (database is locked)。
+            for snap in pending_snapshots:
+                try:
+                    await get_auto_download_service().add_to_queue([snap])
+                except Exception as e:
+                    logger.error(f"[NewRelease] 自动下载入队失败 ({snap.get('title')}): {e}", exc_info=True)
             logger.info(f"[NewRelease] {artist.name}: 新增 {new_count} 首")
         return new_count
 
     async def check_all(self, db: AsyncSession) -> dict:
         """遍历所有监控中的歌手做增量检查。"""
         stmt = select(Artist).options(selectinload(Artist.sources)).where(
-            Artist.is_monitored == True
+            Artist.is_monitored
         )
         artists = (await db.execute(stmt)).scalars().all()
 
@@ -154,10 +168,12 @@ class NewReleaseMonitorService:
         logger.info(f"[NewRelease] 检查完成: {len(artists)} 位歌手，新增 {total_new} 首")
         return {"checked": len(artists), "new_songs": total_new}
 
-    async def _handle_new_song(self, db: AsyncSession, song: Song, cand):
-        """对新歌: 补全发布时间 -> 发发现通知 -> 入下载队列 -> 记录通知时间。"""
-        from app.services.metadata_healer import MetadataHealer
+    async def _handle_new_song(self, db: AsyncSession, song: Song, cand) -> Optional[Dict]:
+        """对新歌: 补全发布时间 -> 发发现通知 -> 记录通知时间。
 
+        返回下载快照 (由调用方在 commit 后统一入队), 不在事务内触发后台任务,
+        避免与未提交主事务竞争 SQLite 写锁。
+        """
         # 解析发布时间
         p_raw = getattr(cand, "publish_time", None)
         if p_raw and not song.publish_time:
@@ -179,28 +195,20 @@ class NewReleaseMonitorService:
             "source_id": str(cand.id),
         }
 
-        from app.services.notification import NotificationService
-
         try:
             await NotificationService.notify_new_song(snapshot)
             logger.info(f"🆕 [NewRelease] 发现新歌并已通知: {song.title}")
         except Exception as e:
             logger.error(f"[NewRelease] 新歌通知失败 ({song.title}): {e}", exc_info=True)
 
-        try:
-            from app.services.auto_download_service import get_auto_download_service
-
-            await get_auto_download_service().add_to_queue([snapshot])
-        except Exception as e:
-            logger.error(f"[NewRelease] 自动下载入队失败 ({song.title}): {e}", exc_info=True)
-
         song.last_notified_at = datetime.now()
+        return snapshot
 
 _service = None
 
 
 def get_new_release_monitor() -> NewReleaseMonitorService:
-    global _service
+    global _service  # noqa: PLW0603 - 单例惰性初始化惯用法
     if _service is None:
         _service = NewReleaseMonitorService()
     return _service

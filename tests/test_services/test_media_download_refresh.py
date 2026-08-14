@@ -37,7 +37,6 @@ async def test_download_audio_broadcasts_refresh_songs(
     db_session.add(artist)
     await db_session.flush()
 
-    from app.services import media_service as ms_mod
 
     # ---- 依赖打桩 ----
     # SongRepository.get_by_unique_key -> None (全新下载)
@@ -56,8 +55,8 @@ async def test_download_audio_broadcasts_refresh_songs(
         return {"local_path": str(fake_file), "quality": "HQ"}
 
     monkeypatch.setattr(
-        "app.services._singletons.get_download_service",
-        lambda: type("D", (), {"download_audio": AsyncMock(side_effect=fake_download_audio)})(),
+        "app.services.media_service.get_download_service",
+        lambda: type("D", (), {"download_audio": AsyncMock(side_effect=fake_download_audio)})(),  # noqa: PLW0108 工厂lambda需每次返回新实例
     )
     # _singletons.get_metadata_service
     class FakeMeta:
@@ -69,8 +68,8 @@ async def test_download_audio_broadcasts_refresh_songs(
         return FakeMeta()
 
     monkeypatch.setattr(
-        "app.services._singletons.get_metadata_service",
-        lambda: type("M", (), {"fetch_metadata": AsyncMock(side_effect=fake_fetch_metadata)})(),
+        "app.services.media_service.get_metadata_service",
+        lambda: type("M", (), {"fetch_metadata": AsyncMock(side_effect=fake_fetch_metadata)})(),  # noqa: PLW0108 工厂lambda需每次返回新实例
     )
     # DownloadHistoryService.log_download_attempt
     monkeypatch.setattr(

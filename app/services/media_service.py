@@ -10,21 +10,32 @@ MediaService - 媒体服务业务逻辑处理
 Author: google
 Created: 2026-01-23
 """
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from datetime import datetime
-# 注意：原先此处的 `from loguru import logger` 已被下方 logging.getLogger 覆盖（死代码），
-# 实际生效的一直是标准库 logger。删除它以消除歧义，运行时行为不变。
 import os
 import logging
 import uuid
+import traceback
 
 from app.repositories.song import SongRepository
 from app.repositories.artist import ArtistRepository
 from app.models.song import Song
-from app.models.download_history import DownloadHistory
+from app.models.artist import Artist
 from app.schemas import SongResponse
 from core.config_manager import get_config_manager
+from core.database import AsyncSessionLocal
+from core.websocket import manager
+from app.container import (
+    get_download_service,
+    get_metadata_service,
+    get_aggregator,
+)
+from app.services.download_history_service import DownloadHistoryService
+from app.services.media_asset_service import MediaAssetService
+from app.services.metadata_healer import MetadataHealer
+from app.services.library import LibraryService
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -32,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 class MediaService:
     """媒体服务"""
-    
+
     def __init__(self):
         pass
 
@@ -47,16 +58,13 @@ class MediaService:
     ) -> List[SongResponse]:
         """获取歌曲列表"""
         song_repo = SongRepository(db)
-        
+
         filters = {}
         if artist_id is not None:
             filters['artist_id'] = artist_id
         if is_favorite is not None:
             filters['is_favorite'] = is_favorite
         if artist_name:
-            from app.models.artist import Artist
-            from sqlalchemy import select
-            
             # Find Artist by name (exact)
             stmt = select(Artist.id).where(Artist.name == artist_name)
             result = await db.execute(stmt)
@@ -65,22 +73,22 @@ class MediaService:
                 filters['artist_id'] = found_id
             else:
                 return []
-            
+
         songs = await song_repo.get_multi(skip=skip, limit=limit, filters=filters)
-        
+
         result = []
         for song in songs:
             # Determine cover/album from local or sources?
             # Song model has prioritized cover/publish_time/title/album.
             # Local path is on Song.
-            
+
             # Generate a unique key for frontend compatibility if needed
             # We can use the primary source key or just ID
             source_key = "unknown"
             if song.sources:
                 primary = song.sources[0]
                 source_key = f"{primary.source}_{primary.source_id}"
-            
+
             result.append(SongResponse(
                 id=song.id,
                 title=song.title,
@@ -99,26 +107,26 @@ class MediaService:
                 updated_at=song.created_at.isoformat() if song.created_at else None,
                 publish_time=song.publish_time.isoformat() if song.publish_time else None
             ))
-        
+
         return result
 
     async def get_audio_path(self, filename: str, db: AsyncSession = None) -> tuple[str, Optional[Song]]:
         """
         获取音频文件路径 (增强版: 支持跨平台路径修复)
-        
+
         策略:
         1. 尝试直接从数据库查找 (local_path)
         2. 如果数据库路径不存在 (e.g. Windows路径在Docker中), 尝试在当前配置的目录中查找同名文件
         3. 尝试相对路径拼接
         """
         song_repo = SongRepository(db)
-        
+
         # 1. 尝试从数据库查找
         # 即使这里查出的 song.local_path 是 D:/... 代码也会后续处理
         # 我们先尝试标准化 filename 查找
         normalized_filename = filename.replace("\\", "/")
         simple_filename = os.path.basename(normalized_filename) # song.mp3
-        
+
         # 构造可能的数据库存储路径 (用于查询)
         possible_db_paths = [
             filename,
@@ -127,23 +135,21 @@ class MediaService:
             f"favorites/{simple_filename}",
             f"library/{simple_filename}"
         ]
-        
+
         song = None
         for p in possible_db_paths:
             song = await song_repo.get_by_path(p)
             if song:
                 break
-        
+
         # 如果数据库还没找到，尝试模糊匹配 (危险? 暂不)
-        
-        final_path = None
-        
+
         # A. 如果数据库有记录
         if song and song.local_path:
             # A1. 直接检查数据库记录的路径
             if os.path.exists(song.local_path):
                 return song.local_path, song
-            
+
             # A2. 路径不存在? 可能是环境迁移 (Win -> Docker)
             # 尝试在当前配置的目录中查找同名文件
             storage_cfg = get_config_manager().get("storage", {})
@@ -152,12 +158,13 @@ class MediaService:
                 storage_cfg.get("favorites_dir", "favorites"),
                 storage_cfg.get("library_dir")
             ]
-            
+
             # 提取文件名 (e.g. "Song.mp3")
             db_basename = os.path.basename(song.local_path)
-            
+
             for d in dirs_to_check:
-                if not d: continue
+                if not d:
+                    continue
                 candidate = os.path.join(d, db_basename)
                 if os.path.exists(candidate):
                     logger.info(f"Using auto-healed path for {db_basename}: {candidate}")
@@ -174,11 +181,12 @@ class MediaService:
             "audio_cache", # 默认
             "favorites"
         ]
-        
+
         target_name = os.path.basename(filename)
-        
+
         for d in dirs_to_check:
-            if not d: continue
+            if not d:
+                continue
             candidate = os.path.join(d, target_name)
             if os.path.exists(candidate):
                 return candidate, song
@@ -196,22 +204,15 @@ class MediaService:
         db: AsyncSession = None
     ):
         """下载音频文件"""
-        from app.services._singletons import get_download_service, get_metadata_service
-        from app.services.download_history_service import DownloadHistoryService
-        from app.models.song import Song, SongSource
-        # (ArtistRepository 已在模块顶部第 22 行导入，此处函数内重复导入已删除)
-        
         download_service = get_download_service()
         history_service = DownloadHistoryService()
         metadata_service = get_metadata_service()
-        
-        from core.websocket import manager
-        
+
         # 记录下载开始
         await history_service.log_download_attempt(
             db, title, artist, album, source, source_id, 'PENDING', cover_url=cover_url
         )
-        
+
         # 进度回调定义
         async def send_progress(msg: str):
             logger.info(f"Download Progress [{title}]: {msg}")
@@ -228,20 +229,20 @@ class MediaService:
             })
 
         await send_progress("⏳ 正在启动下载任务...")
-        
+
         try:
             # 1. Check Existing
             song_repo = SongRepository(db)
             existing_song = await song_repo.get_by_unique_key(source, source_id)
-            
+
             if existing_song and existing_song.local_path and os.path.exists(existing_song.local_path):
                 # Update status?
                 if existing_song.status != "DOWNLOADED":
                      existing_song.status = "DOWNLOADED"
                      await db.commit()
-                     
+
                 await history_service.log_download_attempt(
-                    db, title, artist, album, source, source_id, 
+                    db, title, artist, album, source, source_id,
                     'SUCCESS', existing_song.local_path, cover_url=cover_url
                 )
                 return {
@@ -250,7 +251,7 @@ class MediaService:
                     "already_exists": True,
                     "file_path": existing_song.local_path
                 }
-            
+
             # 2. Download
             result = await download_service.download_audio(
                 title=title,
@@ -258,25 +259,25 @@ class MediaService:
                 album=album,
                 progress_callback=send_progress
             )
-            
+
             if result:
                 # 3. Persist
                 # Find/Create Artist
                 artist_repo = ArtistRepository(db)
                 # Note: This is an async method in updated Repo?
                 artist_obj = await artist_repo.get_or_create_by_name(artist)
-                
+
                 # Fetch Meta
                 metadata_result = await metadata_service.fetch_metadata(
                     title=title, artist=artist, source=source, source_id=source_id
                 )
-                
+
                 # Create Song if not exists (existing_song might be None)
                 if not existing_song:
                     existing_song = Song(
                         artist_id=artist_obj.id,
                         title=title,
-                        album=metadata_result.album or album, 
+                        album=metadata_result.album or album,
                         local_path=result["local_path"],
                         status="DOWNLOADED",
                         created_at=datetime.now(),
@@ -290,8 +291,9 @@ class MediaService:
                     existing_song.status = "DOWNLOADED"
 
                 # Create SongSource (Download Source)
-                source_entry = SongSource(
-                    song_id=existing_song.id,
+                # 幂等 upsert: 依赖 uq_song_source 约束, 避免重复记录
+                await song_repo.upsert_source(
+                    existing_song.id,
                     source=source,
                     source_id=source_id,
                     cover=cover_url,
@@ -300,22 +302,19 @@ class MediaService:
                         "quality": result.get("quality")
                     }
                 )
-                db.add(source_entry)
-                
+
                 # Create Local Source
-                local_source = SongSource(
-                    song_id=existing_song.id,
+                await song_repo.upsert_source(
+                    existing_song.id,
                     source="local",
                     source_id=os.path.basename(result["local_path"]),
                     url=result["local_path"]
                 )
-                db.add(local_source)
-                
+
                 await db.commit()
-                
+
                 # [Fix] 下载完成即广播刷新，让前端主列表立即显示本地歌曲
                 try:
-                    from core.websocket import manager
                     await manager.broadcast({
                         "type": "refresh_songs",
                         "song_id": existing_song.id,
@@ -324,20 +323,18 @@ class MediaService:
                     })
                 except Exception as ws_e:
                     logger.warning(f"⚠️ 广播刷新列表失败(非阻塞): {ws_e}")
-                
+
                 # 4. 智能元数据补全 (非阻塞)
                 try:
-                    from app.services.media_asset_service import MediaAssetService
                     svc = MediaAssetService()
                     await svc.ensure_cover(existing_song)
                 except Exception as cover_e:
                     logger.warning(f"🖼️ 封面本地化失败(非阻塞): {cover_e}")
 
                 try:
-                    from app.services.metadata_healer import MetadataHealer
                     healer = MetadataHealer()
                     # 触发单曲治愈
-                    await healer.heal_song(existing_song.id, force=True) 
+                    await healer.heal_song(db, existing_song.id, force=True)
                     logger.info(f"✅ 自动补全元数据完成: {title}")
                 except Exception as enrich_e:
                     logger.warning(f"⚠️ 元数据补全失败(非阻塞): {enrich_e}")
@@ -345,7 +342,6 @@ class MediaService:
                 # [Feature] 即时入库 (秒级反馈)
                 # 无需等待全量扫描，直接把文件送入 ScanService 判定
                 try:
-                    from app.services.library import LibraryService
                     library_service = LibraryService()
                     # scan_single_file 应该是异步的
                     await library_service.scan_single_file(result["local_path"], db)
@@ -354,10 +350,10 @@ class MediaService:
                     logger.warning(f"⚠️ 单曲即时扫描失败: {scan_e}")
 
                 await history_service.log_download_attempt(
-                    db, title, artist, album, source, source_id, 
+                    db, title, artist, album, source, source_id,
                     'SUCCESS', result["local_path"], cover_url=cover_url
                 )
-                
+
                 # Fetch fresh quality from source entry or recalc
                 # result['quality'] already calculated by DownloadService usually, or we assume HQ if missing
                 final_quality = result.get('quality', 'HQ')
@@ -371,18 +367,17 @@ class MediaService:
                 }
             else:
                 await history_service.log_download_attempt(
-                    db, title, artist, album, source, source_id, 
+                    db, title, artist, album, source, source_id,
                     'FAILED', error_message="下载失败", cover_url=cover_url
                 )
                 return {"message": "下载失败", "error": "Download failed"}
-                
+
         except Exception as e:
             await history_service.log_download_attempt(
-                db, title, artist, album, source, source_id, 
+                db, title, artist, album, source, source_id,
                 'FAILED', error_message=str(e), cover_url=cover_url
             )
             # Log traceback for debugging
-            import traceback
             traceback.print_exc()
             raise
 
@@ -391,69 +386,33 @@ class MediaService:
 
 async def find_artist_ids(artist_name: str) -> List[Dict[str, any]]:
     """搜索歌手ID"""
-    from app.services._singletons import get_aggregator
-    
     aggregator = get_aggregator()
     results = await aggregator.search_artist(artist_name, limit=10)
-    
+
     return [artist.to_dict() for artist in results]
 
 
 async def check_file_integrity():
     """检查媒体文件完整性"""
-    from core.database import AsyncSessionLocal
-    from app.models.song import Song
-    from sqlalchemy import select
-    
     logger.info("开始文件完整性检查...")
-    
+
     async with AsyncSessionLocal() as db:
         try:
             stmt = select(Song).where(Song.local_path.isnot(None))
             result = await db.execute(stmt)
             records = result.scalars().all()
-            
+
             missing_count = 0
             for record in records:
                 if record.local_path and not os.path.exists(record.local_path):
                     logger.warning(f"文件丢失: {record.title} at {record.local_path}")
                     record.status = "FILE_MISSING"
                     missing_count += 1
-            
+
             if missing_count > 0:
                 await db.commit()
-            
+
             logger.info(f"文件完整性检查完成，丢失: {missing_count}")
-            
+
         except Exception as e:
             logger.error(f"文件完整性检查错误: {e}")
-
-
-async def auto_cache_recent_songs():
-    """自动缓存最近的歌曲"""
-    from core.database import AsyncSessionLocal
-    from app.models.song import Song
-    from sqlalchemy import select
-    from datetime import timedelta
-    
-    logger.info("开始自动缓存...")
-    
-    async with AsyncSessionLocal() as db:
-        try:
-            yesterday = datetime.now() - timedelta(days=1)
-            stmt = select(Song).where(
-                Song.created_at > yesterday,
-                Song.local_path.isnot(None)
-            )
-            result = await db.execute(stmt)
-            recent_records = result.scalars().all()
-            
-            cached_count = 0
-            for record in recent_records:
-                if record.local_path and os.path.exists(record.local_path):
-                    cached_count += 1
-            
-            logger.info(f"自动缓存完成，共 {cached_count} 首歌曲")
-            
-        except Exception as e:
-            logger.error(f"自动缓存错误: {e}")

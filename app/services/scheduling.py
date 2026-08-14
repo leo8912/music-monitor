@@ -5,20 +5,27 @@ Scheduling - 周期任务注册与重排
 统一管理所有循环任务，避免在 main.py 内联零散注册。
 - job_new_release_check: 新歌增量监控 (默认 6h，可配置)
 - job_file_integrity: 每 24h 文件完整性检查
-- job_auto_cache: 每 30min 自动缓存近期歌曲
+- job_asset_localize: 每 24h 媒体资源本地化巡检
 
 Author: music-monitor development team
 """
 import logging
 
 from core.config_manager import get_config_manager
+from core.database import AsyncSessionLocal
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from app.models.artist import Artist
+from app.models.song import Song
+from app.services.media_asset_service import MediaAssetService
+from app.services.new_release_monitor import get_new_release_monitor
+from app.services.media_service import check_file_integrity
 
 logger = logging.getLogger(__name__)
 
 # 任务 ID (稳定标识，供重排/移除使用)
 JOB_RELEASE_CHECK = "job_new_release_check"
 JOB_FILE_INTEGRITY = "job_file_integrity"
-JOB_AUTO_CACHE = "job_auto_cache"
 JOB_ASSET_LOCALIZE = "job_asset_localize"
 
 # 默认: 6 小时
@@ -49,11 +56,7 @@ def get_release_interval_minutes() -> int:
 
 async def run_new_release_check():
     """增量新歌监控（轻量，可高频）。"""
-    handled_by = None
     try:
-        from core.database import AsyncSessionLocal
-        from app.services.new_release_monitor import get_new_release_monitor
-
         async with AsyncSessionLocal() as db:
             await get_new_release_monitor().check_all(db)
     except Exception as e:
@@ -63,13 +66,6 @@ async def run_new_release_check():
 async def run_asset_localization():
     """媒体资源本地化巡检: 全库头像/封面远程 URL 落盘 (低频, 每 24h)。"""
     try:
-        from core.database import AsyncSessionLocal
-        from sqlalchemy import select
-        from sqlalchemy.orm import selectinload
-        from app.models.artist import Artist
-        from app.models.song import Song
-        from app.services.media_asset_service import MediaAssetService
-
         svc = MediaAssetService()
         async with AsyncSessionLocal() as db:
             # 1. 歌手头像: 远程 URL 或空 → 补源下载
@@ -121,21 +117,11 @@ def register_recurring_jobs(scheduler) -> None:
     )
     logger.info(f"[Scheduler] 新歌增量监控: 每 {get_release_interval_minutes()} 分钟")
 
-    from app.services.media_service import check_file_integrity, auto_cache_recent_songs
-
     scheduler.add_job(
         check_file_integrity,
         "interval",
         hours=24,
         id=JOB_FILE_INTEGRITY,
-        replace_existing=True,
-    )
-
-    scheduler.add_job(
-        auto_cache_recent_songs,
-        "interval",
-        minutes=30,
-        id=JOB_AUTO_CACHE,
         replace_existing=True,
     )
 

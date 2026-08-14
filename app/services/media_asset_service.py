@@ -18,7 +18,13 @@ Author: refactor
 import logging
 import os
 import hashlib
+import json
+import urllib.parse as urlparse
 from typing import Optional, Tuple
+
+from app.container import get_aggregator
+from app.models.artist import Artist
+from app.models.song import Song
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +46,6 @@ class MediaAssetService:
     @property
     def aggregator(self):
         if self._aggregator is None:
-            from app.services._singletons import get_aggregator
             self._aggregator = get_aggregator()
         return self._aggregator
 
@@ -96,9 +101,6 @@ class MediaAssetService:
     async def ensure_localized(self, entity) -> bool:
         """按实体类型统一分发本地化。"""
         # artist / song 都由其 attr 判别
-        from app.models.artist import Artist, ArtistSource
-        from app.models.song import Song
-
         if isinstance(entity, Artist):
             return await self.ensure_avatar(entity)
         if isinstance(entity, Song):
@@ -181,7 +183,6 @@ class MediaAssetService:
 
             # 处理代理 URL: /api/discovery/cover?source=xxx&id=yyy
             if str(url).startswith("/api/discovery/cover"):
-                import urllib.parse as urlparse
                 parsed = urlparse.urlparse(url)
                 qs = urlparse.parse_qs(parsed.query)
                 source = qs.get("source", [""])[0]
@@ -207,7 +208,6 @@ class MediaAssetService:
                     if resp.status == 200:
                         content = await resp.read()
                         if b'{"url":' in content[:100]:
-                            import json
                             try:
                                 data = json.loads(content.decode("utf-8"))
                                 img_real_url = data.get("url")

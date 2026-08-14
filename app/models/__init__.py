@@ -13,3 +13,13 @@ from app.models.download_history import DownloadHistory
 from app.models.wechat_session import WeChatSession
 from app.models.settings import SystemSettings
 from app.models.media_record import MediaRecord
+
+__all__ = [
+    "Base",
+    "Artist",
+    "Song",
+    "DownloadHistory",
+    "WeChatSession",
+    "SystemSettings",
+    "MediaRecord",
+]

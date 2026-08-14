@@ -23,14 +23,14 @@ class ConfigMigration:
         Returns: (changed: bool, message: str)
         """
         template_config = {}
-        
+
         # Determine source of template
         if self.template_dict is not None:
              template_config = self.template_dict
         else:
             if not os.path.exists(self.example_path):
                 return False, f"Template config not found at {self.example_path}"
-            
+
             try:
                 with open(self.example_path, 'r', encoding='utf-8') as f:
                     template_config = yaml.safe_load(f) or {}
@@ -44,7 +44,7 @@ class ConfigMigration:
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 user_config = yaml.safe_load(f) or {}
-            
+
             # 1. Create Backup
             backup_path = f"{self.config_path}.bak"
             try:
@@ -65,7 +65,7 @@ class ConfigMigration:
                 with open(self.config_path, 'w', encoding='utf-8') as f:
                     yaml.safe_dump(merged_config, f, allow_unicode=True, default_flow_style=False)
                 return True, "Configuration updated to latest format"
-            
+
             return False, "No changes needed"
 
         except Exception as e:
@@ -77,34 +77,41 @@ class ConfigMigration:
         Handle specific key renames from old versions.
         """
         changed = False
-        
+
         # 0. Migrate 'notifications' to 'notify'
         if 'notifications' in config and config['notifications'].get('providers'):
             providers = config['notifications']['providers']
             if 'notify' not in config:
                 config['notify'] = {}
-            
+
             # WeCom
             if 'wecom' in providers and providers['wecom'].get('enabled'):
                 legacy_wecom = providers['wecom']
-                if 'wecom' not in config['notify']: config['notify']['wecom'] = {}
+                if 'wecom' not in config['notify']:
+                    config['notify']['wecom'] = {}
                 target = config['notify']['wecom']
                 target['enabled'] = legacy_wecom.get('enabled', False)
-                if legacy_wecom.get('corp_id'): target['corpid'] = legacy_wecom.get('corp_id')
-                if legacy_wecom.get('agent_id'): target['agentid'] = legacy_wecom.get('agent_id')
-                if legacy_wecom.get('agent_secret'): target['corpsecret'] = legacy_wecom.get('agent_secret')
+                if legacy_wecom.get('corp_id'):
+                    target['corpid'] = legacy_wecom.get('corp_id')
+                if legacy_wecom.get('agent_id'):
+                    target['agentid'] = legacy_wecom.get('agent_id')
+                if legacy_wecom.get('agent_secret'):
+                    target['corpsecret'] = legacy_wecom.get('agent_secret')
                 changed = True
 
             # Telegram
             if 'telegram' in providers and providers['telegram'].get('enabled'):
                 legacy_tg = providers['telegram']
-                if 'telegram' not in config['notify']: config['notify']['telegram'] = {}
+                if 'telegram' not in config['notify']:
+                    config['notify']['telegram'] = {}
                 target = config['notify']['telegram']
                 target['enabled'] = legacy_tg.get('enabled', False)
-                if legacy_tg.get('bot_token'): target['bot_token'] = legacy_tg.get('bot_token')
-                if legacy_tg.get('chat_id'): target['chat_id'] = legacy_tg.get('chat_id')
+                if legacy_tg.get('bot_token'):
+                    target['bot_token'] = legacy_tg.get('bot_token')
+                if legacy_tg.get('chat_id'):
+                    target['chat_id'] = legacy_tg.get('chat_id')
                 changed = True
-        
+
         # 1. WeCom Legacy Keys (within notify.wecom)
         if config.get('notify', {}).get('wecom'):
             wecom = config['notify']['wecom']
@@ -115,7 +122,7 @@ class ConfigMigration:
                 'aes_key': 'encoding_aes_key',
                 'corp_secret': 'corpsecret' # Handle possible variation
             }
-            
+
             # Explicitly ensure target keys exist, then DELETE source keys
             for old_k, new_k in legacy_map.items():
                 if old_k in wecom:
@@ -124,7 +131,7 @@ class ConfigMigration:
                         wecom[new_k] = wecom[old_k]
                         changed = True
                     # ALWAYS remove old key to prevent duplicates
-                    wecom.pop(old_k, None) 
+                    wecom.pop(old_k, None)
                     changed = True
 
             # Ensure we don't have partial migrations left over
@@ -132,12 +139,12 @@ class ConfigMigration:
                  if unwanted in wecom:
                      wecom.pop(unwanted, None)
                      changed = True
-            
+
             # Ensure token exists if we have aes_key
             if 'encoding_aes_key' in wecom and 'token' not in wecom:
-                 wecom['token'] = '' 
+                 wecom['token'] = ''
                  changed = True
-        
+
         return config, changed
 
     def _cleanup_zombie_keys(self, config: Dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
@@ -161,10 +168,10 @@ class ConfigMigration:
             if not isinstance(user_val, dict):
                 if user_val is None:
                     return copy.deepcopy(template_val), True
-                return user_val, False 
+                return user_val, False
 
             new_user_dict = user_val.copy()
-            
+
             for k, v in template_val.items():
                 if k not in new_user_dict:
                     new_user_dict[k] = copy.deepcopy(v)
@@ -174,7 +181,7 @@ class ConfigMigration:
                     if sub_changed:
                         new_user_dict[k] = updated_val
                         changed = True
-            
+
             return new_user_dict, changed
-        
+
         return user_val, False

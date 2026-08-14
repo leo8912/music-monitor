@@ -18,7 +18,7 @@
             :key="index"
             class="lyric-line"
             :class="{ active: index === playerStore.currentLyricIndex }"
-            :ref="(el) => { if (index === playerStore.currentLyricIndex) activeLyricRef = el }"
+            :ref="(el) => { if (index === playerStore.currentLyricIndex) setActiveLyricRef(el) }"
           >
             {{ line.text }}
           </div>
@@ -38,7 +38,12 @@ import { CloseOutline } from '@vicons/ionicons5'
 
 const playerStore = usePlayerStore()
 const lyricsContainer = ref<HTMLElement | null>(null)
-const activeLyricRef = ref<any>(null)
+const activeLyricRef = ref<HTMLElement | null>(null)
+
+// ref 回调: 仅当元素为真实 HTMLElement 时记录, 供自动滚动使用
+const setActiveLyricRef = (el: unknown) => {
+    activeLyricRef.value = el instanceof HTMLElement ? el : null
+}
 
 // Auto-scroll logic
 watch(() => playerStore.currentLyricIndex, (newIdx) => {

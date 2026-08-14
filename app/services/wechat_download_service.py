@@ -17,6 +17,8 @@ from urllib.parse import quote
 import logging
 
 from app.repositories.media_record import MediaRecordRepository
+from app.container import get_download_service
+from core.security import generate_signed_url_params
 from core.config import config
 
 logger = logging.getLogger(__name__)
@@ -25,10 +27,10 @@ logger = logging.getLogger(__name__)
 class WeChatDownloadService:
     """
     微信下载服务
-    
+
     处理微信触发的后台下载，使用 DownloadService 执行实际下载。
     """
-    
+
     @staticmethod
     async def download_and_save(
         db: AsyncSession,
@@ -36,25 +38,23 @@ class WeChatDownloadService:
     ) -> Optional[Dict[str, Any]]:
         """
         执行下载并保存记录
-        
+
         Args:
             db: 数据库会话
             song: 歌曲信息 {title, artist, album, source, id, cover}
-        
+
         Returns:
             下载结果字典
         """
-        from app.services._singletons import get_download_service
-        
         title = song.get('title', '')
         artist = song.get('artist', '')
         if isinstance(artist, list):
             artist = "/".join(artist)
         album = song.get('album', '')
-        
+
         # 使用 DownloadService 执行下载
         download_service = get_download_service()
-        
+
         try:
             result = await download_service.download_audio(
                 title=title,
@@ -63,7 +63,7 @@ class WeChatDownloadService:
                 source=song.get('source'),
                 source_id=str(song.get('id', ''))
             )
-            
+
             if result:
                 # 下载成功，创建记录
                 return await WeChatDownloadService.create_or_update_record(
@@ -75,11 +75,11 @@ class WeChatDownloadService:
             else:
                 logger.error(f"微信下载失败: {title}")
                 return None
-                
+
         except Exception as e:
             logger.error(f"微信下载异常: {e}")
             return None
-    
+
     @staticmethod
     async def create_or_update_record(
         db: AsyncSession,
@@ -89,13 +89,13 @@ class WeChatDownloadService:
     ) -> Optional[Dict[str, Any]]:
         """下载完成后创建或更新媒体记录"""
         repo = MediaRecordRepository(db)
-        
+
         unique_key = f"{song['source']}_{song['id']}"
         title = song.get('title', '')
         artist = song.get('artist', '')
         if isinstance(artist, list):
             artist = "/".join(artist)
-        
+
         # 记录数据
         record_data = {
             "unique_key": unique_key,
@@ -109,25 +109,25 @@ class WeChatDownloadService:
             "audio_quality": download_result.get('quality'),
             "publish_time": datetime.now()
         }
-        
+
         # 处理封面
         final_cover = (
-            download_result.get('cover') or 
-            cover_url or 
-            song.get('cover') or 
+            download_result.get('cover') or
+            cover_url or
+            song.get('cover') or
             ""
         )
         record_data["cover"] = final_cover
-        
+
         # 创建或更新记录
-        record = await repo.create_or_update(record_data)
-        
+        await repo.create_or_update(record_data)
+
         # 设置为收藏
         await repo.set_favorite(unique_key, True)
-        
+
         # 生成 Magic Link
         magic_url = WeChatDownloadService._generate_magic_url(unique_key)
-        
+
         return {
             "unique_key": unique_key,
             "magic_url": magic_url,
@@ -136,23 +136,21 @@ class WeChatDownloadService:
             "artist": artist,
             "local_path": download_result.get('local_path')
         }
-    
+
     @staticmethod
     def _generate_magic_url(unique_key: str) -> str:
         """生成带签名的播放链接"""
-        from core.security import generate_signed_url_params
-        
         sign_params = generate_signed_url_params(unique_key)
-        
+
         base_url = config.get('global', {}).get('external_url', 'http://localhost:8000')
         if base_url.endswith('/'):
             base_url = base_url[:-1]
-        
+
         magic_url = (
             f"{base_url}/#/mobile/play?"
             f"id={quote(sign_params['id'])}&"
             f"sign={sign_params['sign']}&"
             f"expires={sign_params['expires']}"
         )
-        
+
         return magic_url

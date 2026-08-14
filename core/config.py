@@ -38,7 +38,7 @@ elif os.path.exists("/app/config.example.yaml"):
 else:
     # Fallback lookup (e.g. relative to this file)
     _rel_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config.example.yaml")
-    # core/config.py -> core -> app? -> root? 
+    # core/config.py -> core -> app? -> root?
     # __file__ = d:/code/music-monitor/core/config.py
     # dirname = core
     # dirname = music-monitor
@@ -48,7 +48,7 @@ else:
     if os.path.exists(_local_root):
         EXAMPLE_CONFIG_PATH = _local_root
     else:
-        EXAMPLE_CONFIG_PATH = "config.example.yaml" 
+        EXAMPLE_CONFIG_PATH = "config.example.yaml"
 
 def load_config():
     if not os.path.exists(CONFIG_FILE_PATH):
@@ -84,7 +84,7 @@ def migrate_and_save_config():
         # 3. Run Migration
         migration = ConfigMigration(CONFIG_FILE_PATH, EXAMPLE_CONFIG_PATH, template_dict=template_dict)
         changed, msg = migration.run()
-        
+
         if changed:
             logger.info(f"Config migration: {msg}")
             return True, msg
@@ -99,10 +99,10 @@ def ensure_security_config():
     try:
         if not os.path.exists(CONFIG_FILE_PATH):
             return secrets.token_urlsafe(32), False
-            
+
         with open(CONFIG_FILE_PATH, "r", encoding='utf-8') as f:
             content = f.read()
-        
+
         # Check current secret
         match = re.search(r'secret_key:\s*["\']?([^"\']+)["\']?', content)
         if match:
@@ -110,20 +110,23 @@ def ensure_security_config():
             # If default or weak
             if current_secret in ["secret_key_for_session_encryption", "default_secret_key", "CHANGE_THIS_TO_RANDOM_SECRET", "CHANGE_THIS_SECRET_KEY"]:
                 new_secret = secrets.token_urlsafe(32)
-                logger.warning(f"Detected weak secret_key. Rotated to new random key.")
-                
+                logger.warning("Detected weak secret_key. Rotated to new random key.")
+
                 # Replace in content (preserve whitespace/comments)
                 new_content = re.sub(
-                    r'(secret_key:\s*)(["\']?)([^"\']+)(["\']?)', 
-                    f'\\1"{new_secret}"', 
+                    r'(secret_key:\s*)(["\']?)([^"\']+)(["\']?)',
+                    f'\\1"{new_secret}"',
                     content
                 )
-                
+
                 with open(CONFIG_FILE_PATH, "w", encoding='utf-8') as f:
                     f.write(new_content)
-                
+
                 return new_secret, True
             return current_secret, False
+        # 配置文件中无 secret_key 字段: 返回临时随机密钥 (不落盘, 避免破坏 YAML 结构)
+        logger.warning("No secret_key found in config. Using an ephemeral random key.")
+        return secrets.token_urlsafe(32), False
     except Exception as e:
         logger.error(f"Security config check failed: {e}")
         # Return random temp secret
@@ -133,53 +136,59 @@ def add_monitored_user(source: str, user_id: str, name: str, avatar: str = None)
     """Add a new user to monitor config and save."""
     try:
         # 1. Update In-Memory Config
-        if not config.get('monitor'): config['monitor'] = {}
-        if not config['monitor'].get(source): config['monitor'][source] = {'enabled': True, 'users': []}
-        
+        if not config.get('monitor'):
+            config['monitor'] = {}
+        if not config['monitor'].get(source):
+            config['monitor'][source] = {'enabled': True, 'users': []}
+
         users = config['monitor'][source].get('users')
-        if users is None: 
+        if users is None:
             users = []
             config['monitor'][source]['users'] = users
-            
+
         # Check duplicate
         for u in users:
             if str(u.get('id')) == str(user_id):
                 return False # Already exists
-        
+
         new_entry = {'id': str(user_id), 'name': name}
-        if avatar: new_entry['avatar'] = avatar
-            
+        if avatar:
+            new_entry['avatar'] = avatar
+
         users.append(new_entry)
         config['monitor'][source]['users'] = users
-        
+
         # 2. Save to File
         with open(CONFIG_FILE_PATH, "r", encoding='utf-8') as f:
             data = yaml.safe_load(f) or {}
-            
-        if not data.get('monitor'): data['monitor'] = {}
-        if not data['monitor'].get(source): data['monitor'][source] = {'enabled': True, 'users': []}
-        
+
+        if not data.get('monitor'):
+            data['monitor'] = {}
+        if not data['monitor'].get(source):
+            data['monitor'][source] = {'enabled': True, 'users': []}
+
         # Ensure we don't duplicate in file if it desynced
         file_users = data['monitor'][source].get('users')
         if file_users is None:
              file_users = []
              data['monitor'][source]['users'] = file_users
-             
+
         exists = False
         for u in file_users:
             if str(u.get('id')) == str(user_id):
                 exists = True
                 break
-        
+
         if not exists:
             file_entry = {'id': str(user_id), 'name': name}
-            if avatar: file_entry['avatar'] = avatar
+            if avatar:
+                file_entry['avatar'] = avatar
             file_users.append(file_entry)
             data['monitor'][source]['users'] = file_users
-            
+
             with open(CONFIG_FILE_PATH, "w", encoding='utf-8') as f:
                 yaml.safe_dump(data, f, allow_unicode=True, default_flow_style=False)
-                
+
         return True
     except Exception as e:
         logger.error(f"Failed to add monitored user: {e}")

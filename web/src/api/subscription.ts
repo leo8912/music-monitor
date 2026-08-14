@@ -1,10 +1,11 @@
 
 import { get, post, del } from './index'
+import type { MusicSource, ArtistDetail } from '@/types'
 
 export interface ArtistAddRequest {
     name: string;
     source: string;
-    artist_id: string;
+    id: string;
     avatar?: string;
 }
 
@@ -12,7 +13,7 @@ export interface MonitoredArtist {
     id: number;
     name: string;
     source_count: number;
-    sources: any[];
+    sources: MusicSource[];
     is_monitored: boolean;
 }
 
@@ -28,6 +29,6 @@ export const deleteArtist = (artistId: number): Promise<{ success: boolean; mess
     return del(`/api/subscription/artists/${artistId}`)
 }
 
-export const getArtistDetail = (artistId: string | number): Promise<any> => {
+export const getArtistDetail = (artistId: string | number): Promise<ArtistDetail> => {
     return get(`/api/subscription/artists/${artistId}`)
 }

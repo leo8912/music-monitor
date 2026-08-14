@@ -70,11 +70,11 @@ export const addArtist = (data: {
     id: string
     avatar?: string
 }): Promise<{ success: boolean; message: string }> => {
-    // Map 'id' (source id) to backend 'artist_id'
+    // 后端 ArtistConfig 字段为 id (source id)
     return post('/api/subscription/artists', {
         name: data.name,
         source: data.source,
-        artist_id: data.id,
+        id: data.id,
         avatar: data.avatar
     })
 }
@@ -129,7 +129,7 @@ export const redownloadSong = (data: {
     quality?: number,
     title?: string,
     artist?: string
-}): Promise<{ success: boolean, song?: any }> => {
+}): Promise<{ success: boolean, song?: Song }> => {
     return post('/api/library/redownload', data)
 }
 
@@ -142,6 +142,6 @@ export const downloadSong = (data: {
     source_id: string
     quality?: number
     cover_url?: string
-}): Promise<{ success: boolean; song?: any }> => {
+}): Promise<{ success: boolean; song?: Song }> => {
     return post('/api/library/download', data)
 }

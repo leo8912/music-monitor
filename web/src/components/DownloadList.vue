@@ -3,16 +3,23 @@ import { h } from 'vue'
 import { NIcon, NEmpty, NButton, useMessage } from 'naive-ui'
 import { CloudDownloadOutline } from '@vicons/ionicons5'
 import Skeleton from '@/components/common/Skeleton.vue'
+import { bitrateToQuality } from '@/utils/quality'
+import type { SearchDownloadItem } from '@/types'
+
+// 搜索下载项 + 前端局部 loading 状态
+interface DownloadItem extends SearchDownloadItem {
+    _loading?: boolean
+}
 
 const props = defineProps({
-  items: { type: Array as () => any[], default: () => [] },
+  items: { type: Array as () => DownloadItem[], default: () => [] },
   loading: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['download'])
 const message = useMessage()
 
-const handleDownload = (item: any) => {
+const handleDownload = (item: DownloadItem) => {
     emit('download', item)
 }
 
@@ -20,20 +27,17 @@ const formatSize = (sizeStr: string) => {
     return sizeStr || ''
 }
 
-const getQualityColor = (quality: any) => {
+const getQualityColor = (quality: string | number | null | undefined) => {
     const q = parseInt(String(quality))
     if (q >= 2000) return '#c0392b' // Hi-Res
-    if (q >= 1000) return '#f1c40f' // Flac
+    if (q >= 900) return '#f1c40f' // Flac (统一阈值 900, M4)
     if (q >= 320) return '#20d25c' // 320k
     return '#3498db'
 }
 
-const getQualityLabel = (quality: any) => {
-     const q = parseInt(String(quality))
-    if (q >= 2000) return 'HR'
-    if (q >= 1000) return 'SQ'
-    if (q >= 320) return 'HQ'
-    return 'PQ'
+const getQualityLabel = (quality: string | number | null | undefined) => {
+    const q = parseInt(String(quality))
+    return bitrateToQuality(q)
 }
 
 </script>

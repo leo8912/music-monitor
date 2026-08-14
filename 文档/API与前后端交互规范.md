@@ -1,8 +1,13 @@
 # API 与前后端交互规范
 
-> **版本**: 1.0.0
+> **版本**: 1.0.0（基于重构前接口）
 > **API 基础路径**: `/api`
-> **状态**: 已就绪
+> **状态**: ⚠️ 已过时，以 OpenAPI (`/docs`) 为准
+>
+> [!WARNING]
+> 本文档编写于重构前。2026-08 重构后接口已按 `app/api/v1/` 重排（拆分 system.py / media.py，
+> 新增 response_model 与统一分页），路径与返回结构均有变化。本文档仅作历史参考，
+> **实际接口以 FastAPI 自动生成的 `/docs` (OpenAPI) 为准**。
 
 本规范旨在整合前后端数据交换格式，明确各实体的核心字段，以及定义具体的 API 接口交付标准，以减少沟通成本。
 
@@ -26,7 +31,7 @@
 
 ### 2.1 资料库管理 (Library)
 **获取歌曲列表** 
-`GET /library/songs`
+`GET /api/library/songs`
 - **参数**: 
   - `skip` (int): 分页偏移
   - `limit` (int): 页面大小
@@ -51,7 +56,7 @@
 
 ### 2.2 媒体操作 (Media)
 **触发下载**
-`POST /download/audio`
+`POST /api/download_audio`
 - **请求体 (JSON)**:
 ```json
 {
@@ -64,13 +69,13 @@
 ```
 
 **移动端元数据 (带签名验证)**
-`GET /mobile/metadata`
+`GET /api/mobile/metadata`
 - **参数**: `id`, `sign`, `expires` (由后端签名生成)
 - **说明**: 微信推送专用接口，返回该唯一标识符对应的歌曲完整详情。
 
 ### 2.3 搜索与发现 (Discovery)
 **搜索歌手**
-`GET /api/search/artist` (由聚合器分发)
+`GET /api/discovery/search` (由聚合器分发)
 - **参数**: `keyword`, `limit`
 - **说明**: 并发调用网易云与 QQ 音乐，已包含打分去重逻辑。
 

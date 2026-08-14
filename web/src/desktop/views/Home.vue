@@ -7,6 +7,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useMessage, NSpin, NIcon, NButton, NPagination } from 'naive-ui'
 import { usePlayerStore, useLibraryStore, useSettingsStore } from '@/stores'
 import { SettingsOutline } from '@vicons/ionicons5'
+import type { Song } from '@/types'
 
 
 // 组件
@@ -30,7 +31,7 @@ const greeting = computed(() => {
 })
 
 // 处理播放
-const handlePlay = (song: any) => {
+const handlePlay = (song: Song) => {
   playerStore.setPlaylist(libraryStore.songs)
   playerStore.playSong(song)
 }

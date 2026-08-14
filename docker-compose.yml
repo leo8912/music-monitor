@@ -4,7 +4,7 @@ services:
     container_name: music-monitor
     restart: always
     volumes:
-      - ./config:/config # 核心配置目录 (config.yaml, db, uploads)
+      - ./config:/config # 核心配置目录 (config.yaml, db, uploads, redis)
       - ./cache:/audio_cache # 缓存目录
       - ./favorites:/favorites # 收藏目录
       - ./library:/library # 资料库目录
@@ -16,3 +16,15 @@ services:
     network_mode: bridge
     ports:
       - "18000:8000" # 端口映射
+    healthcheck:
+      # 容器内无 curl/wget，用 Python 打匿名端点 /api/check_auth
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/check_auth', timeout=5).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # 说明：
+    # - SQLite WAL 模式会产生 music_monitor.db-wal / music_monitor.db-shm 两个伴随文件，
+    #   必须与主库文件同目录同卷（此处 ./config:/config 已保证）。
+    # - /config/redis 是内置 Redis 的 AOF 持久化目录，也由 ./config 卷承载。
+    # - 升级镜像后如遇数据库结构变化，entrypoint 会自动执行 alembic upgrade head。

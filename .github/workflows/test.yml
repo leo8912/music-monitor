@@ -9,9 +9,9 @@ name: Tests
 #     测试不过就不会有镜像产出。
 #
 # 覆盖率策略（ratchet 棘轮）：
-#   QA 本地实测 `--cov=app` = 22%（72 条用例，Python 3.13）。
-#   阈值先定 20%，留 2 个点吸收跨平台差异，作用是**防止继续下滑**而不是拔高。
-#   每补一批测试就把这个数字往上抬一级：20 -> 30 -> 45 -> 60。
+#   阶段 0 补完 API 冒烟测试后本地实测 `--cov=app` = 33%（113 passed + 9 xfailed）。
+#   阈值定 30%，留 3 个点吸收跨平台差异，作用是**防止继续下滑**而不是拔高。
+#   每补一批测试就把这个数字往上抬一级：30 -> 45 -> 60。
 #   注意：暂时只统计 app/，不含 core/。core 里大量是启动期/调度器代码，
 #   单测很难覆盖，一并统计会把分母冲得很难看，反而让阈值失去意义。
 # ============================================================================
@@ -81,12 +81,20 @@ jobs:
 
       # ------------------------------------------------------------------
       # 非阻断式 lint：把技术债晒出来但不拦车
-      # 目前已知 5 条（均为 F811 重复导入）。清零后请把这一步合并进上面的
-      # 阻断步骤，并删掉 continue-on-error。
+      # 阶段 0 整理测试目录后已实测 0 命中（原 5 条 F811 随伪测试文件一并移除）。
+      # 若能稳定保持 0，可把这一步合并进上面的阻断步骤并删掉 continue-on-error。
       # ------------------------------------------------------------------
       - name: Lint (ruff · 全量扫描，仅报告)
         continue-on-error: true
         run: ruff check . --select E9,F63,F7,F82,F811 --output-format=github
+
+      # ------------------------------------------------------------------
+      # 类型检查：非阻断。基线为 42 处 attr-defined 错误，多数是真实缺陷
+      # （调用不存在的方法/导入已删除的名字），随重构逐条清零后再改为阻断。
+      # ------------------------------------------------------------------
+      - name: Type check (mypy · 仅报告)
+        continue-on-error: true
+        run: mypy
 
       - name: Run tests with coverage
         env:
@@ -97,7 +105,7 @@ jobs:
             --cov=app \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=20 \
+            --cov-fail-under=30 \
             -q
 
       - name: Upload coverage artifact
@@ -108,3 +116,35 @@ jobs:
           path: coverage.xml
           if-no-files-found: ignore
           retention-days: 7
+
+  # ==========================================================================
+  # 前端门禁：vue-tsc 类型检查 + vite 生产构建。
+  # Dockerfile 的 frontend stage 也会跑 build，但那只在推 main/tag 时发生；
+  # 这里让每个 PR 都先验证前端可编译，避免 PR 合入后才在镜像构建阶段炸掉。
+  # ==========================================================================
+  frontend:
+    name: frontend (typecheck + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 类型检查是硬门禁：tsconfig strict 模式下能拦"调了不存在的 API 字段"
+      - name: Type check (vue-tsc · 阻断)
+        run: npx vue-tsc --noEmit
+
+      - name: Build (vite · 阻断)
+        run: npm run build

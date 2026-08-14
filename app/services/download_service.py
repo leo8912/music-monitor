@@ -26,6 +26,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from core.storage import get_storage_paths
+
 logger = logging.getLogger(__name__)
 
 # ============== 繁简转换 ==============
@@ -82,7 +84,7 @@ class DownloadTask:
 class RateLimiter:
     """
     API 频率限制器
-    
+
     GDStudio API 限制: 5分钟50次请求
     """
     def __init__(self, max_tokens: int = 45, refill_period: int = 300):
@@ -96,27 +98,27 @@ class RateLimiter:
         """获取令牌"""
         async with self._lock:
             self._refill()
-            
+
             if self.tokens > 0:
                 self.tokens -= 1
                 return True
-            
+
             if not wait:
                 return False
-            
+
             wait_time = self.refill_period - (time.time() - self.last_refill)
             if wait_time > 0:
                 logger.info(f"频率限制，等待 {wait_time:.1f}s...")
                 await asyncio.sleep(wait_time)
                 return await self.acquire(wait=False)
-        
+
         return False
-    
+
     def _refill(self):
         """刷新令牌"""
         now = time.time()
         elapsed = now - self.last_refill
-        
+
         if elapsed >= self.refill_period:
             self.tokens = self.max_tokens
             self.last_refill = now
@@ -127,38 +129,41 @@ class RateLimiter:
 class DownloadService:
     """
     下载服务 - 使用 GDStudio API 搜索和下载音频
-    
+
     功能:
-    - 多源搜索 (kuwo, netease, joox 等)
+    - 多源搜索 (netease, joox, bilibili 等)
     - 权重评分算法匹配最佳结果
-    - 频率限制 (5分钟45次)
+    - 频率限制 (5分钟50次, 代码保守取45次)
     - 自动下载和保存
+
+    说明: 音源列表以 https://music-api.gdstudio.xyz/api.php 网页文档为准 (2026-06-26)。
+    当前稳定音乐源: netease、joox、bilibili。其余源 (tencent/kuwo/tidal/qobuz/
+    apple/ytmusic/spotify) 文档虽列出但实际返回 400 not supported;
+    kugou/migu/ximalaya 已从文档移除。经实测只有 netease/joox/bilibili 可正常
+    搜索并获取真实音频链接 (kuwo 搜索可用但 url 恒为空)。
     """
-    
+
     API_BASE = "https://music-api.gdstudio.xyz/api.php"
-    
-    # 搜索优先级顺序
+
+    # 搜索优先级顺序 (与网页文档稳定源一致, 2026-08-14 实测)
     SEARCH_PRIORITY = [
-        "kuwo", "netease", "joox", "kugou", "migu", 
-        "tencent", "ximalaya"
+        "netease", "joox", "bilibili"
     ]
-    
+
     def __init__(self, cache_dir: str = None):
         if cache_dir is None:
-            from core.config_manager import get_config_manager
-            storage_cfg = get_config_manager().get("storage", {})
-            cache_dir = storage_cfg.get("cache_dir", "audio_cache")
-            
+            cache_dir = str(get_storage_paths().cache_dir)
+
         self.cache_dir = cache_dir
         self.rate_limiter = RateLimiter(max_tokens=45, refill_period=300)
         self._tasks: Dict[str, DownloadTask] = {}
         self._execution_locks: Dict[str, asyncio.Event] = {}
-        
+
         # 确保缓存目录存在
         Path(self.cache_dir).mkdir(parents=True, exist_ok=True)
-    
+
     # ---------- 搜索相关 ----------
-    
+
     def _convert_traditional_to_simplified(self, text: str) -> str:
         """繁体转简体"""
         if not _opencc_instance or not text:
@@ -167,56 +172,56 @@ class DownloadService:
             return _opencc_instance.convert(text)
         except Exception:
             return text
-    
-    def _calculate_weight_score(self, result: SearchResult, 
-                                 expected_title: str, 
+
+    def _calculate_weight_score(self, result: SearchResult,
+                                 expected_title: str,
                                  expected_artist: str) -> int:
         """计算搜索结果的权重分数"""
         score = 0
-        
+
         result_title = result.title.lower().strip()
         result_artist = " ".join(result.artist).lower().strip() if result.artist else ""
         expected_title = expected_title.lower().strip()
         expected_artist = expected_artist.lower().strip()
-        
+
         # 检查翻唱/器乐版本
-        is_cover = any(word in result_title for word in 
+        is_cover = any(word in result_title for word in
                        ['cover', '翻唱', '(cover)', '原唱'])
-        is_instrumental = any(word in result_title for word in 
+        is_instrumental = any(word in result_title for word in
                               ['钢琴', 'instrumental', '纯音乐', 'piano'])
-        
+
         # 歌曲名匹配
         if expected_title == result_title:
             score += 1000
         elif expected_title in result_title:
             score += 500
-        
+
         # 歌手匹配
         if expected_artist == result_artist:
             score += 1000
         elif expected_artist in result_artist:
             score += 500
-        
+
         # 降低翻唱/器乐版本分数
         if is_cover:
             score -= 200
         if is_instrumental:
             score -= 300
-        
+
         return score
-    
-    async def search_single_source(self, title: str, artist: str, 
+
+    async def search_single_source(self, title: str, artist: str,
                                     source: str, count: int = 5) -> List[SearchResult]:
         """在单个源中搜索"""
         if not await self.rate_limiter.acquire(wait=True):
             logger.warning(f"频率限制: {title} {artist}")
             return []
-        
+
         # 清理搜索关键词
         clean_title = re.sub(r'[<>:"/\\|?*]', ' ', title).strip()
         clean_artist = re.sub(r'[<>:"/\\|?*]', ' ', artist).strip()
         keyword = f"{clean_title} {clean_artist}"
-        
+
         params = {
             "types": "search",
             "count": count,
@@ -227,21 +232,21 @@ class DownloadService:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
         }
-        
+
         logger.info(f"搜索 [{source}]: {keyword}")
-        
+
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(self.API_BASE, params=params, 
+                async with session.get(self.API_BASE, params=params,
                                        headers=headers, timeout=15) as resp:
                     if resp.status != 200:
                         logger.warning(f"搜索失败 [{source}], 状态码: {resp.status}")
                         return []
-                    
+
                     data = await resp.json()
                     if not data:
                         return []
-                    
+
                     results = []
                     for item in data:
                         # JOOX 源繁简转换
@@ -250,10 +255,10 @@ class DownloadService:
                                 item.get("name", ""))
                             if isinstance(item.get("artist"), list):
                                 item["artist"] = [
-                                    self._convert_traditional_to_simplified(str(a)) 
+                                    self._convert_traditional_to_simplified(str(a))
                                     for a in item["artist"]
                                 ]
-                        
+
                         result = SearchResult(
                             id=str(item.get("id", "")),
                             source=source,
@@ -267,7 +272,7 @@ class DownloadService:
                         # Since types=pic returns JSON, we use our backend proxy /api/discovery/cover
                         direct_pic = item.get("pic")
                         pic_id = item.get("pic_id")
-                        
+
                         if direct_pic and direct_pic.startswith("http"):
                             result.cover_url = direct_pic
                         else:
@@ -275,17 +280,17 @@ class DownloadService:
                             # The track ID itself is often a good enough ID for the pic API
                             target_id = pic_id if pic_id else result.id
                             result.cover_url = f"/api/discovery/cover?source={source}&id={target_id}"
-                        
+
                         result.weight_score = self._calculate_weight_score(
                             result, title, artist)
                         results.append(result)
-                    
+
                     return results
         except Exception as e:
             logger.warning(f"搜索异常 [{source}]: {e}")
             return []
-    
-    async def find_candidates(self, title: str, artist: str, 
+
+    async def find_candidates(self, title: str, artist: str,
                                album: str = None, limit_per_source: int = 2) -> List[SearchResult]:
         """
         从多个源搜集候选列表，按分数排序 (瀑布重试核心)
@@ -298,12 +303,12 @@ class DownloadService:
                 # 仅保留匹配度高的前几个候选
                 valid = [r for r in results[:limit_per_source] if r.weight_score >= 500]
                 all_candidates.extend(valid)
-        
+
         # 全局按分数降序排列
         all_candidates.sort(key=lambda x: x.weight_score, reverse=True)
         return all_candidates
 
-    async def find_best_match(self, title: str, artist: str, 
+    async def find_best_match(self, title: str, artist: str,
                                album: str = None) -> Optional[SearchResult]:
         """按优先级搜索，返回最佳匹配结果 (保留接口，内部调用新逻辑)"""
         candidates = await self.find_candidates(title, artist, album, limit_per_source=1)
@@ -313,12 +318,12 @@ class DownloadService:
         """并发探测该歌曲在不同音质下的可用性"""
         qualities = [128, 320, 999]
         tasks = []
-        
+
         async with aiohttp.ClientSession() as session:
             for q in qualities:
                 tasks.append(self._probe_single_quality(session, source, track_id, q))
             results = await asyncio.gather(*tasks)
-            
+
         return [r for r in results if r["available"]]
 
     async def _probe_single_quality(self, session, source, track_id, br) -> Dict:
@@ -345,17 +350,17 @@ class DownloadService:
                         }
         except Exception:
             pass
-            
+
         return {"quality": br, "available": False}
-    
+
     # ---------- 下载相关 ----------
-    
-    async def get_audio_url(self, source: str, track_id: str, 
+
+    async def get_audio_url(self, source: str, track_id: str,
                             quality: int = 999) -> Optional[Dict]:
         """获取音频下载链接 (带自动降质重试)"""
         # 定义重试序列
         quality_fallback = [999, 320, 192, 128]
-        
+
         # 如果初始请求不在序列中，将其插入头部
         if quality not in quality_fallback:
             quality_fallback.insert(0, quality)
@@ -369,7 +374,7 @@ class DownloadService:
             for attempt in range(3):
                 if not await self.rate_limiter.acquire(wait=True):
                     continue
-                
+
                 params = {
                     "types": "url",
                     "source": source,
@@ -379,18 +384,19 @@ class DownloadService:
                 headers = {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
                 }
-                
+
                 try:
                     retry_suffix = f"(Attempt {attempt+1}/3)" if attempt > 0 else ""
                     logger.info(f"正在尝试获取音质 {br} [{source}:{track_id}] {retry_suffix}")
                     async with aiohttp.ClientSession() as session:
-                        async with session.get(self.API_BASE, params=params, 
+                        async with session.get(self.API_BASE, params=params,
                                                headers=headers, timeout=15) as resp:
                             if resp.status != 200:
                                 logger.warning(f"音质 {br} 获取失败, 状态码: {resp.status}")
-                                if attempt < 2: await asyncio.sleep(1)
+                                if attempt < 2:
+                                    await asyncio.sleep(1)
                                 continue
-                            
+
                             data = await resp.json()
                             if data and data.get("url"):
                                 return {
@@ -404,17 +410,19 @@ class DownloadService:
                             else:
                                 # URL is empty, strictly implies this quality is unavailable
                                 logger.info(f"音质 {br} 数据为空")
-                                # If data implies unavailable, maybe don't retry? 
+                                # If data implies unavailable, maybe don't retry?
                                 # But API might be flaky, so we retry unless it's a hard 404 meaning "not exists"
                                 # For now, let's retry to be safe as user requested stability.
-                                if attempt < 2: await asyncio.sleep(1)
-                                
+                                if attempt < 2:
+                                    await asyncio.sleep(1)
+
                 except Exception as e:
                     logger.error(f"获取音频链接异常 ({br}): {e}")
-                    if attempt < 2: await asyncio.sleep(1)
-            
+                    if attempt < 2:
+                        await asyncio.sleep(1)
+
             logger.info(f"音质 {br} 尝试3次均失败，尝试更低音质...")
-        
+
         return None
     async def download_file(self, url: str, filepath: str,
                             progress_callback: Callable[[float], Awaitable[None]] = None) -> bool:
@@ -424,7 +432,7 @@ class DownloadService:
         }
         # [New] Add simple retry for network flakes
         max_retries = 3
-        
+
         for attempt in range(max_retries):
             try:
                 async with aiohttp.ClientSession() as session:
@@ -435,32 +443,32 @@ class DownloadService:
                                 await asyncio.sleep(1)
                                 continue
                             return False
-                        
+
                         total_size = int(resp.headers.get('content-length', 0))
                         downloaded = 0
-                        
+
                         temp_path = filepath + ".tmp"
                         async with aiofiles.open(temp_path, 'wb') as f:
                             async for chunk in resp.content.iter_chunked(8192):
                                 await f.write(chunk)
                                 downloaded += len(chunk)
-                                
+
                                 if progress_callback and total_size > 0:
                                     progress = (downloaded / total_size) * 100
                                     await progress_callback(progress)
-                        
+
                         if await anyio.to_thread.run_sync(os.path.exists, filepath):
                             await anyio.to_thread.run_sync(os.remove, filepath)
                         await anyio.to_thread.run_sync(os.rename, temp_path, filepath)
-                        
+
                         # [Fix] Ensure audio file is readable (NAS compatibility)
                         try:
                             await anyio.to_thread.run_sync(os.chmod, filepath, 0o644)
                         except Exception:
                             pass # Ignore permission errors on Windows/weird FS
-                            
+
                         return True
-                        
+
             except Exception as e:
                 logger.error(f"下载异常 (尝试 {attempt+1}): {e}")
                 if attempt < max_retries - 1:
@@ -473,12 +481,12 @@ class DownloadService:
                     await anyio.to_thread.run_sync(os.remove, temp_path)
                 return False
         return False
-    
+
     # ---------- 主下载方法 ----------
-    
-    async def download_audio(self, 
-                             title: str, 
-                             artist: str, 
+
+    async def download_audio(self,
+                             title: str,
+                             artist: str,
                              album: str = "",
                              quality: int = 999,
                              source: str = None,
@@ -486,7 +494,7 @@ class DownloadService:
                              progress_callback: Callable[[str], Awaitable[None]] = None) -> Optional[Dict]:
         """
         主下载方法
-        
+
         Args:
             title: 歌曲名
             artist: 歌手名
@@ -495,21 +503,21 @@ class DownloadService:
             source: 指定音源平台 (可选，如 'netease')
             source_id: 指定平台歌曲 ID (可选)
             progress_callback: 进度回调
-        
+
         Returns:
             下载结果字典，包含 local_path, quality, size, format
         """
         task_id = f"{artist}_{title}".replace(" ", "_")
-        
+
         # 防止重复下载
         if task_id in self._execution_locks:
             await self._execution_locks[task_id].wait()
             # 返回已有结果
             if task_id in self._tasks and self._tasks[task_id].download_path:
                 return {"local_path": self._tasks[task_id].download_path}
-        
+
         self._execution_locks[task_id] = asyncio.Event()
-        
+
         try:
             # 创建任务
             task = DownloadTask(
@@ -517,13 +525,13 @@ class DownloadService:
                 created_at=datetime.now()
             )
             self._tasks[task_id] = task
-            
+
             # 快速路径：指定 source + source_id 时直接下载，跳过搜索
             if source and source_id:
                 task.status = DownloadStatus.DOWNLOADING
                 if progress_callback:
                     await progress_callback(f"🎯 直接下载指定源: [{source}:{source_id}]")
-                
+
                 audio_info = await self.get_audio_url(source, source_id, quality)
                 if audio_info:
                     safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
@@ -531,11 +539,11 @@ class DownloadService:
                     ext = "flac" if audio_info.get("br", 0) >= 740 else "mp3"
                     filename = f"{safe_artist} - {safe_title}.{ext}"
                     filepath = os.path.join(self.cache_dir, filename)
-                    
+
                     async def update_progress_direct(pct):
                         if progress_callback:
                             await progress_callback(f"⬇️ 下载中... {pct:.0f}%")
-                    
+
                     success = await self.download_file(audio_info["url"], filepath, update_progress_direct)
                     if success:
                         task.status = DownloadStatus.SUCCESS
@@ -549,44 +557,44 @@ class DownloadService:
                             "format": ext,
                             "source": source
                         }
-                
+
                 # 指定源失败，降级到搜索模式
                 logger.warning(f"指定源 {source}:{source_id} 下载失败，降级到搜索模式")
-            
+
             # 1. 搜集候选池 (瀑布式重试基础)
             task.status = DownloadStatus.SEARCHING
             if progress_callback:
                 await progress_callback("🔍 搜集全球音源候选池...")
-            
+
             candidates = await self.find_candidates(title, artist, album)
             if not candidates:
                 if progress_callback:
                     await progress_callback("❌ 未找到匹配音源")
                 return None
-            
+
             # 2. 瀑布式尝试下载
             for idx, search_result in enumerate(candidates):
                 try:
                     if progress_callback:
                         retry_msg = f" (尝试 {idx+1}/{len(candidates)})" if idx > 0 else ""
                         await progress_callback(f"🎵 尝试音源: [{search_result.source}]{retry_msg}")
-                    
+
                     audio_info = await self.get_audio_url(search_result.source, search_result.id, quality)
                     if not audio_info:
                         continue
-                    
+
                     # 生成文件名
                     safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
                     safe_artist = re.sub(r'[<>:"/\\|?*]', '_', artist)
                     ext = "flac" if audio_info.get("br", 0) >= 740 else "mp3"
                     filename = f"{safe_artist} - {safe_title}.{ext}"
                     filepath = os.path.join(self.cache_dir, filename)
-                    
+
                     # 定义内部进度逻辑
                     async def update_progress(pct):
                         if progress_callback:
                             await progress_callback(f"⬇️ 下载中... {pct:.0f}%")
-                    
+
                     # 尝试下载
                     success = await self.download_file(audio_info["url"], filepath, update_progress)
                     if success:
@@ -594,7 +602,7 @@ class DownloadService:
                         task.download_path = filename
                         if progress_callback:
                             await progress_callback("✅ 下载完成！")
-                        
+
                         return {
                             "local_path": filename,
                             "quality": audio_info.get("br", quality),
@@ -602,17 +610,17 @@ class DownloadService:
                             "format": ext,
                             "source": search_result.source
                         }
-                    
+
                 except Exception as e:
                     logger.warning(f"候选源尝试失败 ({search_result.source}): {e}")
                     continue
-            
+
             # 如果走到这里，说明全部候选都失败了
             task.status = DownloadStatus.FAILED
             if progress_callback:
                 await progress_callback("❌ 尝试了所有音源，均下载失败")
             return None
-            
+
         except Exception as e:
             logger.error(f"下载失败: {e}", exc_info=True)
             if task_id in self._tasks:
@@ -621,16 +629,16 @@ class DownloadService:
             if progress_callback:
                 await progress_callback(f"❌ 下载失败: {e}")
             return None
-            
+
         finally:
             if task_id in self._execution_locks:
                 self._execution_locks[task_id].set()
                 del self._execution_locks[task_id]
-    
+
     def get_task_status(self, task_id: str) -> Optional[DownloadTask]:
         """获取下载任务状态"""
         return self._tasks.get(task_id)
-    
+
     async def get_download_status(self, task_id: str) -> Optional[Dict]:
         """获取下载状态 (异步版本)"""
         task = self.get_task_status(task_id)
@@ -643,13 +651,13 @@ class DownloadService:
             "error_message": task.error_message,
             "download_path": task.download_path
         }
-    
+
     async def retry_failed_download(self, task_id: str) -> bool:
         """重试失败的下载"""
         task = self.get_task_status(task_id)
         if not task or task.status != DownloadStatus.FAILED:
             return False
-        
+
         # 重新执行下载
         result = await self.download_audio(
             title=task.title,
@@ -657,23 +665,23 @@ class DownloadService:
             album=task.album
         )
         return result is not None
-    
+
     async def get_play_url(self, source: str, track_id: str) -> Optional[str]:
         """获取播放链接"""
         return await self.get_audio_url(source, track_id)
-    
+
     def get_local_file(self, artist: str, title: str) -> Optional[str]:
         """检查本地是否已有文件"""
         safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
         safe_artist = re.sub(r'[<>:"/\\|?*]', '_', artist)
-        
+
         for ext in ['flac', 'mp3', 'wav', 'm4a']:
             filename = f"{safe_artist} - {safe_title}.{ext}"
             filepath = os.path.join(self.cache_dir, filename)
             # 注意: 此处为同步方法 get_local_file，通常在同步 context 调用，保持原有逻辑或针对特定场景优化
             if os.path.exists(filepath):
                 return filepath
-        
+
         return None
 
 
@@ -681,13 +689,13 @@ class DownloadService:
 
 class RetryManager:
     """简单的重试管理器"""
-    
+
     def get_retry_options(self) -> Dict:
         """获取重试配置选项"""
         return {
             "max_retries": 3,
             "retry_delay": 5,
-            "sources": ["kuwo", "netease", "joox", "kugou", "migu"]
+            "sources": ["netease", "joox", "bilibili"]
         }
 
 

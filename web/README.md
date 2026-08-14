@@ -27,7 +27,7 @@ npm run build
 
 - `src/`: Vue 源代码
 - `src/components/`: 可复用的 UI 组件
-- `src/views/`: 页面视图 (仪表盘、设置等)
+- `src/desktop/views/`: 页面视图 (仪表盘、设置等)
 - `src/api/`: API 客户端服务
 
 如需查看完整的项目文档，请参考 [项目根目录 README](../README.md)。

@@ -27,8 +27,11 @@ export const useUserStore = defineStore('user', () => {
             isAuthenticated.value = result.authenticated
             authEnabled.value = result.enabled
 
-            if (result.user) {
-                user.value = result.user
+            // check_auth 的 user 字段是用户名（字符串），完整用户信息由 /api/user 提供
+            if (result.authenticated) {
+                await fetchUser()
+            } else {
+                user.value = null
             }
 
             return result.authenticated
@@ -52,8 +55,9 @@ export const useUserStore = defineStore('user', () => {
             }
 
             return result
-        } catch (error: any) {
-            return { success: false, message: error.message || '登录失败' }
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : '登录失败'
+            return { success: false, message: msg }
         } finally {
             isLoading.value = false
         }

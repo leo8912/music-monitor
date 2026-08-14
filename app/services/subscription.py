@@ -10,22 +10,44 @@ Author: google (Recovered)
 Created: 2026-01-28
 """
 import asyncio
+import logging
 from datetime import datetime
 from typing import List, Dict, Optional
-from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from app.models.artist import Artist, ArtistSource
 from app.models.song import Song
-from app.services._singletons import get_aggregator
+from app.container import get_aggregator
+from app.services.media_asset_service import MediaAssetService
+from app.services.deduplication_service import DeduplicationService
+
+logger = logging.getLogger(__name__)
 
 # Global lock for artist addition to prevent duplicate creation on concurrent requests
 _add_artist_lock = asyncio.Lock()
 
 # Store active refresh tasks to avoid redundant processing (Shared across services)
 active_refreshes = set()
+# 保护 active_refreshes 的原子检查-添加/移除: 原实现 "if in -> add" 非原子,
+# 并发任务可能同时通过检查导致同一歌手被重复刷新 (并发专项)。
+_active_refresh_lock = asyncio.Lock()
+
+
+async def acquire_active_refresh(artist_name: str) -> bool:
+    """原子地检查并标记歌手正在刷新; 返回 True 表示获得刷新权 (唯一)。"""
+    async with _active_refresh_lock:
+        if artist_name in active_refreshes:
+            return False
+        active_refreshes.add(artist_name)
+        return True
+
+
+async def release_active_refresh(artist_name: str) -> None:
+    """释放刷新标记 (幂等, 不存在时静默)。"""
+    async with _active_refresh_lock:
+        active_refreshes.discard(artist_name)
 
 
 async def _localize_artist_avatar(db: AsyncSession, artist, sources=None, candidate_url: str = "") -> None:
@@ -34,7 +56,6 @@ async def _localize_artist_avatar(db: AsyncSession, artist, sources=None, candid
     首次添加时即下载，前端立即可显示。
     """
     try:
-        from app.services.media_asset_service import MediaAssetService
         svc = MediaAssetService()
         # 显式传入已加载的 sources，避免异步懒加载 MissingGreenlet
         ok = await svc.ensure_avatar(artist, candidate_url or None, sources=sources)
@@ -49,18 +70,17 @@ class SubscriptionService:
         """
         获取所有关注的歌手。
         """
-        from sqlalchemy import func
         stmt = (
             select(Artist, func.count(Song.id).label('song_count'))
             .options(selectinload(Artist.sources))
             .outerjoin(Song, Song.artist_id == Artist.id)
-            .where(Artist.is_monitored == True)
+            .where(Artist.is_monitored)
             .group_by(Artist.id)
             .order_by(Artist.id.asc())
         )
         result = await db.execute(stmt)
         artists_with_counts = result.unique().all()
-        
+
         res = [
             {
                 "name": a.name,
@@ -84,15 +104,15 @@ class SubscriptionService:
         async with _add_artist_lock:
             name = name.strip()
             artist_id = str(artist_id).strip()
-            
+
             # 1. 检查该源是否已存在
             stmt = select(ArtistSource).where(
-                ArtistSource.source == source, 
+                ArtistSource.source == source,
                 ArtistSource.source_id == artist_id
             )
             result = await db.execute(stmt)
             existing_source = result.scalars().first()
-            
+
             if existing_source:
                 logger.info(f"Artist source already exists: {name} ({source}:{artist_id})")
                 parent = await db.get(Artist, existing_source.artist_id)
@@ -113,7 +133,7 @@ class SubscriptionService:
             # 2. 按名称查找逻辑艺人 (合并同名艺人)
             stmt = select(Artist).where(Artist.name == name)
             artist = (await db.execute(stmt)).scalars().first()
-            
+
             if not artist:
                 artist = Artist(name=name, avatar=avatar, is_monitored=True)
                 db.add(artist)
@@ -132,16 +152,16 @@ class SubscriptionService:
                 source=source,
                 source_id=artist_id,
                 avatar=avatar or artist.avatar,
-                url="" 
+                url=""
             )
             db.add(new_source)
             logger.info(f"Linked source {source}:{artist_id} to artist {artist.name}")
-            
+
             # 头像本地化: 首次添加即下载到 /uploads/avatars/ (在 commit 前, 避免异步懒加载)
             await _localize_artist_avatar(
                 db, artist, sources=[new_source], candidate_url=avatar
             )
-            
+
             await db.commit()
             logger.info(f"DEBUG: Success, returning True for {name}")
             return True
@@ -153,12 +173,12 @@ class SubscriptionService:
         """
         aggregator = get_aggregator()
         logger.info(f"Smart Searching for artist: {artist_name} to find all IDs...")
-        
+
         candidates = await aggregator.search_artist(artist_name, limit=10)
-        
+
         stmt = select(Artist).options(selectinload(Artist.sources)).where(Artist.name == artist_name)
         artist = (await db.execute(stmt)).scalars().first()
-        
+
         if not artist:
             logger.warning(f"Smart Link: Artist {artist_name} not found in DB (likely deleted during background task)")
             return
@@ -180,7 +200,7 @@ class SubscriptionService:
         for cand in candidates:
             cand_clean = cand.name.lower().replace(' ', '')
             is_match = False
-            
+
             # 模糊匹配逻辑
             if cand_clean == target_clean:
                 is_match = True
@@ -188,14 +208,14 @@ class SubscriptionService:
                  diff = abs(len(cand_clean) - len(target_clean))
                  if diff <= 5:
                      is_match = True
-            
+
             if is_match:
                 # 收集 ID
                 potential_links[cand.source] = str(cand.id)
                 if cand.extra_ids:
                     for k, v in cand.extra_ids.items():
                         potential_links[k] = str(v)
-            
+
             logger.debug(f"Smart Link: Checking '{cand.name}' ({cand.source}) - Match: {is_match}")
 
         # 应用关联
@@ -207,7 +227,7 @@ class SubscriptionService:
             res = await db.execute(chk)
             if res.scalars().first():
                 continue
-                
+
             src_avatar = ""
             for cand in candidates:
                 if cand.source == s_src and str(cand.id) == str(s_id):
@@ -219,18 +239,18 @@ class SubscriptionService:
                 source=s_src,
                 source_id=str(s_id),
                 avatar=src_avatar or "",
-                url="" 
+                url=""
             )
             db.add(new_source)
             logger.info(f"Smart Link: Linked {s_src}:{s_id} to {artist.name}")
-            
+
         await db.commit()
 
     @staticmethod
     async def get_artist_detail(db: AsyncSession, artist_id: int) -> Optional[Dict]:
         """
         获取艺人详情，包含歌曲列表和专辑分组。
-        
+
         返回格式:
         {
             "id": int,
@@ -241,29 +261,24 @@ class SubscriptionService:
             "albums": [Album]
         }
         """
-        from sqlalchemy.orm import selectinload
-        from app.models.song import Song, SongSource
-        
         stmt = select(Artist).options(
             selectinload(Artist.sources),
             selectinload(Artist.songs).selectinload(Song.sources)
         ).where(Artist.id == artist_id)
-        
+
         result = await db.execute(stmt)
         artist = result.scalar_one_or_none()
-        
+
         if not artist:
             return None
-        
+
         # 构建歌曲列表
-        from app.services.deduplication_service import DeduplicationService
-        
         # 使用去重逻辑
         deduplicated_songs = DeduplicationService.deduplicate_songs(artist.songs)
-        
+
         songs = []
         albums = {}  # 用于去重专辑
-        
+
         def get_dict_publish_date(s_dict):
             val = s_dict.get("publish_time")
             if not val:
@@ -274,11 +289,11 @@ class SubscriptionService:
                         return datetime.fromisoformat(val.replace('Z', ''))
                     return datetime.strptime(val.split('.')[0], "%Y-%m-%d %H:%M:%S")
                 return val
-            except:
+            except Exception:
                 return datetime.min
 
         songs = sorted(deduplicated_songs, key=get_dict_publish_date, reverse=True)
-        
+
         for song_data in songs:
             # 收集专辑信息
             album_name = song_data.get("album")
@@ -288,7 +303,7 @@ class SubscriptionService:
                     "cover": song_data.get("cover"),
                     "publish_time": song_data.get("publish_time")
                 }
-        
+
         return {
             "id": artist.id,
             "name": artist.name,

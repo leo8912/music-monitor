@@ -3,9 +3,18 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { NIcon, NSpin, useMessage } from 'naive-ui'
 import { SearchOutline, PersonOutline, MusicalNotesOutline, AddOutline, CheckmarkOutline } from '@vicons/ionicons5'
-import axios from 'axios'
-import type { Artist } from '@/types'
+import type { SearchArtist, MusicSource } from '@/types'
 import { useLibraryStore } from '@/stores/library' // Import store
+import { searchArtists } from '@/api/discovery'
+import { addArtist } from '@/api/subscription'
+
+// 去重后的歌手搜索结果 (在 SearchArtist 基础上附加去重/UI 字段)
+interface DedupedArtist extends SearchArtist {
+    sources: MusicSource[]
+    extra_ids: Record<string, string>
+    adding: boolean
+    added: boolean
+}
 
 const router = useRouter()
 const message = useMessage()
@@ -15,7 +24,7 @@ const libraryStore = useLibraryStore() // Init store
 const query = ref('')
 const searching = ref(false)
 const showDropdown = ref(false)
-const searchResults = ref<any[]>([])
+const searchResults = ref<DedupedArtist[]>([])
 const selectedIndex = ref(-1)
 const searchContainer = ref<HTMLElement | null>(null)
 
@@ -28,12 +37,9 @@ const handleSearch = async () => {
     selectedIndex.value = -1
 
     try {
-        const res = await axios.get('/api/discovery/search_artists', {
-            params: { keyword: query.value }
-        })
-        const results = res.data || []
+        const results = await searchArtists({ keyword: query.value })
         searchResults.value = deduplicateResults(results)
-    } catch (e: any) {
+    } catch (e) {
         console.error('Search failed:', e)
         // message.error('搜索失败') 
     } finally {
@@ -42,20 +48,20 @@ const handleSearch = async () => {
 }
 
 // deduplication logic (from AddArtistModal)
-const deduplicateResults = (results: any[]) => {
-    const map = new Map()
+const deduplicateResults = (results: SearchArtist[]): DedupedArtist[] => {
+    const map = new Map<string, DedupedArtist>()
     results.forEach(item => {
         const key = item.name.toLowerCase()
-        let currentSources = [item.source]
-        let currentIds = { [item.source]: item.id }
+        let currentSources: MusicSource[] = [item.source]
+        let currentIds: Record<string, string> = { [item.source]: item.id }
         
         if (item.extra_ids) {
-            currentSources = Object.keys(item.extra_ids)
+            currentSources = Object.keys(item.extra_ids) as MusicSource[]
             currentIds = { ...item.extra_ids }
         }
 
         if (map.has(key)) {
-            const existing = map.get(key)
+            const existing = map.get(key)!
             currentSources.forEach(s => {
                 if (!existing.sources.includes(s)) existing.sources.push(s)
             })
@@ -73,17 +79,17 @@ const deduplicateResults = (results: any[]) => {
     return Array.from(map.values())
 }
 
-const addArtist = async (artist: any) => {
+const handleAddArtist = async (artist: DedupedArtist) => {
     if (artist.adding || artist.added) return
     artist.adding = true
 
     try {
-        const promises = artist.sources.map((source: string) => {
+        const promises = artist.sources.map((source: MusicSource) => {
             const sourceId = artist.extra_ids[source] || artist.id
-            return axios.post('/api/subscription/artists', {
+            return addArtist({
                 name: artist.name,
                 source: source,
-                id: sourceId,
+                id: String(sourceId),
                 avatar: artist.avatar
             })
         })
@@ -107,8 +113,9 @@ const addArtist = async (artist: any) => {
             showDropdown.value = false
         }, 1000)
         
-    } catch (e: any) {
-        message.error("添加失败: " + (e.response?.data?.detail || e.message))
+    } catch (e) {
+        const err = e as { response?: { data?: { detail?: string } }; message?: string }
+        message.error("添加失败: " + (err.response?.data?.detail || err.message || String(e)))
     } finally {
         artist.adding = false
     }
@@ -137,7 +144,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     } else if (e.key === 'Enter') {
         e.preventDefault()
         if (selectedIndex.value >= 0) {
-            addArtist(searchResults.value[selectedIndex.value])
+            handleAddArtist(searchResults.value[selectedIndex.value])
         } else {
             handleSearch()
         }
@@ -189,7 +196,7 @@ const handleKeydown = (e: KeyboardEvent) => {
                     :key="`${artist.name}-${index}`"
                     class="result-item"
                     :class="{ selected: index === selectedIndex }"
-                    @click.stop="addArtist(artist)"
+                    @click.stop="handleAddArtist(artist)"
                     @mouseenter="selectedIndex = index"
                 >
                     <div class="avatar">

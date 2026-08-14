@@ -1,0 +1,37 @@
+# pre-commit 钩子配置
+#
+# 安装：pre-commit install
+# 全量跑一遍：pre-commit run --all-files
+#
+# 门禁策略与 CI (.github/workflows/test.yml) 保持一致：
+# ruff 只拦致命错误（未定义名字、语法错、重复定义），不做风格强制，
+# 避免重构期被大量格式告警淹没。mypy 目前存在 30 处历史 attr-defined 错误，
+# 因此不进钩子（详见 pyproject.toml [tool.mypy] 注释），只在 CI 做非阻断汇报。
+#
+# 注意：trailing-whitespace / end-of-file-fixer 默认只处理本次提交暂存的文件，
+# 日常提交影响面很小；但**不要**执行 `pre-commit run --all-files`——
+# 仓库现存 150 个行尾空格、110 个缺末尾换行的历史文件，全量修会淹没重构 diff。
+# 未启用 mixed-line-ending：本仓库 core.autocrlf=true（工作区 CRLF / 仓库 LF），
+# 换行符已由 git 归一化，钩子再改会造成 282 个文件的无意义改写。
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.md$
+      - id: end-of-file-fixer
+        exclude: \.md$
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=2048]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.5
+    hooks:
+      - id: ruff
+        name: ruff (仅致命错误)
+        args: [--select, "E9,F63,F7,F82,F811"]

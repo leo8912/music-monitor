@@ -51,8 +51,9 @@ const handleLogin = async () => {
             errorMsg.value = result.message || '登录失败'
             message.error(errorMsg.value)
         }
-    } catch (e: any) {
-        errorMsg.value = '连接服务器失败: ' + (e.message || 'Unknown')
+    } catch (e) {
+        const err = e as { message?: string }
+        errorMsg.value = '连接服务器失败: ' + (err.message || 'Unknown')
         message.error(errorMsg.value)
     }
 }

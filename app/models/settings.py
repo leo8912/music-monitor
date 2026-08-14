@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, JSON, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, JSON, DateTime
 from sqlalchemy.sql import func
 from app.models.base import Base
 
@@ -10,7 +10,7 @@ class SystemSettings(Base):
     __tablename__ = "system_settings"
 
     id = Column(Integer, primary_key=True, default=1)
-    
+
     # --- 下载设置 ---
     # JSON 结构: { "concurrent": 3, "quality": 999, "sources": ["netease", "qqmusic"], "retry_attempts": 3, "timeout": 30 }
     download_settings = Column(JSON, default=dict)
@@ -26,7 +26,7 @@ class SystemSettings(Base):
     # --- 元数据设置 ---
     # JSON 结构: { "enable_cover": true, "enable_lyrics": true, "cover_priority": ["plugin"], ... }
     metadata_settings = Column(JSON, default=dict)
-    
+
     # --- 调度器设置 ---
     # JSON 结构: { "check_interval_minutes": 60, "cleanup_interval_hours": 24 }
     scheduler_settings = Column(JSON, default=dict)

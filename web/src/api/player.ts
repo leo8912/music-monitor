@@ -48,24 +48,6 @@ export const getCoverUrl = (params: {
     return `/api/metadata/cover?title=${encodeURIComponent(params.title)}&artist=${encodeURIComponent(params.artist)}`
 }
 
-// 获取移动端元数据
-export const getMobileMetadata = (params: {
-    id: string
-    sign: string
-    expires: string
-}): Promise<{
-    title: string
-    artist: string
-    album: string
-    cover?: string
-    lyrics?: string
-    audio_url: string
-    source: string
-    is_favorite: boolean
-}> => {
-    return get('/api/mobile/metadata', params)
-}
-
 // 记录播放历史
 export const recordPlay = (data: {
     title: string

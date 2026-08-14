@@ -21,7 +21,7 @@ export const saveSettings = (data: Partial<Settings>): Promise<Settings> => {
 }
 
 // 测试通知
-export const testNotify = (type: string, config?: any): Promise<{ success: boolean; message: string }> => {
+export const testNotify = (type: string, config?: Record<string, unknown>): Promise<{ success: boolean; message: string }> => {
     return post('/api/settings/test-notify', { type, config })
 }
 
@@ -32,8 +32,8 @@ export const checkNotifyStatus = (channel: string): Promise<{ status: string; co
 
 // 获取下载历史
 export const getDownloadHistory = (params: {
-    skip?: number
-    limit?: number
+    page?: number
+    page_size?: number
     source?: string
     status?: string
     artist?: string

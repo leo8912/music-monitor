@@ -53,12 +53,13 @@ import { NSpin, NEmpty, NIcon, NPagination } from 'naive-ui'
 import { TimeOutline } from '@vicons/ionicons5'
 import { useLibraryStore, usePlayerStore } from '@/stores'
 import SongList from '@/components/SongList.vue'
+import type { Song } from '@/types'
 
 const libraryStore = useLibraryStore()
 const playerStore = usePlayerStore()
 const isLoading = ref(false)
 
-const handlePlay = (song: any) => {
+const handlePlay = (song: Song) => {
   playerStore.playSong(song)
 }
 

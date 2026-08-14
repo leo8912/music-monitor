@@ -41,12 +41,6 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/profile',
-        name: 'Profile',
-        component: () => import('@/desktop/views/Settings.vue'), // 暂时指向设置页
-        meta: { requiresAuth: true }
-    },
-    {
         path: '/artist/:id',
         name: 'ArtistDetail',
         component: () => import('@/desktop/views/ArtistDetail.vue'),
@@ -55,7 +49,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/lyrics',
         name: 'Lyrics',
-        component: () => import('@/views/LyricsView.vue'),
+        component: () => import('@/desktop/views/LyricsView.vue'),
         meta: { requiresAuth: true }
     },
     {
@@ -67,7 +61,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/mobile/play',
         name: 'MobilePlay',
-        component: () => import('@/views/MobilePlay.vue'),
+        component: () => import('@/desktop/views/MobilePlay.vue'),
         meta: { hideLayout: true, requiresAuth: false }
     },
 
@@ -75,6 +69,10 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/main',
         redirect: '/'
+    },
+    {
+        path: '/mobile/artist/:id',
+        redirect: (to) => `/artist/${to.params.id}`
     }
 ]
 

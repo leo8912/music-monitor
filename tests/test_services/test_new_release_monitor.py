@@ -48,13 +48,17 @@ def build_service(songs_by_source, monkeypatch, notified, queued):
         notified.append(snapshot)
     monkeypatch.setattr(NotificationService, "notify_new_song", classmethod(_notify_stub))
 
-    from app.services import auto_download_service as ads
 
     class RecorderDownloader:
         async def add_to_queue(self, snapshots):
             queued.extend(snapshots)
 
-    monkeypatch.setattr(ads, "get_auto_download_service", lambda: RecorderDownloader())
+    # 注意: get_auto_download_service 已在 new_release_monitor 模块级绑定，
+    # 必须 patch 使用点 (nr_mod) 而非定义点 (ads)
+    monkeypatch.setattr(
+        nr_mod, "get_auto_download_service",
+        lambda: RecorderDownloader(),  # noqa: PLW0108 工厂lambda需每次返回新实例
+    )
 
     # 避免构造真实 Aggregator (其会实例化真实 provider)
     return nr_mod.NewReleaseMonitorService()
