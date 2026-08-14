@@ -318,7 +318,7 @@ const getPlatformLabel = (source: string) => {
 
     <!-- Empty State -->
     <div v-else-if="filteredHistory.length === 0" class="empty-state">
-        <n-empty :description="isPending ? '暂无待定歌曲' : '没有找到歌曲'" size="large">
+        <n-empty :description="isPending ? '暂无待定歌曲，新歌自动下载后会出现在这里' : '没有找到歌曲'" size="large">
             <template #icon>
                 <n-icon :component="FolderOpenOutline" />
             </template>

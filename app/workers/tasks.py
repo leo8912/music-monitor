@@ -91,15 +91,20 @@ async def wechat_download(song: Dict, user_id: str):
 @register_task("wechat_import")
 async def wechat_import(song_id: int, user_id: str):
     """微信「待定」入库: 收藏歌曲 (自包含 session)。"""
+    from sqlalchemy import select
     from core.database import AsyncSessionLocal
+    from app.models.song import Song
     from app.services.favorite_service import FavoriteService
     from app.notifiers.wecom import WeComNotifier
 
     try:
         async with AsyncSessionLocal() as db:
+            song = (await db.execute(select(Song).where(Song.id == song_id))).scalars().first()
+            title = song.title if song else ""
             result = await FavoriteService().toggle(db, song_id)
         if result and result.get('is_favorite'):
-            await WeComNotifier().send_text(f"✅ 已入库: {result.get('message', '')}", [user_id])
+            await WeComNotifier().send_text(
+                f"✅ 已入库：{title}\n已移至收藏夹，可在资料库中查看。", [user_id])
         else:
             await WeComNotifier().send_text("⚠️ 入库失败或歌曲不存在", [user_id])
     except Exception as e:
@@ -113,15 +118,20 @@ async def wechat_import(song_id: int, user_id: str):
 @register_task("wechat_ignore")
 async def wechat_ignore(song_id: int, user_id: str):
     """微信「待定」忽略: 删文件+删Song+写墓碑 (自包含 session)。"""
+    from sqlalchemy import select
     from core.database import AsyncSessionLocal
+    from app.models.song import Song
     from app.services.ignore_service import IgnoreService
     from app.notifiers.wecom import WeComNotifier
 
     try:
         async with AsyncSessionLocal() as db:
+            song = (await db.execute(select(Song).where(Song.id == song_id))).scalars().first()
+            title = song.title if song else ""
             ok = await IgnoreService().ignore_song(db, song_id)
         if ok:
-            await WeComNotifier().send_text("🗑️ 已忽略该歌曲, 不再监控推送", [user_id])
+            await WeComNotifier().send_text(
+                f"🗑️ 已忽略：{title}\n该歌曲不再监控推送，文件与记录已删除。", [user_id])
         else:
             await WeComNotifier().send_text("⚠️ 忽略失败: 歌曲不存在", [user_id])
     except Exception as e:

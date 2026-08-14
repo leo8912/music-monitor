@@ -7,7 +7,7 @@
           <div class="search-box">
             <n-input
               v-model:value="searchQuery"
-              placeholder="筛选待定歌曲..."
+              placeholder="搜索歌名 / 歌手 / 专辑..."
               clearable
               round
               size="small"
@@ -23,12 +23,12 @@
         </div>
       </div>
       <div class="header-sub">
-        <span>监控到的新歌会自动下载到这里，听过喜欢后再手动入库。</span>
+        <span>关注歌手的新歌会自动下载到这里，试听喜欢后可手动入库，不喜欢的可直接忽略。</span>
       </div>
     </header>
 
     <div class="view-content">
-      <div class="list-wrapper">
+      <div class="list-wrapper" v-if="pendingSongs.length > 0">
         <SongList
           :history="pagedSongs"
           :loading="loading"
@@ -51,7 +51,9 @@
       </div>
 
       <div v-if="!loading && pendingSongs.length === 0" class="empty-state">
-        <n-empty description="暂无待定歌曲，新歌自动下载后会出现在这里">
+        <n-empty
+          :description="searchQuery.trim() ? '没有找到匹配的待定歌曲' : '暂无待定歌曲，新歌自动下载后会出现在这里'"
+        >
           <template #icon>
             <n-icon size="48" :component="CloudDownloadOutline" color="var(--text-tertiary)" />
           </template>
@@ -175,7 +177,7 @@ const handlePlay = (song: Song) => {
 const handleImport = async (song: Song) => {
     const success = await libraryStore.toggleFavorite(song)
     if (success) {
-        message.success(`「${song.title}」已入库`)
+        message.success(`已将「${song.title}」入库收藏`)
         allSongs.value = allSongs.value.filter(s => s.id !== song.id)
     } else {
         message.error('入库失败')
@@ -192,7 +194,7 @@ const handleIgnore = (song: Song) => {
         onPositiveClick: async () => {
             const success = await libraryStore.deleteSong(song)
             if (success) {
-                message.success('已忽略')
+                message.success(`已忽略「${song.title}」，不再监控推送`)
                 allSongs.value = allSongs.value.filter(s => s.id !== song.id)
             } else {
                 message.error('忽略失败')

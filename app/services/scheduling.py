@@ -6,6 +6,7 @@ Scheduling - 周期任务注册与重排
 - job_new_release_check: 新歌增量监控 (默认 6h，可配置)
 - job_file_integrity: 每 24h 文件完整性检查
 - job_asset_localize: 每 24h 媒体资源本地化巡检
+- job_cache_cleanup: 每 24h 音频缓存自动清理 (孤儿文件 + 容量超限, 待定歌曲不清理)
 
 Author: music-monitor development team
 """
@@ -27,9 +28,22 @@ logger = logging.getLogger(__name__)
 JOB_RELEASE_CHECK = "job_new_release_check"
 JOB_FILE_INTEGRITY = "job_file_integrity"
 JOB_ASSET_LOCALIZE = "job_asset_localize"
+JOB_CACHE_CLEANUP = "job_cache_cleanup"
 
 # 默认: 6 小时
 DEFAULT_RELEASE_INTERVAL_MINUTES = 360
+
+# 默认: 缓存清理每 24 小时
+DEFAULT_CACHE_CLEANUP_INTERVAL_HOURS = 24
+
+
+def get_cache_cleanup_interval_hours() -> int:
+    """获取缓存清理间隔 (小时)。优先级: scheduler.cleanup_interval_hours -> 默认 24。"""
+    sched = get_config_manager().get("scheduler", {}) or {}
+    iv = sched.get("cleanup_interval_hours")
+    if iv:
+        return int(iv)
+    return DEFAULT_CACHE_CLEANUP_INTERVAL_HOURS
 
 
 def get_release_interval_minutes() -> int:
@@ -106,6 +120,18 @@ async def run_asset_localization():
         logger.error(f"[Scheduler] 媒体资源本地化巡检失败: {e}", exc_info=True)
 
 
+async def run_cache_cleanup():
+    """音频缓存自动清理: 孤儿文件 + 容量超限 (待定歌曲永不自动删除, 每 24h)。"""
+    from app.services.cache_cleanup_service import get_cache_cleanup_service
+
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await get_cache_cleanup_service().cleanup(db)
+            logger.info(f"[Scheduler] 缓存清理执行完成: {result}")
+    except Exception as e:
+        logger.error(f"[Scheduler] 缓存清理失败: {e}", exc_info=True)
+
+
 def register_recurring_jobs(scheduler) -> None:
     """注册所有循环任务。scheduler 为 APScheduler(AsyncIOScheduler/SimpleScheduler) 实例。"""
     scheduler.add_job(
@@ -133,6 +159,15 @@ def register_recurring_jobs(scheduler) -> None:
         replace_existing=True,
     )
     logger.info("[Scheduler] 媒体资源本地化巡检: 每 24 小时")
+
+    scheduler.add_job(
+        run_cache_cleanup,
+        "interval",
+        hours=get_cache_cleanup_interval_hours(),
+        id=JOB_CACHE_CLEANUP,
+        replace_existing=True,
+    )
+    logger.info(f"[Scheduler] 音频缓存自动清理: 每 {get_cache_cleanup_interval_hours()} 小时")
 
 
 def reschedule_release_job(scheduler) -> None:

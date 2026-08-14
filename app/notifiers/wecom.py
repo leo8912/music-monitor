@@ -119,6 +119,9 @@ class WeComNotifier(BaseNotifier):
         if media.trial_url:
              desc_lines.append("\n✨ <b>已匹配试听，点击直达</b>")
 
+        # 待定引导: 试听卡片同时告诉用户后续动作 (与微信指令「待定」一致)
+        desc_lines.append("\n💬 试听后回复「待定」查看入库列表，喜欢即可收藏")
+
         description = "\n".join(desc_lines)
 
         if media.trial_url:
@@ -163,7 +166,7 @@ class WeComNotifier(BaseNotifier):
             "msgtype": "text",
             "agentid": self.agent_id,
             "text": {
-                "content": "👋 嗨！Music Monitor 通知服务连接正常 🚀\nMusic Monitor: Notification service connected."
+                "content": "✅ 通知服务连接正常 🚀\nMusic Monitor 推送测试成功，新歌发布时将在此收到卡片。"
             }
         }
 

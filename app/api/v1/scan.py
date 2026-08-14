@@ -51,6 +51,32 @@ async def trigger_library_scan(db: AsyncSession = Depends(get_async_session)):
         raise HTTPException(status_code=500, detail="服务器内部错误, 请查看日志")
 
 
+@router.post("/api/system/cache_cleanup", response_model=GenericActionResponse)
+async def trigger_cache_cleanup(db: AsyncSession = Depends(get_async_session)):
+    """
+    手动触发音频缓存自动清理。
+
+    清理 cache_dir 中的孤儿文件 (DB 无记录的下载残留)，并处理容量超限。
+    待定歌曲 (DB 有记录且文件在缓存内) 不会被自动删除。
+    """
+    from app.services.cache_cleanup_service import get_cache_cleanup_service
+
+    try:
+        result = await get_cache_cleanup_service().cleanup(db)
+        if result.get("skipped"):
+            return {"status": "success", "message": "缓存清理未执行 (自动清理未启用或无缓存目录)"}
+        removed = result.get("removed_count", 0)
+        freed_mb = result.get("freed_bytes", 0) / 1048576
+        kept = result.get("kept_pending", 0)
+        return {
+            "status": "success",
+            "message": f"缓存清理完成: 删除 {removed} 个孤儿文件, 释放 {freed_mb:.1f} MB, 保留待定歌曲 {kept} 首",
+        }
+    except Exception as e:
+        logger.error(f"手动缓存清理失败: {e}")
+        raise HTTPException(status_code=500, detail="服务器内部错误, 请查看日志")
+
+
 @router.post("/api/check/{source}", response_model=GenericActionResponse)
 @router.post("/api/run_check/{source}", response_model=GenericActionResponse)
 async def trigger_check(source: str):

@@ -147,7 +147,7 @@ async def dispatch_command(content: str, user_id: str) -> Optional[str]:
             "🎤 歌手监控\n"
             "发送 `歌手 周杰伦`\n"
             "-> 自动添加监控并开始补全\n\n"
-            "� 待定入库\n"
+            "📥 待定入库\n"
             "发送 `待定`\n"
             "-> 查看新歌列表，回复数字入库\n"
             "-> 回复 `忽略 N` 忽略第 N 首\n\n"
@@ -319,7 +319,6 @@ async def handle_pending_list(user_id: str) -> str:
         from core.storage import get_storage_paths
 
         paths = get_storage_paths()
-        cache_dir = paths.cache_dir
 
         async with AsyncSessionLocal() as db:
             stmt = (

@@ -96,7 +96,8 @@ class NotificationService:
             f"👤 歌手: {artist}\n"
             f"💿 专辑: {album}\n"
             f"📅 发布时间: {date_str or '未知'}\n\n"
-            "🔽 正在自动下载高清音质，完成后将推送试听卡片。"
+            "🔽 正在自动下载高清音质，完成后将推送试听卡片。\n"
+            "💬 试听后回复「待定」查看入库列表，喜欢即可收藏。"
         )
 
         target_url = cls._build_play_url(source, source_id)
@@ -118,7 +119,9 @@ class NotificationService:
                     f"🎵 新歌发布: {title}\n"
                     f"👤 歌手: {artist}\n"
                     f"💿 专辑: {album}\n"
-                    f"📅 时间: {date_str or '未知'}"
+                    f"📅 时间: {date_str or '未知'}\n\n"
+                    "🔽 正在自动下载高清音质，完成后将推送试听卡片。\n"
+                    "💬 试听后回复「待定」查看入库列表，喜欢即可收藏。"
                 )
                 await run_in_threadpool(
                     cls._telegram.send_message,
