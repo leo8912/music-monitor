@@ -213,10 +213,15 @@ async def delete_song(
     song_id: int,
     db: AsyncSession = Depends(get_async_session)
 ):
-    """删除歌曲"""
+    """
+    删除歌曲 (忽略语义)
+
+    删除本地文件 + 删除 Song 记录 + 写忽略墓碑 (ignored_songs)。
+    墓碑用于防止新歌监控在删除后重新发现同一首歌 (死循环)。
+    """
     try:
         service = LibraryService()
-        success = await service.delete_song(song_id, db)
+        success = await service.ignore_song(song_id, db)
         if success:
             return {"success": True}
         raise HTTPException(status_code=404, detail="歌曲未找到")

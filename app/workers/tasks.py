@@ -88,6 +88,50 @@ async def wechat_download(song: Dict, user_id: str):
             pass
 
 
+@register_task("wechat_import")
+async def wechat_import(song_id: int, user_id: str):
+    """微信「待定」入库: 收藏歌曲 (自包含 session)。"""
+    from core.database import AsyncSessionLocal
+    from app.services.favorite_service import FavoriteService
+    from app.notifiers.wecom import WeComNotifier
+
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await FavoriteService().toggle(db, song_id)
+        if result and result.get('is_favorite'):
+            await WeComNotifier().send_text(f"✅ 已入库: {result.get('message', '')}", [user_id])
+        else:
+            await WeComNotifier().send_text("⚠️ 入库失败或歌曲不存在", [user_id])
+    except Exception as e:
+        logger.error(f"微信入库任务异常: {e}", exc_info=True)
+        try:
+            await WeComNotifier().send_text(f"❌ 系统错误: {e}", [user_id])
+        except Exception:
+            pass
+
+
+@register_task("wechat_ignore")
+async def wechat_ignore(song_id: int, user_id: str):
+    """微信「待定」忽略: 删文件+删Song+写墓碑 (自包含 session)。"""
+    from core.database import AsyncSessionLocal
+    from app.services.ignore_service import IgnoreService
+    from app.notifiers.wecom import WeComNotifier
+
+    try:
+        async with AsyncSessionLocal() as db:
+            ok = await IgnoreService().ignore_song(db, song_id)
+        if ok:
+            await WeComNotifier().send_text("🗑️ 已忽略该歌曲, 不再监控推送", [user_id])
+        else:
+            await WeComNotifier().send_text("⚠️ 忽略失败: 歌曲不存在", [user_id])
+    except Exception as e:
+        logger.error(f"微信忽略任务异常: {e}", exc_info=True)
+        try:
+            await WeComNotifier().send_text(f"❌ 系统错误: {e}", [user_id])
+        except Exception:
+            pass
+
+
 @register_task("refresh_artist")
 async def refresh_artist(artist_name: str, source: Optional[str] = None, artist_id: Optional[str] = None):
     """添加歌手后的后台任务: 智能关联 + 刷新全量歌曲 (自包含 session, 带去重)。"""

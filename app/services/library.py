@@ -25,6 +25,7 @@ import logging
 from app.services.artist_refresh_service import ArtistRefreshService
 from app.services.favorite_service import FavoriteService
 from app.services.song_management_service import SongManagementService
+from app.services.ignore_service import IgnoreService
 from app.services.scan_service import ScanService
 from app.services.metadata_healer import MetadataHealer
 from app.container import get_aggregator
@@ -40,6 +41,7 @@ class LibraryService:
         self.artist_refresh_service = ArtistRefreshService()
         self.favorite_service = FavoriteService()
         self.song_service = SongManagementService()
+        self.ignore_service = IgnoreService()
         self.scan_service = ScanService()
         self.metadata_healer = MetadataHealer()
         self.song_repo = None
@@ -73,6 +75,18 @@ class LibraryService:
         委托给 SongManagementService
         """
         return await self.song_service.delete_song(db, song_id)
+
+    async def ignore_song(
+        self,
+        song_id: int,
+        db: AsyncSession = None
+    ) -> bool:
+        """
+        忽略歌曲: 删文件 + 删 Song + 写忽略墓碑 (防监控重发现)
+
+        委托给 IgnoreService
+        """
+        return await self.ignore_service.ignore_song(db, song_id)
 
     async def delete_artist(
         self,

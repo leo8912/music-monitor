@@ -5,6 +5,7 @@ import {
   HomeOutline, 
   SearchOutline, 
   LibraryOutline, 
+  CloudDownloadOutline,
   TimeOutline, 
   SettingsOutline
 } from '@vicons/ionicons5'
@@ -17,6 +18,7 @@ const menuItems = [
   { key: 'listen-now', label: '现在就听', icon: HomeOutline, path: '/' },
   { key: 'search', label: '搜索', icon: SearchOutline, path: '/search' },
   { key: 'library', label: '资料库', icon: LibraryOutline, path: '/library' },
+  { key: 'pending', label: '待定', icon: CloudDownloadOutline, path: '/pending' },
   { key: 'history', label: '最近播放', icon: TimeOutline, path: '/history' },
 ]
 

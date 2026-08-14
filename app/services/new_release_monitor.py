@@ -69,6 +69,12 @@ class NewReleaseMonitorService:
             for s in existing_songs
             for ss in s.sources
         }
+        # 用户手动忽略的键: 排除, 防止忽略后再次被发现/推送 (死循环)
+        from app.services.ignore_service import IgnoreService
+        ignored_keys = await IgnoreService().get_ignored_keys(db, artist_id=artist.id)
+        logger.debug(
+            f"[NewRelease] {artist.name}: 已知源 {len(known_srcs)} 个，已忽略 {len(ignored_keys)} 个"
+        )
 
         new_count = 0
         # 收集新歌下载快照, 在 commit 后统一入队 (避免与主事务竞争写锁)
@@ -94,6 +100,9 @@ class NewReleaseMonitorService:
             for cand in candidates:
                 key = (cand.source, str(cand.id))
                 if key in known_srcs:
+                    continue
+                if key in ignored_keys:
+                    logger.info(f"[NewRelease] {artist.name}: 跳过已忽略歌曲 {cand.title} ({key})")
                     continue
 
                 norm = ScanService._normalize_cn_brackets(cand.title).lower().strip()

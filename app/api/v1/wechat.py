@@ -147,8 +147,33 @@ async def dispatch_command(content: str, user_id: str) -> Optional[str]:
             "🎤 歌手监控\n"
             "发送 `歌手 周杰伦`\n"
             "-> 自动添加监控并开始补全\n\n"
+            "� 待定入库\n"
+            "发送 `待定`\n"
+            "-> 查看新歌列表，回复数字入库\n"
+            "-> 回复 `忽略 N` 忽略第 N 首\n\n"
             "💡 提示：直接发送文字即可搜索"
         )
+
+    # 1.5 待定列表指令
+    if content.lower() in ["待定", "入库", "pending", "/pending"]:
+        return await handle_pending_list(user_id)
+
+    # 1.6 忽略指令: 忽略 N
+    if content.lower().startswith(("忽略", "ignore")):
+        parts = content.split()
+        if len(parts) >= 2 and parts[1].isdigit():
+            idx = int(parts[1]) - 1
+            session = await WeChatSessionService.get_db_session(user_id)
+
+            if session and session.get('type') == 'pending':
+                results = session.get('results', [])
+                if 0 <= idx < len(results):
+                    target = results[idx]
+                    asyncio.create_task(background_ignore(target, user_id))
+                    await WeChatSessionService.clear_db_session(user_id)
+                    return f"🗑️ 正在忽略：\n{target.get('title', '未知')} - {format_artist(target.get('artist', ''))}\n忽略后不再监控推送。"
+                return f"⚠️ 请输入有效的序号 (1-{len(results)})"
+            return "⚠️ 会话已过期或不存在，请先发送 `待定` 查看列表。"
 
     # 2. 数字选择 (上下文敏感)
     if content.isdigit():
@@ -168,12 +193,13 @@ async def dispatch_command(content: str, user_id: str) -> Optional[str]:
                 elif stype == 'artist':
                     asyncio.create_task(background_add_artist(target, user_id))
                     return f"🚀 正在添加歌手：\n{target.get('name', '未知')}\n添加完成后将推送卡片通知。"
-
-                await WeChatSessionService.clear_db_session(user_id)
-            else:
-                return f"⚠️ 请输入有效的序号 (1-{len(results)})"
-        else:
-            return "⚠️ 会话已过期或不存在，请重新搜索。"
+                elif stype == 'pending':
+                    asyncio.create_task(background_import(target, user_id))
+                    await WeChatSessionService.clear_db_session(user_id)
+                    return f"📥 正在入库：\n{target.get('title', '未知')} - {format_artist(target.get('artist', ''))}\n入库完成后将移至收藏。"
+                else:
+                    await WeChatSessionService.clear_db_session(user_id)
+                    return "⚠️ 会话类型异常，请重新搜索。"
 
     # 3. 意图识别
     intent = "song" # 默认搜歌
@@ -280,6 +306,73 @@ async def handle_artist_search(keyword: str, user_id: str) -> str:
         return "⚠️ 搜索服务不可用"
 
 
+async def handle_pending_list(user_id: str) -> str:
+    """查询待定歌曲: cache 目录中已下载但未收藏 (未入库) 的歌曲。
+
+    存入会话上下文 {type: 'pending', results: [...]}，
+    回复数字入库，回复 `忽略 N` 忽略第 N 首。
+    """
+    try:
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        from app.models.song import Song
+        from core.storage import get_storage_paths
+
+        paths = get_storage_paths()
+        cache_dir = paths.cache_dir
+
+        async with AsyncSessionLocal() as db:
+            stmt = (
+                select(Song)
+                .options(selectinload(Song.artist))
+                .where(
+                    Song.local_path.isnot(None),
+                    Song.is_favorite.is_(False),
+                )
+                .order_by(Song.created_at.desc())
+                .limit(20)
+            )
+            result = await db.execute(stmt)
+            songs = result.scalars().all()
+
+            # session 内完成序列化, 避免关闭后懒加载失败
+            pending = []
+            for s in songs:
+                if not s.local_path:
+                    continue
+                if paths.is_in_cache(s.local_path):
+                    pending.append({
+                        "song_id": s.id,
+                        "title": s.title,
+                        "artist": s.artist.name if s.artist else "Unknown",
+                    })
+
+        if not pending:
+            return (
+                "📥 暂无待定歌曲\n\n"
+                "监控到的新歌自动下载后会出现在这里，\n"
+                "发送 `待定` 可随时查看。"
+            )
+
+        # 缓存结果到会话上下文
+        await WeChatSessionService.set_db_session(user_id, {
+            "type": "pending",
+            "keyword": "pending",
+            "results": pending
+        })
+
+        lines = [f"📥 待定歌曲 {len(pending)} 首：\n"]
+        for i, song in enumerate(pending):
+            lines.append(f"{i+1}. {song['title']} - {song['artist']}")
+        lines.append("\n回复数字入库，回复 `忽略 N` 忽略第 N 首")
+
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.error(f"待定列表查询异常: {e}")
+        return "⚠️ 查询待定歌曲失败，请稍后重试"
+
+
 async def background_download(song: dict, user_id: str):
     """后台下载歌曲 (经任务队列投递, arq 模式由 worker 消费)"""
     from core.queue import enqueue
@@ -339,3 +432,15 @@ async def background_add_artist(target: dict, user_id: str):
             await WeComNotifier().send_text(f"❌ 系统错误：{e}", [user_id])
         except Exception:
             pass
+
+
+async def background_import(target: dict, user_id: str):
+    """后台入库待定歌曲 (经任务队列投递, arq 模式由 worker 消费)"""
+    from core.queue import enqueue
+    await enqueue("wechat_import", song_id=target.get('song_id'), user_id=user_id)
+
+
+async def background_ignore(target: dict, user_id: str):
+    """后台忽略待定歌曲 (删文件+删Song+写墓碑, 经任务队列投递)"""
+    from core.queue import enqueue
+    await enqueue("wechat_ignore", song_id=target.get('song_id'), user_id=user_id)

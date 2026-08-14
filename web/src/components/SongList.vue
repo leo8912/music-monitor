@@ -29,7 +29,7 @@ import type { Song } from '@/types'
 const props = defineProps({
     history: { type: Array as () => Song[], default: () => [] },
     loading: { type: Boolean, default: false },
-    mode: { type: String as () => 'library' | 'history' | 'discovery' | 'artist', default: 'library' },
+    mode: { type: String as () => 'library' | 'history' | 'discovery' | 'artist' | 'pending', default: 'library' },
     sortField: { type: String, default: 'publish_time' }, // Changed sortBy to sortField for consistency with Home.vue
     sortOrder: { type: String as () => 'asc' | 'desc', default: 'desc' }
 })
@@ -43,6 +43,7 @@ const playerStore = usePlayerStore()
 const showIndex = computed(() => props.mode !== 'discovery')
 const showArtist = computed(() => props.mode !== 'artist')
 const showPath = computed(() => props.mode === 'library')
+const isPending = computed(() => props.mode === 'pending')
 const dateLabel = computed(() => {
     if (props.mode === 'history') return '播放时间'
     if (props.mode === 'library') return '添加日期'
@@ -276,7 +277,7 @@ const getPlatformLabel = (source: string) => {
     
     <!-- Tools / Filter Bar -->
     <div class="list-tools">
-        <div class="search-box">
+        <div class="search-box" v-if="!isPending">
              <n-input 
                 v-model:value="searchQuery" 
                 placeholder="在资料库中筛选..." 
@@ -317,7 +318,7 @@ const getPlatformLabel = (source: string) => {
 
     <!-- Empty State -->
     <div v-else-if="filteredHistory.length === 0" class="empty-state">
-        <n-empty description="没有找到歌曲" size="large">
+        <n-empty :description="isPending ? '暂无待定歌曲' : '没有找到歌曲'" size="large">
             <template #icon>
                 <n-icon :component="FolderOpenOutline" />
             </template>
@@ -416,11 +417,41 @@ const getPlatformLabel = (source: string) => {
           </div>
 
           <!-- Like Button -->
-          <div class="col-like" @click.stop="emit('toggleFavorite', song)">
+          <div v-if="!isPending" class="col-like" @click.stop="emit('toggleFavorite', song)">
               <n-icon size="18" :class="['like-icon', { 'liked': song.is_favorite }]">
                   <Heart v-if="song.is_favorite" />
                   <HeartOutline v-else />
               </n-icon>
+          </div>
+
+          <!-- Pending Actions: 入库 / 忽略 -->
+          <div v-else class="col-actions" @click.stop>
+              <n-button
+                  size="tiny"
+                  type="success"
+                  quaternary
+                  class="pending-action-btn"
+                  title="入库到资料库"
+                  @click="emit('toggleFavorite', song)"
+              >
+                  <template #icon>
+                      <n-icon :component="HeartOutline" />
+                  </template>
+                  入库
+              </n-button>
+              <n-button
+                  size="tiny"
+                  type="error"
+                  quaternary
+                  class="pending-action-btn"
+                  title="忽略该歌曲（不再监控）"
+                  @click="emit('delete', song)"
+              >
+                  <template #icon>
+                      <n-icon :component="TrashOutline" />
+                  </template>
+                  忽略
+              </n-button>
           </div>
         </div>
     </div>
@@ -535,6 +566,8 @@ const getPlatformLabel = (source: string) => {
 .song-list-container:has(.col-path) .col-date { width: 100px; padding-right: 8px;}
 .col-like { width: 40px; display: flex; justify-content: center; align-items: center; }
 .col-more { width: 40px; } /* For dropdown ellipsis */
+.col-actions { display: flex; align-items: center; gap: 4px; padding-right: 8px; }
+.song-list-container:has(.col-actions) .col-more { width: 148px; }
 
 .path-content {
     display: flex;

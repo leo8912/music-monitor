@@ -13,6 +13,7 @@ from app.models.download_history import DownloadHistory
 from app.models.wechat_session import WeChatSession
 from app.models.settings import SystemSettings
 from app.models.media_record import MediaRecord
+from app.models.ignored_song import IgnoredSong
 
 __all__ = [
     "Base",
@@ -22,4 +23,5 @@ __all__ = [
     "WeChatSession",
     "SystemSettings",
     "MediaRecord",
+    "IgnoredSong",
 ]

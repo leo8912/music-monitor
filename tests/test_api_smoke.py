@@ -155,10 +155,8 @@ async def test_known_broken_logs_endpoint(smoke_client):
     assert (await smoke_client.get("/api/logs")).status_code == 200
 
 
-@pytest.mark.xfail(
-    strict=True, reason="R9: system.py 调用了 LibraryService 上不存在的 scan_local_files"
-)
 async def test_known_broken_system_scan(smoke_client):
+    # 端点已在 app/api/v1/scan.py 实现 (trigger_library_scan)
     assert (await smoke_client.post("/api/system/scan")).status_code == 200
 
 

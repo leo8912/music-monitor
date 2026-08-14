@@ -21,6 +21,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/desktop/views/Library.vue'),
         meta: { requiresAuth: true }
     },
+    {
+        path: '/pending',
+        name: 'Pending',
+        component: () => import('@/desktop/views/Pending.vue'),
+        meta: { requiresAuth: true }
+    },
 
     {
         path: '/settings',

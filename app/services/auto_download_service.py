@@ -93,6 +93,13 @@ class AutoDownloadService:
                     try:
                         logger.info(f"📥 正在自动下载: {title} - {artist}")
 
+                        # 拦截已忽略的歌曲: 用户可能在入队后手动忽略了该歌
+                        # (忽略 = 删文件 + 删 Song + 写忽略墓碑)，此时不应再落盘。
+                        from app.services.ignore_service import IgnoreService
+                        if await IgnoreService().is_ignored(db, source, source_id):
+                            logger.info(f"⏭️ 跳过已忽略歌曲: {title} ({source}:{source_id})")
+                            continue
+
                         # 调用 MediaService 进行下载 (包含自动补全元数据和存库)
                         result = await self._media_service.download_audio(
                             title=title,
