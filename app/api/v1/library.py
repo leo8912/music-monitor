@@ -104,7 +104,7 @@ async def match_metadata(
 async def get_local_songs(
     # 统一分页参数
     page: int = Query(1, ge=1, description="页码,从1开始"),
-    page_size: int = Query(20, ge=1, le=100, description="每页数量"),
+    page_size: int = Query(20, ge=1, le=500, description="每页数量 (最多500)"),
     sort_by: str = Query("created_at", description="排序字段: created_at, publish_time, artist, title, album"),
     order: str = Query("desc", description="排序方向: desc, asc"),
     db: AsyncSession = Depends(get_async_session)

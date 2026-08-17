@@ -131,14 +131,24 @@ const fetchPending = async () => {
     loading.value = true
     try {
         // 全量拉取本地歌曲 (前端过滤缓存目录与收藏状态)
-        const result = await libraryApi.getLocalSongs({
-            page: 1,
-            page_size: 500,
-            sortBy: 'created_at',
-            order: 'desc'
-        })
+        // 循环分页拉取所有页, 避免本地歌曲超过单页上限时漏歌
+        const pageSize = 500
+        const all: any[] = []
+        let page = 1
+        let totalPages = 1
+        do {
+            const result = await libraryApi.getLocalSongs({
+                page,
+                page_size: pageSize,
+                sortBy: 'created_at',
+                order: 'desc'
+            })
+            all.push(...(result.items || []))
+            totalPages = result.total_pages
+            page += 1
+        } while (page <= totalPages)
         // @ts-ignore 后端 SongPayload 字段
-        allSongs.value = (result.items || []).map((s: any) => ({
+        allSongs.value = all.map((s: any) => ({
             id: s.id,
             title: s.title,
             artist: s.artist,

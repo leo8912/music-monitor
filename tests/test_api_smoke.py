@@ -72,6 +72,15 @@ async def test_smoke_get_ok(smoke_client, path):
     assert resp.status_code == 200, resp.text
 
 
+async def test_local_songs_accepts_page_size_500(smoke_client):
+    """[待定页] local-songs 必须接受前端传的 page_size=500 (原 le=100 会导致 422)。"""
+    resp = await smoke_client.get(
+        "/api/library/local-songs",
+        params={"page": 1, "page_size": 500, "sort_by": "created_at", "order": "desc"},
+    )
+    assert resp.status_code == 200, resp.text
+
+
 async def test_settings_response_is_sanitized(smoke_client):
     """[Fix C-01] 回归锁：/api/settings 里的凭据字段必须是脱敏占位值。"""
     payload = (await smoke_client.get("/api/settings")).json()
