@@ -32,7 +32,7 @@ def upgrade() -> None:
             'ignored_songs',
             sa.Column('id', sa.Integer(), primary_key=True, index=True),
             sa.Column('artist_id', sa.Integer(),
-                      sa.ForeignKey('artists.id', ondelete='CASCADE'),
+                      sa.ForeignKey('artists.id', ondelete='SET NULL'),
                       nullable=True, index=True),
             sa.Column('source', sa.String(), nullable=False),
             sa.Column('source_id', sa.String(), nullable=False),

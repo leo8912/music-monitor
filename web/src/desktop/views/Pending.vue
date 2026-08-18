@@ -34,7 +34,7 @@
           :loading="loading"
           mode="pending"
           @play="handlePlay"
-          @toggleFavorite="handleImport"
+          @import="handleImport"
           @delete="handleIgnore"
         />
       </div>
@@ -99,6 +99,8 @@ const allSongs = ref<Song[]>([])
 /** 判断 local_path 是否位于缓存目录 (cache_dir) 内 */
 const pathInCache = (path: string | undefined, cacheDir: string): boolean => {
     if (!path || !cacheDir) return false
+    // 后端 settings 已返回解析后的绝对 cache_dir, local_path 也是绝对路径,
+    // 统一规范化后做前缀比较 (Windows 大小写不敏感)。
     const normalize = (p: string) => p.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()
     const p = normalize(path)
     const c = normalize(cacheDir)
@@ -123,23 +125,26 @@ const pendingSongs = computed(() => {
 })
 
 const pagedSongs = computed(() => {
-    const start = (currentPage.value - 1) * pageSize.value
+    // 过滤/删除后总页数可能减少, 钳制 currentPage 避免越界导致空白页
+    const pageCount = Math.max(1, Math.ceil(pendingSongs.value.length / pageSize.value))
+    const safePage = Math.min(currentPage.value, pageCount)
+    const start = (safePage - 1) * pageSize.value
     return pendingSongs.value.slice(start, start + pageSize.value)
 })
 
-const fetchPending = async () => {
+const fetchPending = async (): Promise<boolean> => {
     loading.value = true
     try {
         // 全量拉取本地歌曲 (前端过滤缓存目录与收藏状态)
         // 循环分页拉取所有页, 避免本地歌曲超过单页上限时漏歌
-        const pageSize = 500
+        const apiPageSize = 500
         const all: any[] = []
         let page = 1
         let totalPages = 1
         do {
             const result = await libraryApi.getLocalSongs({
                 page,
-                page_size: pageSize,
+                page_size: apiPageSize,
                 sortBy: 'created_at',
                 order: 'desc'
             })
@@ -165,17 +170,21 @@ const fetchPending = async () => {
             quality: s.quality,
             local_files: s.local_files || []
         }))
+        return true
     } catch (error) {
         console.error('获取待定歌曲失败:', error)
         message.error('获取待定歌曲失败')
+        return false
     } finally {
         loading.value = false
     }
 }
 
 const handleRefresh = async () => {
-    await fetchPending()
-    message.success('列表已刷新')
+    const ok = await fetchPending()
+    if (ok) {
+        message.success('列表已刷新')
+    }
 }
 
 const handlePlay = (song: Song) => {

@@ -27,8 +27,9 @@ class IgnoredSong(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    # ondelete='CASCADE': 删除歌手时由数据库层级联删除其忽略记录 (配合 PRAGMA foreign_keys=ON)
-    artist_id = Column(Integer, ForeignKey("artists.id", ondelete="CASCADE"), nullable=True, index=True)
+    # ondelete='SET NULL': 删除歌手时保留忽略墓碑 (artist_id 置空), 避免
+    # 重新关注同一歌手后再次发现并下载已忽略的歌曲 (死循环)。
+    artist_id = Column(Integer, ForeignKey("artists.id", ondelete="SET NULL"), nullable=True, index=True)
 
     source = Column(String, nullable=False)    # 'qqmusic', 'netease', 'local'
     source_id = Column(String, nullable=False) # mid / filename

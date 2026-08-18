@@ -15,6 +15,7 @@ import {
     FlashOutline, 
     CloudDownloadOutline,
     FolderOpenOutline,
+    AddOutline,
     ChevronUp,
     SearchOutline,
     ChevronDown,
@@ -34,7 +35,7 @@ const props = defineProps({
     sortOrder: { type: String as () => 'asc' | 'desc', default: 'desc' }
 })
 
-const emit = defineEmits(['play', 'toggleFavorite', 'repair', 'delete', 'redownload', 'sort'])
+const emit = defineEmits(['play', 'toggleFavorite', 'import', 'repair', 'delete', 'redownload', 'sort'])
 
 const message = useMessage()
 const playerStore = usePlayerStore()
@@ -432,10 +433,10 @@ const getPlatformLabel = (source: string) => {
                   quaternary
                   class="pending-action-btn"
                   title="入库到资料库"
-                  @click="emit('toggleFavorite', song)"
+                  @click="emit('import', song)"
               >
                   <template #icon>
-                      <n-icon :component="HeartOutline" />
+                      <n-icon :component="AddOutline" />
                   </template>
                   入库
               </n-button>
@@ -566,7 +567,7 @@ const getPlatformLabel = (source: string) => {
 .song-list-container:has(.col-path) .col-date { width: 100px; padding-right: 8px;}
 .col-like { width: 40px; display: flex; justify-content: center; align-items: center; }
 .col-more { width: 40px; } /* For dropdown ellipsis */
-.col-actions { display: flex; align-items: center; gap: 4px; padding-right: 8px; }
+.col-actions { width: 148px; display: flex; align-items: center; gap: 4px; padding-right: 8px; }
 .song-list-container:has(.col-actions) .col-more { width: 148px; }
 
 .path-content {

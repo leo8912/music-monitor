@@ -23,8 +23,10 @@ from typing import List, Optional, Set, Tuple
 import anyio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.models.ignored_song import IgnoredSong
+from app.models.song import Song
 from app.repositories.song import SongRepository
 from app.utils.error_handler import handle_service_errors
 
@@ -49,7 +51,14 @@ class IgnoreService:
             bool: 成功返回 True，歌曲不存在或失败返回 False。
         """
         song_repo = SongRepository(db)
-        song = await song_repo.get(song_id)
+        # 必须显式 eager-load sources: SongRepository.get 仅 joinedload(artist),
+        # 而下方会遍历 song.sources。AsyncSession 下懒加载会触发 MissingGreenlet。
+        stmt = (
+            select(Song)
+            .options(joinedload(Song.artist), selectinload(Song.sources))
+            .where(Song.id == song_id)
+        )
+        song = (await db.execute(stmt)).scalars().first()
 
         if not song:
             return False

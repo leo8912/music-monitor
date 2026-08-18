@@ -101,7 +101,13 @@ async def wechat_import(song_id: int, user_id: str):
         async with AsyncSessionLocal() as db:
             song = (await db.execute(select(Song).where(Song.id == song_id))).scalars().first()
             title = song.title if song else ""
-            result = await FavoriteService().toggle(db, song_id)
+            # FavoriteService.toggle 是真正的切换 (非幂等): 若歌曲已收藏, 再次调用会取消收藏。
+            # 入库语义应为"确保收藏", 因此仅在未收藏时才执行 toggle。
+            if song and not song.is_favorite:
+                result = await FavoriteService().toggle(db, song_id)
+                await db.commit()
+            else:
+                result = {"is_favorite": bool(song and song.is_favorite)}
         if result and result.get('is_favorite'):
             await WeComNotifier().send_text(
                 f"✅ 已入库：{title}\n已移至收藏夹，可在资料库中查看。", [user_id])
@@ -111,8 +117,8 @@ async def wechat_import(song_id: int, user_id: str):
         logger.error(f"微信入库任务异常: {e}", exc_info=True)
         try:
             await WeComNotifier().send_text(f"❌ 系统错误: {e}", [user_id])
-        except Exception:
-            pass
+        except Exception as notify_err:
+            logger.error(f"微信入库任务通知发送失败: {notify_err}", exc_info=True)
 
 
 @register_task("wechat_ignore")
@@ -129,6 +135,10 @@ async def wechat_ignore(song_id: int, user_id: str):
             song = (await db.execute(select(Song).where(Song.id == song_id))).scalars().first()
             title = song.title if song else ""
             ok = await IgnoreService().ignore_song(db, song_id)
+            # AsyncSessionLocal 是普通上下文管理器, 退出时未提交的变更会被回滚。
+            # 必须显式 commit, 否则 Song 删除与忽略墓碑都不会持久化 (死循环)。
+            if ok:
+                await db.commit()
         if ok:
             await WeComNotifier().send_text(
                 f"🗑️ 已忽略：{title}\n该歌曲不再监控推送，文件与记录已删除。", [user_id])
@@ -138,6 +148,8 @@ async def wechat_ignore(song_id: int, user_id: str):
         logger.error(f"微信忽略任务异常: {e}", exc_info=True)
         try:
             await WeComNotifier().send_text(f"❌ 系统错误: {e}", [user_id])
+        except Exception as notify_err:
+            logger.error(f"微信忽略任务通知发送失败: {notify_err}", exc_info=True)
         except Exception:
             pass
 

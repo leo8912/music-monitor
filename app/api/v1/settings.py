@@ -47,7 +47,19 @@ async def get_settings():
     #      GET 读到的始终是最新值, 无需在此防御性重载。
     manager = get_config_manager()
     # [Fix C-01] 回显前脱敏，避免 secret_key / corpsecret / bot_token / password 明文外泄
-    return sanitize_config(manager._config)
+    result = sanitize_config(manager._config)
+    # 将 storage 目录解析为绝对路径返回: 配置里 cache_dir 等可能是相对路径
+    # (如 "audio_cache"), 而 Song.local_path 存的是绝对路径, 前端据此判断
+    # "是否在缓存目录" 时相对/绝对不一致会导致误判 (待定列表为空)。
+    storage = result.get("storage")
+    if isinstance(storage, dict):
+        from core.storage import StoragePaths
+        paths = StoragePaths.get_instance()
+        storage["cache_dir"] = str(paths.cache_dir)
+        storage["favorites_dir"] = str(paths.favorites_dir)
+        if paths.library_dir is not None:
+            storage["library_dir"] = str(paths.library_dir)
+    return result
 
 @router.patch("", response_model=Dict[str, Any])
 async def update_settings(

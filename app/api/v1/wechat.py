@@ -200,6 +200,10 @@ async def dispatch_command(content: str, user_id: str) -> Optional[str]:
                 else:
                     await WeChatSessionService.clear_db_session(user_id)
                     return "⚠️ 会话类型异常，请重新搜索。"
+            # 序号越界: 明确提示, 避免数字被当作搜索关键词
+            return f"⚠️ 请输入有效的序号 (1-{len(results)})"
+        # 会话缺失/过期: 明确提示, 避免数字被当作搜索关键词
+        return "⚠️ 会话已过期或不存在，请重新搜索。"
 
     # 3. 意图识别
     intent = "song" # 默认搜歌
@@ -321,12 +325,16 @@ async def handle_pending_list(user_id: str) -> str:
         paths = get_storage_paths()
 
         async with AsyncSessionLocal() as db:
+            # 在 SQL 层按 cache 目录前缀过滤, 避免 .limit(20) 被非缓存
+            # (如 library) 的未收藏歌曲占满, 导致真正的待定歌曲被挤出结果。
+            cache_dir_str = str(paths.cache_dir).replace("\\", "/")
             stmt = (
                 select(Song)
                 .options(selectinload(Song.artist))
                 .where(
                     Song.local_path.isnot(None),
                     Song.is_favorite.is_(False),
+                    Song.local_path.like(f"{cache_dir_str}%"),
                 )
                 .order_by(Song.created_at.desc())
                 .limit(20)

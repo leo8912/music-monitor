@@ -265,7 +265,8 @@ class NotificationService:
                 f"👤 歌手: {artist}\n"
                 f"💿 专辑: {album or '未知'}\n"
                 f"💎 音质: {quality}\n\n"
-                "✨ 点击卡片立即播放 (无需登录)"
+                "✨ 点击卡片立即播放 (无需登录)\n"
+                "💬 试听后回复「待定」查看入库列表，喜欢即可收藏。"
             )
 
             await cls._wecom.send_news_message(

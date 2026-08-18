@@ -104,20 +104,30 @@ class CacheCleanupService:
         # 1. 收集 DB 中位于 cache 内的有效文件 (待定歌曲, 永不自动删除)
         pending_paths, kept_pending = await self._collect_pending_paths(db, cache_prefix)
 
+        # 快照时间戳: 扫描/删除期间并发下载或入库提交的新文件, 其 mtime 会晚于该时间戳。
+        # 这些文件不在 pending_paths 快照中, 若按年龄清理可能误删刚下载/刚入库的文件,
+        # 因此扫描时跳过 mtime >= snapshot_ts 的文件 (视为"新文件", 留给下一轮清理)。
+        snapshot_ts = time.time()
+
         # 2. 扫描缓存目录, 区分 孤儿文件 / 有效文件, 统计总大小
         orphans: list[Tuple[float, int, str]] = []  # (mtime, size, path)
         total_bytes = 0
         checked_files = 0
-        for root, _dirs, files in os.walk(str(cache_dir)):
+        for root, _dirs, files in await anyio.to_thread.run_sync(
+            lambda: list(os.walk(str(cache_dir)))
+        ):
             for fname in files:
                 if not fname.lower().endswith(AUDIO_EXTS):
                     continue
                 fp = os.path.join(root, fname)
                 try:
-                    st = os.stat(fp)
+                    st = await anyio.to_thread.run_sync(os.stat, fp)
                 except OSError:
                     continue
-                if not os.path.isfile(fp):
+                if not await anyio.to_thread.run_sync(os.path.isfile, fp):
+                    continue
+                # 跳过快照之后才出现/修改的文件 (并发下载/入库的新文件)
+                if st.st_mtime >= snapshot_ts:
                     continue
                 checked_files += 1
                 total_bytes += st.st_size

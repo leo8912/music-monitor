@@ -501,19 +501,22 @@ class SongManagementService:
         stmt = stmt.where(Song.local_path.isnot(None))
 
         # 排序处理
+        # 注意: 所有排序分支都追加 id 作为确定性 tiebreaker,
+        # 保证分页翻页时记录顺序稳定, 避免 created_at 相同(如批量入库)时跨页漂移导致重复/漏歌
         order_func = desc if order.lower() == "desc" else asc
+        id_order = Song.id.desc() if order.lower() == "desc" else Song.id.asc()
         if sort_by == "created_at":
-            stmt = stmt.order_by(order_func(Song.created_at))
+            stmt = stmt.order_by(order_func(Song.created_at), id_order)
         elif sort_by == "publish_time":
-            stmt = stmt.order_by(order_func(Song.publish_time).nullslast())
+            stmt = stmt.order_by(order_func(Song.publish_time).nullslast(), id_order)
         elif sort_by == "artist":
-            stmt = stmt.join(Artist).order_by(order_func(Artist.name))
+            stmt = stmt.join(Artist).order_by(order_func(Artist.name), id_order)
         elif sort_by == "title":
-            stmt = stmt.order_by(order_func(Song.title))
+            stmt = stmt.order_by(order_func(Song.title), id_order)
         elif sort_by == "album":
-            stmt = stmt.order_by(order_func(Song.album))
+            stmt = stmt.order_by(order_func(Song.album), id_order)
         else:
-             stmt = stmt.order_by(Song.created_at.desc())
+             stmt = stmt.order_by(Song.created_at.desc(), id_order)
 
         # 分页
         count_stmt = select(func.count()).select_from(stmt.subquery())
