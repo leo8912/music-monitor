@@ -74,10 +74,13 @@ async def get_settings():
     if isinstance(storage, dict):
         from core.storage import StoragePaths
         paths = StoragePaths.get_instance()
-        storage["cache_dir"] = str(paths.cache_dir)
-        storage["favorites_dir"] = str(paths.favorites_dir)
-        if paths.library_dir is not None:
-            storage["library_dir"] = str(paths.library_dir)
+        # 使用 resolve_path (不 mkdir) 而非 cache_dir/favorites_dir 属性，
+        # 避免只读查询在 CI 等无写权限环境中触发 PermissionError。
+        storage["cache_dir"] = str(paths.resolve_path('cache_dir', 'audio_cache'))
+        storage["favorites_dir"] = str(paths.resolve_path('favorites_dir', 'favorites'))
+        lib = paths.resolve_path('library_dir')
+        if lib:
+            storage["library_dir"] = str(lib)
     return result
 
 @router.patch("", response_model=Dict[str, Any])

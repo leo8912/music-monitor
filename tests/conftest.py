@@ -165,6 +165,15 @@ def _isolate_global_state():
     except Exception:  # pragma: no cover
         cm_mod = None
 
+    # 4. StoragePaths 单例也缓存了 storage config，需要隔离
+    storage_paths_before = None
+    try:
+        from core.storage import StoragePaths
+        storage_paths_before = StoragePaths._instance
+        StoragePaths._instance = None  # 阻止本测试的实例泄漏
+    except Exception:  # pragma: no cover
+        StoragePaths = None  # type: ignore[assignment]
+
     _clear_dedup_cache()
 
     yield
@@ -190,6 +199,13 @@ def _isolate_global_state():
         else:
             # 单例是在本测试期间被创建的 -> 丢弃，别留给下一个测试
             cm_mod._config_manager = None
+
+    # 还原 StoragePaths 单例
+    try:
+        if StoragePaths is not None:  # type: ignore[possibly-undefined]
+            StoragePaths._instance = storage_paths_before  # type: ignore[possibly-undefined]
+    except Exception:  # pragma: no cover
+        pass
 
     _clear_dedup_cache()
 

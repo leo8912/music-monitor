@@ -44,6 +44,15 @@ class StoragePaths:
         """用于测试的重置"""
         cls._instance = None
 
+    def resolve_path(self, key: str, fallback: str = '') -> Path:
+        """解析配置中的路径为绝对路径，**不创建目录**。
+
+        用于只读查询（如 GET /api/settings 返回路径信息），
+        避免在 CI 或只读环境中触发 mkdir 导致 PermissionError。
+        """
+        path_str = self._storage_config.get(key, fallback)
+        return Path(path_str).resolve()
+
     @property
     def cache_dir(self) -> Path:
         """获取音频缓存目录"""
