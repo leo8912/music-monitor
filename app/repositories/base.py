@@ -38,6 +38,17 @@ class BaseRepository(Generic[T]):
         await self._session.refresh(obj)
         return obj
 
+    async def create_many(self, objs: List[T], refresh: bool = False) -> List[T]:
+        """批量插入: 仅 flush 不 refresh, 避免 N 次 SELECT 回读。"""
+        if not objs:
+            return objs
+        self._session.add_all(objs)
+        await self._session.flush()
+        if refresh:
+            for obj in objs:
+                await self._session.refresh(obj)
+        return objs
+
     async def update(self, id: int, obj_data: Dict[str, Any]) -> Optional[T]:
         stmt = update(self._model).where(self._model.id == id).values(**obj_data)
         await self._session.execute(stmt)

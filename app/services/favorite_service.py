@@ -133,7 +133,7 @@ class FavoriteService:
 
                         # 更新数据库路径
                         song.local_path = str(new_path)
-                        await db.commit()
+                        await db.flush()
                         await db.refresh(song)
             else:
                 logger.warning(f"File not found: {old_path}")

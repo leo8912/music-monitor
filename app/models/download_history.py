@@ -9,7 +9,7 @@ Author: music-monitor development team
 更新日志:
 2026-01-21 - 创建DownloadHistory模型，实现下载历史与歌曲列表的解耦
 """
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Index
 from datetime import datetime
 from app.models.base import Base
 
@@ -45,6 +45,14 @@ class DownloadHistory(Base):
     # 额外信息
     error_message = Column(String)  # 下载失败时的错误信息
     user_id = Column(Integer)  # 如果有多用户需求
+
+    # 性能索引: 加速按歌曲、来源、状态、时间的常用查询
+    __table_args__ = (
+        Index('ix_dh_song_unique_key', 'song_unique_key'),
+        Index('ix_dh_source', 'source'),
+        Index('ix_dh_download_status', 'download_status'),
+        Index('ix_dh_download_time', 'download_time'),
+    )
 
     def __repr__(self):
         return f"<DownloadHistory(title={self.title}, source={self.source}, status={self.download_status})>"

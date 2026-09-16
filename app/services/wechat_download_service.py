@@ -19,7 +19,7 @@ import logging
 from app.repositories.media_record import MediaRecordRepository
 from app.container import get_download_service
 from core.security import generate_signed_url_params
-from core.config import config
+from core.config_manager import get_config_manager
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +142,7 @@ class WeChatDownloadService:
         """生成带签名的播放链接"""
         sign_params = generate_signed_url_params(unique_key)
 
-        base_url = config.get('global', {}).get('external_url', 'http://localhost:8000')
+        base_url = get_config_manager().get('global', {}).get('external_url', 'http://localhost:8000')
         if base_url.endswith('/'):
             base_url = base_url[:-1]
 

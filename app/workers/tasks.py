@@ -150,8 +150,6 @@ async def wechat_ignore(song_id: int, user_id: str):
             await WeComNotifier().send_text(f"❌ 系统错误: {e}", [user_id])
         except Exception as notify_err:
             logger.error(f"微信忽略任务通知发送失败: {notify_err}", exc_info=True)
-        except Exception:
-            pass
 
 
 @register_task("refresh_artist")

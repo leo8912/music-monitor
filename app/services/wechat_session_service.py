@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+"""
+WeChatSessionService - 企业微信搜索会话服务
+
+注: 本服务为微信回调链路专用, 回调端点不走 FastAPI Depends(DI),
+因此每个方法自行管理 AsyncSessionLocal 生命周期。
+其余服务应通过 DI 注入 db 参数。
+"""
 import logging
 from typing import Optional
 from datetime import datetime, timedelta
@@ -8,6 +15,7 @@ from core.database import AsyncSessionLocal
 from app.models.wechat_session import WeChatSession
 
 logger = logging.getLogger(__name__)
+
 
 class WeChatSessionService:
     """企业微信搜索会话服务，处理数据库交互逻辑"""

@@ -9,6 +9,7 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
 import os
 from sqlalchemy import select
 
@@ -20,7 +21,11 @@ from app.repositories.song import SongRepository
 from app.models.song import SongSource
 from app.pagination import PaginatedResponse
 from app.dependencies import require_auth
-from app.schemas import GenericActionResponse, EnrichResponse, FavoriteResponse, DeleteResponse, RedownloadResponse, RefreshArtistResponse, FixQualityResponse, ScanLibraryResponse, DownloadFromSearchResponse
+from app.schemas import (
+    GenericActionResponse, EnrichResponse, FavoriteResponse, DeleteResponse,
+    RedownloadResponse, RefreshArtistResponse, FixQualityResponse,
+    ScanLibraryResponse, DownloadFromSearchResponse
+)
 
 logger = logging.getLogger(__name__)
 
@@ -74,37 +79,33 @@ async def get_library_songs(
         )
     except Exception:
         import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail="获取资料库失败: 服务器内部错误, 请查看日志")
+class MatchMetadataRequest(BaseModel):
+    """手动匹配元数据请求"""
+    song_id: int
+    target_source: str
+    target_song_id: str
 
 
 @router.post("/match-metadata", response_model=GenericActionResponse)
 async def match_metadata(
-    match_data: dict, # {song_id, target_source, target_song_id}
+    match_data: MatchMetadataRequest,
     db: AsyncSession = Depends(get_async_session)
 ):
     """
     手动匹配元数据 (Manual Match)
     强制使用指定源的元数据覆盖本地文件
     """
-    from app.services.library import LibraryService
     service = LibraryService()
-
-    song_id = match_data.get("song_id")
-    target_source = match_data.get("target_source")
-    target_song_id = match_data.get("target_song_id")
-
-    if not all([song_id, target_source, target_song_id]):
-         return {"success": False, "message": "Missing required parameters"}
-
-    success = await service.apply_metadata_match(db, song_id, target_source, target_song_id)
+    success = await service.apply_metadata_match(
+        db, match_data.song_id, match_data.target_source, match_data.target_song_id
+    )
     return {"success": success}
 
 @router.get("/local-songs", response_model=PaginatedResponse)
 async def get_local_songs(
     # 统一分页参数
     page: int = Query(1, ge=1, description="页码,从1开始"),
-    page_size: int = Query(20, ge=1, le=500, description="每页数量 (最多500)"),
+    page_size: int = Query(20, ge=1, le=1000, description="每页数量 (最多1000)"),
     sort_by: str = Query("created_at", description="排序字段: created_at, publish_time, artist, title, album"),
     order: str = Query("desc", description="排序方向: desc, asc"),
     db: AsyncSession = Depends(get_async_session)
@@ -229,9 +230,6 @@ async def delete_song(
         raise
     except Exception:
         raise HTTPException(status_code=500, detail="删除失败: 服务器内部错误, 请查看日志")
-
-
-from pydantic import BaseModel
 
 
 class RedownloadRequest(BaseModel):

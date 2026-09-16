@@ -49,7 +49,7 @@ class SongRepository(BaseRepository[Song]):
             )
         )
         result = await self._session.execute(stmt)
-        return result.scalars().first()
+        return result.unique().scalars().first()
 
     async def upsert_source(
         self,
@@ -91,12 +91,16 @@ class SongRepository(BaseRepository[Song]):
         return result.scalar_one_or_none()
 
     async def get_by_title_artist(self, title: str, artist: str) -> Optional[Song]:
-        """根据标题和艺术家获取歌曲"""
-        stmt = select(Song).options(joinedload(Song.artist)).where(
-            and_(Song.title == title, Song.artist_id == artist)
+        """根据标题和艺术家名获取歌曲 (JOIN Artist 表按 name 过滤)"""
+        from app.models.artist import Artist
+        stmt = (
+            select(Song)
+            .options(joinedload(Song.artist))
+            .join(Artist, Song.artist_id == Artist.id)
+            .where(and_(Song.title == title, Artist.name == artist))
         )
         result = await self._session.execute(stmt)
-        return result.scalars().first()
+        return result.unique().scalars().first()
 
     async def get_favorites(self, skip: int = 0, limit: int = 100) -> List[Song]:
         """获取收藏歌曲"""

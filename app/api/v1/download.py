@@ -52,6 +52,8 @@ async def download_audio_endpoint(
             }
         else:
             raise HTTPException(status_code=500, detail="下载失败")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"下载错误: {e}")
         raise HTTPException(status_code=500, detail="下载失败: 服务器内部错误, 请查看日志")

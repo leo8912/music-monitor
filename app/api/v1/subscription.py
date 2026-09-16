@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -126,35 +126,22 @@ async def add_artist(
 
 @router.delete("/api/subscription/artists/{artist_id}", response_model=SubscriptionResponse)
 async def delete_artist(
+    artist_id: int,
     db: AsyncSession = Depends(get_async_session),
-    artist_id: Optional[int] = None,
-    source: Optional[str] = None,
-    id: Optional[str] = None
 ):
     """
-    删除歌手
-    同时支持按 artist_id 或按 source/id 删除
+    删除歌手（按 artist_id）
     """
     try:
-        if artist_id:
-            success_count = await SubscriptionService.delete_artist(db, artist_id)
-        elif source and id:
-            # 找到对应的逻辑艺人 ID
-            from app.models.artist import ArtistSource
-            stmt = select(ArtistSource).where(ArtistSource.source == source, ArtistSource.source_id == id)
-            src = (await db.execute(stmt)).scalar_one_or_none()
-            if src:
-                success_count = await SubscriptionService.delete_artist(db, src.artist_id)
-            else:
-                success_count = 0
-        else:
-            raise HTTPException(status_code=400, detail="Missing deletion parameters")
+        success_count = await SubscriptionService.delete_artist(db, artist_id)
 
         if success_count > 0:
             return {"success": True, "message": "已成功删除艺人及其所有数据"}
         else:
             raise HTTPException(status_code=404, detail="未找到该艺人")
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Delete artist error: {e}")
         raise HTTPException(status_code=500, detail="服务器内部错误, 请查看日志")

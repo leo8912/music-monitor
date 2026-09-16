@@ -14,7 +14,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Depends
 
 from app.schemas import GenericActionResponse
-from core.config import config
+from core.config_manager import get_config_manager
 from app.notifiers.wecom import WeComNotifier
 from app.notifiers.telegram import TelegramNotifier
 from app.dependencies import require_auth
@@ -28,7 +28,7 @@ async def test_notify(channel: str):
     """Send a test notification to the specified channel."""
     try:
         # Load fresh config logic
-        notify_cfg = config.get('notify', {})
+        notify_cfg = get_config_manager().get('notify', {})
 
         if channel == 'wecom':
             cfg = notify_cfg.get('wecom', {})
@@ -63,7 +63,7 @@ async def test_notify(channel: str):
 async def check_notify_status(channel: str):
     """Check connectivity status for notification channel."""
     try:
-        notify_cfg = config.get('notify', {})
+        notify_cfg = get_config_manager().get('notify', {})
         if channel == 'wecom':
             cfg = notify_cfg.get('wecom', {})
             notifier = WeComNotifier(

@@ -32,6 +32,7 @@ from app.container import get_download_service, get_aggregator, get_metadata_ser
 from app.services.metadata_healer import MetadataHealer
 from app.services.scan_service import ScanService
 from app.utils.error_handler import handle_service_errors
+from app.utils.text import normalize_cn_brackets
 
 logger = logging.getLogger(__name__)
 
@@ -292,12 +293,12 @@ class SongManagementService:
             db_artist = await artist_repo.get_by_name(artist)
 
             if db_artist:
-                norm_target = ScanService._normalize_cn_brackets(title).lower().strip()
+                norm_target = normalize_cn_brackets(title).lower().strip()
                 song_repo = SongRepository(db)
                 artist_songs = await song_repo.get_by_artist(db_artist.id)
 
                 for s in artist_songs:
-                    norm_curr = ScanService._normalize_cn_brackets(s.title).lower().strip()
+                    norm_curr = normalize_cn_brackets(s.title).lower().strip()
                     if norm_curr == norm_target:
                         song = s
                         logger.info(f"Found existing song by title match: {song.title}")

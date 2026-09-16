@@ -27,6 +27,25 @@ class SettingsUpdate(BaseModel):
     scheduler: Optional[Dict[str, Any]] = None
     system: Optional[Dict[str, Any]] = None
 
+    def model_post_init(self, __context: Any) -> None:
+        """在 Pydantic 验证通过后过滤不允许的键。"""
+        allowed = {
+            'download': {'source', 'quality', 'parallel', 'timeout', 'auto', 'dir', 'cover_dir',
+                         'max_concurrent_downloads', 'retry_attempts', 'quality_preference', 'sources'},
+            'monitor': {'interval_minutes', 'interval', 'artists', 'sources', 'enabled'},
+            'notify': {'enabled', 'wecom', 'telegram', 'bot_token', 'chat_id', 'corpid',
+                       'corpsecret', 'agentid', 'user_id'},
+            'metadata': {'enabled', 'sources', 'timeout', 'auto_heal'},
+            'scheduler': {'check_interval_minutes', 'cleanup_interval_hours',
+                          'sync_interval_hours'},
+            'system': {'admin_password', 'external_url'},
+        }
+        for section, keys in allowed.items():
+            val = getattr(self, section, None)
+            if isinstance(val, dict):
+                filtered = {k: v for k, v in val.items() if k in keys}
+                setattr(self, section, filtered)
+
 class TestNotifyRequest(BaseModel):
     type: str # wecom, telegram
     config: Optional[Dict[str, Any]] = None # 可选，如果不传则使用当前保存的配置

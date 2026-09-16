@@ -26,6 +26,7 @@ from app.services.scan_service import ScanService
 from app.services.metadata_healer import MetadataHealer
 from app.services.notification import NotificationService
 from app.services.auto_download_service import get_auto_download_service
+from app.utils.text import normalize_cn_brackets
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class NewReleaseMonitorService:
         existing_songs = (await db.execute(stmt)).scalars().all()
 
         norm_title_map = {
-            ScanService._normalize_cn_brackets(s.title).lower().strip(): s
+            normalize_cn_brackets(s.title).lower().strip(): s
             for s in existing_songs
         }
         known_srcs = {
@@ -105,7 +106,7 @@ class NewReleaseMonitorService:
                     logger.info(f"[NewRelease] {artist.name}: 跳过已忽略歌曲 {cand.title} ({key})")
                     continue
 
-                norm = ScanService._normalize_cn_brackets(cand.title).lower().strip()
+                norm = normalize_cn_brackets(cand.title).lower().strip()
                 song = norm_title_map.get(norm)
 
                 is_new_song = False

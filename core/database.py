@@ -77,7 +77,6 @@ if DATABASE_URL.startswith("sqlite"):
 AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 # Database initialization for async
 import asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import text
 from alembic.config import Config
 from alembic import command

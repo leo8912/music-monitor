@@ -34,9 +34,6 @@ class HistoryService:
     提供歌曲列表相关的业务逻辑处理
     """
 
-    def __init__(self, db: AsyncSession = None):
-        self.db = db
-
     @handle_service_errors(fallback_value={'items': [], 'total': 0}, raise_on_critical=False)
     async def get_history(
         self,

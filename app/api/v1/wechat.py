@@ -24,7 +24,7 @@ try:
 except ImportError:
     HAS_WECHATPY = False
 
-from core.config import config
+from core.config_manager import get_config_manager
 from core.database import AsyncSessionLocal
 from app.container import get_aggregator
 from app.notifiers.wecom import WeComNotifier
@@ -42,9 +42,9 @@ def get_crypto():
         return None
 
     # 获取配置，支持两种可能的路径
-    wecom_cfg = config.get('notify', {}).get('wecom', {})
+    wecom_cfg = get_config_manager().get('notify', {}).get('wecom', {})
     if not wecom_cfg:
-        wecom_cfg = config.get('notifications', {}).get('providers', {}).get('wecom', {})
+        wecom_cfg = get_config_manager().get('notifications', {}).get('providers', {}).get('wecom', {})
 
     if not wecom_cfg:
         return None

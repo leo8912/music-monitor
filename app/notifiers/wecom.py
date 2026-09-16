@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 class WeComNotifier(BaseNotifier):
     def __init__(self, corp_id: str = None, secret: str = None, agent_id: str = None):
         if not corp_id or not secret or not agent_id:
-            from core.config import config
-            wc = config.get('notify', {}).get('wecom', {})
+            from core.config_manager import get_config_manager
+            wc = get_config_manager().get('notify', {}).get('wecom', {})
             corp_id = corp_id or wc.get('corpid') or wc.get('corp_id')
             secret = secret or wc.get('corpsecret') or wc.get('secret')
             agent_id = agent_id or wc.get('agentid') or wc.get('agent_id')

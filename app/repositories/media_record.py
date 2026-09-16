@@ -203,25 +203,14 @@ class MediaRecordRepository(BaseRepository[MediaRecord]):
         return record
 
     async def get_statistics(self) -> Dict[str, int]:
-        """获取统计信息"""
-        # 总歌曲数
-        total_query = select(func.count(MediaRecord.id))
-        total_result = await self._session.execute(total_query)
-        total_songs = total_result.scalar() or 0
-
-        # 已下载数
-        downloaded_query = select(func.count(MediaRecord.id)).where(
-            MediaRecord.local_audio_path.isnot(None)
+        """获取统计信息 (单次查询聚合, 减少 DB 往返)"""
+        # 聚合统计: 总数 + 已下载 + 收藏
+        agg_query = select(
+            func.count(MediaRecord.id).label('total'),
+            func.count(MediaRecord.id).filter(MediaRecord.local_audio_path.isnot(None)).label('downloaded'),
+            func.count(MediaRecord.id).filter(MediaRecord.is_favorite).label('favorites'),
         )
-        downloaded_result = await self._session.execute(downloaded_query)
-        downloaded_songs = downloaded_result.scalar() or 0
-
-        # 收藏数
-        favorites_query = select(func.count(MediaRecord.id)).where(
-            MediaRecord.is_favorite
-        )
-        favorites_result = await self._session.execute(favorites_query)
-        favorites_count = favorites_result.scalar() or 0
+        agg_result = (await self._session.execute(agg_query)).one()
 
         # 按来源统计
         source_query = select(
@@ -232,8 +221,8 @@ class MediaRecordRepository(BaseRepository[MediaRecord]):
         sources = dict(source_result.all())
 
         return {
-            "total_songs": total_songs,
-            "downloaded_songs": downloaded_songs,
-            "favorites_count": favorites_count,
+            "total_songs": agg_result.total or 0,
+            "downloaded_songs": agg_result.downloaded or 0,
+            "favorites_count": agg_result.favorites or 0,
             "sources": sources
         }

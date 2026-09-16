@@ -160,29 +160,34 @@ async def enqueue(job_name: str, *args, **kwargs) -> Optional[str]:
     return None
 
 
+# arq Redis 连接池 (模块级单例, 避免每次 enqueue 创建新连接)
+_arq_pool = None
+
+
 async def _enqueue_arq(job_name: str, *args, **kwargs) -> Optional[str]:
     """arq 模式: 写入 Redis 队列。"""
+    global _arq_pool
     try:
         from arq import create_pool
         from arq.connections import RedisSettings
 
-        settings = load_settings().redis
-        if settings.unix_socket and _path_exists(settings.unix_socket):
-            redis_settings = RedisSettings(host=settings.unix_socket)
-        else:
-            # url 形如 redis://host:port/db
-            redis_settings = RedisSettings.from_dsn(settings.url)
+        if _arq_pool is None:
+            settings = load_settings().redis
+            if settings.unix_socket and _path_exists(settings.unix_socket):
+                redis_settings = RedisSettings(host=settings.unix_socket)
+            else:
+                # url 形如 redis://host:port/db
+                redis_settings = RedisSettings.from_dsn(settings.url)
+            _arq_pool = await create_pool(redis_settings)
 
-        redis = await create_pool(redis_settings)
-        try:
-            job = await redis.enqueue_job(job_name, *args, **kwargs)
-            job_id = job.job_id if job else None
-            logger.info(f"Queue: 任务 {job_name} 已入队 (job_id={job_id})")
-            return job_id
-        finally:
-            await redis.close()
+        job = await _arq_pool.enqueue_job(job_name, *args, **kwargs)
+        job_id = job.job_id if job else None
+        logger.info(f"Queue: 任务 {job_name} 已入队 (job_id={job_id})")
+        return job_id
     except Exception as e:
         logger.error(f"Queue: arq 入队失败, 任务 {job_name} 降级 inline: {e}")
+        # 连接可能已失效, 重置池以便下次重建
+        _arq_pool = None
         return None
 
 

@@ -122,6 +122,13 @@ def ensure_security_config():
                 with open(CONFIG_FILE_PATH, "w", encoding='utf-8') as f:
                     f.write(new_content)
 
+                # 清除内存中的旧密钥缓存，确保后续调用获取新密钥
+                try:
+                    from core.security import reset_secret_key_cache
+                    reset_secret_key_cache()
+                except ImportError:
+                    pass
+
                 return new_secret, True
             return current_secret, False
         # 配置文件中无 secret_key 字段: 返回临时随机密钥 (不落盘, 避免破坏 YAML 结构)

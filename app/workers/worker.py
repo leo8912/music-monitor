@@ -48,11 +48,19 @@ def _cron_jobs():
 
 def main():
     logging.basicConfig(level=logging.INFO)
+
+    # Redis 未启用时优雅退出 (supervisord 以 exitcode=0 不重启)
+    from core.queue import is_arq_enabled
+    if not is_arq_enabled():
+        logger.info("arq worker 退出: Redis 未启用 (MM_REDIS__ENABLED=false)")
+        return
+
     worker = Worker(
         functions=[*_TASK_REGISTRY.values()],
         cron_jobs=_cron_jobs(),
         redis_settings=_redis_settings(),
         max_jobs=4,
+        max_tries=3,
         job_timeout=3600,
         keep_result=3600,
         on_startup=startup,

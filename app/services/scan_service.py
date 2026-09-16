@@ -66,21 +66,9 @@ class ScanService:
 
     @staticmethod
     def _normalize_cn_brackets(text: str) -> str:
-        """
-        归一化中文括号为英文括号，并移除所有空格以最大化匹配容错率
-
-        Args:
-            text: 待归一化的文本
-
-        Returns:
-            归一化后的文本
-        """
-        if not text:
-            return ""
-        text = text.replace('（', '(').replace('）', ')')
-        text = text.replace('【', '[').replace('】', ']')
-        # 移除所有空格以实现严格的模糊匹配
-        return text.replace(" ", "").strip()
+        """向后兼容别名 — 实际逻辑已迁移至 app.utils.text.normalize_cn_brackets。"""
+        from app.utils.text import normalize_cn_brackets
+        return normalize_cn_brackets(text)
 
     async def scan_local_files(
         self,

@@ -7,13 +7,14 @@ Updated: 2026-01-26
 """
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 import io
 import logging
 
 logger = logging.getLogger(__name__)
 
 from app.container import get_metadata_service
-from core.database import AsyncSessionLocal
+from core.database import get_async_session
 from app.models.song import Song
 from sqlalchemy import select
 from app.dependencies import require_auth
@@ -26,23 +27,22 @@ router = APIRouter(prefix="/api/metadata", tags=["metadata"], dependencies=[Depe
 async def get_lyrics(
     title: str,
     artist: str,
-    song_id: str = None
+    song_id: str = None,
+    db: AsyncSession = Depends(get_async_session)
 ):
     """获取歌词"""
     try:
         local_path = None
         if song_id:
             try:
-                # 尝试从数据库获取本地路径
-                async with AsyncSessionLocal() as db:
-                    stmt = select(Song).where(Song.id == int(song_id))
-                    result = await db.execute(stmt)
-                    song = result.scalars().first()
-                    if song and song.local_path:
-                        local_path = song.local_path
-                        logger.debug(f"解析 song_id={song_id} 到 local_path={local_path}")
-                    else:
-                        logger.debug(f"未找到歌曲或无 local_path: id={song_id}")
+                stmt = select(Song).where(Song.id == int(song_id))
+                result = await db.execute(stmt)
+                song = result.scalars().first()
+                if song and song.local_path:
+                    local_path = song.local_path
+                    logger.debug(f"解析 song_id={song_id} 到 local_path={local_path}")
+                else:
+                    logger.debug(f"未找到歌曲或无 local_path: id={song_id}")
             except Exception as db_e:
                 logger.warning(f"解析 song_id 时数据库错误: {db_e}")
 

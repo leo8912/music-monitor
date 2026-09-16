@@ -288,22 +288,25 @@ async def profile_stats(db: AsyncSession = Depends(get_async_session)):
         res_song = await db.execute(stmt_song)
         stats["song_count"] = res_song.scalar() or 0
 
-        # 3. 计算缓存大小
+        # 3. 计算缓存大小 (异步, 避免阻塞事件循环)
         cache_dir = get_config_manager().get('storage', {}).get('cache_dir', 'audio_cache')
-        total_size = 0
-        if os.path.exists(cache_dir):
-            for f in os.listdir(cache_dir):
-                fp = os.path.join(cache_dir, f)
-                if os.path.isfile(fp):
-                    total_size += os.path.getsize(fp)
+        def _scan_cache_size() -> int:
+            total = 0
+            if os.path.exists(cache_dir):
+                for f in os.listdir(cache_dir):
+                    fp = os.path.join(cache_dir, f)
+                    if os.path.isfile(fp):
+                        total += os.path.getsize(fp)
+            return total
+        total_size = await asyncio.to_thread(_scan_cache_size)
 
-            # 转换为人类可读格式
-            if total_size < 1024 * 1024:
-                stats["cache_size"] = f"{total_size / 1024:.1f} KB"
-            elif total_size < 1024 * 1024 * 1024:
-                stats["cache_size"] = f"{total_size / (1024 * 1024):.1f} MB"
-            else:
-                stats["cache_size"] = f"{total_size / (1024 * 1024 * 1024):.2f} GB"
+        # 转换为人类可读格式
+        if total_size < 1024 * 1024:
+            stats["cache_size"] = f"{total_size / 1024:.1f} KB"
+        elif total_size < 1024 * 1024 * 1024:
+            stats["cache_size"] = f"{total_size / (1024 * 1024):.1f} MB"
+        else:
+            stats["cache_size"] = f"{total_size / (1024 * 1024 * 1024):.2f} GB"
 
     except Exception as e:
         logger.warning(f"获取统计信息失败: {e}")

@@ -82,23 +82,31 @@ async def run_asset_localization():
     try:
         svc = MediaAssetService()
         async with AsyncSessionLocal() as db:
-            # 1. 歌手头像: 远程 URL 或空 → 补源下载
-            stmt = select(Artist).options(selectinload(Artist.sources))
-            artists = (await db.execute(stmt)).scalars().all()
+            # 1. 歌手头像: 远程 URL 或空 → 补源下载 (分批加载, 避免全量加载)
             avatar_fixed = 0
-            for artist in artists:
-                av = artist.avatar or ""
-                # 已本地化 → 跳过；空 或 远程/代理 URL → 尝试本地化
-                if av.startswith("/uploads/"):
-                    continue
-                try:
-                    if await svc.ensure_avatar(artist, sources=list(artist.sources)):
-                        avatar_fixed += 1
-                except Exception as e:
-                    logger.warning(f"[Asset] 头像本地化失败 {artist.name}: {e}")
-            if avatar_fixed:
-                await db.commit()
-                logger.info(f"[Asset] 头像本地化巡检完成: 修复 {avatar_fixed} 个")
+            offset = 0
+            batch_size = 50
+            while True:
+                stmt = (
+                    select(Artist)
+                    .options(selectinload(Artist.sources))
+                    .offset(offset)
+                    .limit(batch_size)
+                )
+                artists = (await db.execute(stmt)).scalars().all()
+                if not artists:
+                    break
+                for artist in artists:
+                    av = artist.avatar or ""
+                    # 已本地化 → 跳过；空 或 远程/代理 URL → 尝试本地化
+                    if av.startswith("/uploads/"):
+                        continue
+                    try:
+                        if await svc.ensure_avatar(artist, sources=list(artist.sources)):
+                            avatar_fixed += 1
+                    except Exception as e:
+                        logger.warning(f"[Asset] 头像本地化失败 {artist.name}: {e}")
+                offset += batch_size
 
             # 2. 歌曲封面: 远程 URL → 落盘
             stmt2 = select(Song).where(
@@ -113,8 +121,13 @@ async def run_asset_localization():
                         cover_fixed += 1
                 except Exception as e:
                     logger.warning(f"[Asset] 封面本地化失败 {song.title}: {e}")
-            if cover_fixed:
+
+            # 统一提交: 避免双重 commit 导致不一致
+            if avatar_fixed or cover_fixed:
                 await db.commit()
+            if avatar_fixed:
+                logger.info(f"[Asset] 头像本地化巡检完成: 修复 {avatar_fixed} 个")
+            if cover_fixed:
                 logger.info(f"[Asset] 封面本地化巡检完成: 修复 {cover_fixed} 个")
     except Exception as e:
         logger.error(f"[Scheduler] 媒体资源本地化巡检失败: {e}", exc_info=True)
@@ -133,7 +146,11 @@ async def run_cache_cleanup():
 
 
 def register_recurring_jobs(scheduler) -> None:
-    """注册所有循环任务。scheduler 为 APScheduler(AsyncIOScheduler/SimpleScheduler) 实例。"""
+    """注册所有循环任务。scheduler 为 APScheduler(AsyncIOScheduler/SimpleScheduler) 实例。
+
+    当 arq worker 已启用时, file_integrity 和 asset_localize 由 arq cron 触发,
+    此处仅注册 release_check (增量监控, 需高频) 和 cache_cleanup (arq 无对应任务)。
+    """
     scheduler.add_job(
         run_new_release_check,
         "interval",
@@ -143,22 +160,25 @@ def register_recurring_jobs(scheduler) -> None:
     )
     logger.info(f"[Scheduler] 新歌增量监控: 每 {get_release_interval_minutes()} 分钟")
 
-    scheduler.add_job(
-        check_file_integrity,
-        "interval",
-        hours=24,
-        id=JOB_FILE_INTEGRITY,
-        replace_existing=True,
-    )
+    # 仅在非 arq 模式下注册以下任务, 避免与 arq cron 重复执行
+    from core.queue import is_arq_enabled
+    if not is_arq_enabled():
+        scheduler.add_job(
+            check_file_integrity,
+            "interval",
+            hours=24,
+            id=JOB_FILE_INTEGRITY,
+            replace_existing=True,
+        )
 
-    scheduler.add_job(
-        run_asset_localization,
-        "interval",
-        hours=24,
-        id=JOB_ASSET_LOCALIZE,
-        replace_existing=True,
-    )
-    logger.info("[Scheduler] 媒体资源本地化巡检: 每 24 小时")
+        scheduler.add_job(
+            run_asset_localization,
+            "interval",
+            hours=24,
+            id=JOB_ASSET_LOCALIZE,
+            replace_existing=True,
+        )
+        logger.info("[Scheduler] 媒体资源本地化巡检: 每 24 小时 (inline 模式)")
 
     scheduler.add_job(
         run_cache_cleanup,
@@ -176,7 +196,7 @@ def reschedule_release_job(scheduler) -> None:
     try:
         scheduler.remove_job(JOB_RELEASE_CHECK)
     except Exception:
-        pass
+        pass  # JobLookupError: 任务不存在则忽略
     try:
         scheduler.add_job(
             run_new_release_check,

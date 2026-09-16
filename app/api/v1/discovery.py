@@ -279,7 +279,7 @@ async def search_download(
                 "publish_time": ""
             })
 
-        return output[:20] # 返回前 20 条最相关的
+        return output[:limit] # 按请求的 limit 返回最相关的结果
     except Exception:
         import traceback
         traceback.print_exc()
@@ -303,7 +303,7 @@ async def probe_qualities_endpoint(
         raise HTTPException(status_code=500, detail="服务器内部错误, 请查看日志")
 
 
-@router.get("/cover")
+@router.get("/cover", dependencies=[Depends(require_auth)])
 async def cover_proxy_endpoint(
     source: str,
     id: str

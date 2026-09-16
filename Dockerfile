@@ -27,12 +27,11 @@ RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debi
 # Python dependencies installation
 COPY requirements.txt .
 COPY vendor ./vendor
-RUN pip install --no-cache-dir --index-url https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt && \
-    chmod -R a+rX /usr/local/lib/python3.11/site-packages
+RUN pip install --no-cache-dir --index-url https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 
-# Fix qqmusic_api cache permission
+# Fix qqmusic_api cache permission (仅设置目录权限, 不递归修改 site-packages)
 RUN mkdir -p /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache && \
-    chmod -R 777 /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache
+    chmod 770 /usr/local/lib/python3.11/site-packages/qqmusic_api/.cache
 
 # Copy application code
 COPY . /app
