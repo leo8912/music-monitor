@@ -8,6 +8,8 @@ arq worker 入口 (阶段 3 / R3)
 启动: python -m app.workers.worker
 """
 import logging
+import os
+import time
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -19,14 +21,29 @@ from core.queue import _TASK_REGISTRY
 
 logger = logging.getLogger(__name__)
 
+REDIS_SOCKET_WAIT_TIMEOUT = 30
+
 
 def _redis_settings() -> RedisSettings:
     settings = load_settings().redis
     if settings.unix_socket:
-        import os
         if os.path.exists(settings.unix_socket):
+            logger.info(f"Using Redis unix socket: {settings.unix_socket}")
             return RedisSettings(unix_socket_path=settings.unix_socket)
+        logger.warning(f"Redis unix socket {settings.unix_socket} not found, falling back to TCP")
     return RedisSettings.from_dsn(settings.url)
+
+
+def _wait_for_redis():
+    settings = load_settings().redis
+    if not settings.unix_socket:
+        return
+    deadline = time.time() + REDIS_SOCKET_WAIT_TIMEOUT
+    while time.time() < deadline:
+        if os.path.exists(settings.unix_socket):
+            return
+        time.sleep(0.5)
+    logger.error(f"Timeout waiting for Redis socket {settings.unix_socket}")
 
 
 async def startup(ctx):
@@ -55,6 +72,8 @@ def main():
         logger.info("arq worker 退出: Redis 未启用 (MM_REDIS__ENABLED=false)")
         return
 
+    _wait_for_redis()
+
     worker = Worker(
         functions=[*_TASK_REGISTRY.values()],
         cron_jobs=_cron_jobs(),
@@ -70,4 +89,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise

@@ -11,6 +11,11 @@ umask 002
 
 echo "Starting with PUID=${PUID} PGID=${PGID}"
 
+# 打印版本信息
+if [ -f /app/version.py ]; then
+    python3 -c "from version import get_version_info; v=get_version_info(); print(f\"Music Monitor v{v['version']} (build: {v['build_date']})\")"
+fi
+
 
 
 # 初始化配置文件 (如果不存在)
