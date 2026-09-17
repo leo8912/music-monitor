@@ -9,15 +9,29 @@ arq worker 入口 (阶段 3 / R3)
 """
 import logging
 import os
+import sys
 import time
+import traceback
 
-from arq import cron
-from arq.connections import RedisSettings
-from arq.worker import Worker
+def _write_err(msg):
+    try:
+        with open("/tmp/worker.err.log", "a") as f:
+            f.write(msg + "\n")
+    except Exception:
+        pass
 
-from core.settings import load_settings
-from app.workers import tasks  # noqa: F401  (导入即注册所有任务)
-from core.queue import _TASK_REGISTRY
+try:
+    from arq import cron
+    from arq.connections import RedisSettings
+    from arq.worker import Worker
+
+    from core.settings import load_settings
+    from app.workers import tasks  # noqa: F401  (导入即注册所有任务)
+    from core.queue import _TASK_REGISTRY
+except Exception as e:
+    _write_err(f"IMPORT ERROR: {e}")
+    _write_err(traceback.format_exc())
+    raise
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +106,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        _write_err(f"MAIN ERROR: {e}")
+        _write_err(traceback.format_exc())
         raise
