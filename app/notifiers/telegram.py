@@ -85,3 +85,43 @@ class TelegramNotifier(BaseNotifier):
                 if not res.get('ok'):
                     raise Exception(f"Telegram API Error: {res.get('description')}")
                 return True
+
+    async def send_message(self, text: str, image_url: str = None):
+        """发送文本消息，可选附带图片。"""
+        if not self.bot_token or not self.chat_id:
+            logger.warning("Telegram config missing, skipping.")
+            return
+
+        url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
+        payload = {
+            "chat_id": self.chat_id,
+            "text": text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": False
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                if image_url:
+                    photo_url = f"https://api.telegram.org/bot{self.bot_token}/sendPhoto"
+                    photo_payload = {
+                        "chat_id": self.chat_id,
+                        "photo": image_url,
+                        "caption": text,
+                        "parse_mode": "HTML"
+                    }
+                    async with session.post(photo_url, json=photo_payload) as resp:
+                        res = await resp.json()
+                        if not res.get('ok'):
+                            logger.error(f"Telegram photo 发送失败: {res}")
+                        else:
+                            logger.info("Telegram 推送成功 (photo)")
+                else:
+                    async with session.post(url, json=payload) as resp:
+                        res = await resp.json()
+                        if not res.get('ok'):
+                            logger.error(f"Telegram 发送失败: {res}")
+                        else:
+                            logger.info("Telegram 推送成功")
+        except Exception as e:
+            logger.error(f"Telegram 网络错误: {e}")

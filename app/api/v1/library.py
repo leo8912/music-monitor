@@ -77,8 +77,11 @@ async def get_library_songs(
             page=current_page,
             page_size=current_page_size
         )
-    except Exception:
-        import traceback
+    except Exception as e:
+        logger.error(f"获取资料库歌曲失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="获取资料库歌曲失败")
+
+
 class MatchMetadataRequest(BaseModel):
     """手动匹配元数据请求"""
     song_id: int

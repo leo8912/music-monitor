@@ -30,7 +30,7 @@ auth:
 database:
   # 默认使用 SQLite。如需 MySQL/PG，请修改 URL。
   # 格式: sqlite+aiosqlite:///路径 或 mysql+aiomysql://user:pass@host/db
-  url: "sqlite+aiosqlite:///music_monitor.db"
+  url: "sqlite+aiosqlite:////config/music_monitor.db"
   echo: false               # 是否打印 SQL (调试用)
   pool_size: 5
   max_overflow: 10

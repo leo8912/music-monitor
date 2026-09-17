@@ -9,29 +9,15 @@ arq worker 入口 (阶段 3 / R3)
 """
 import logging
 import os
-import sys
 import time
-import traceback
 
-def _write_err(msg):
-    try:
-        with open("/tmp/worker.err.log", "a") as f:
-            f.write(msg + "\n")
-    except Exception:
-        pass
+from arq import cron
+from arq.connections import RedisSettings
+from arq.worker import Worker
 
-try:
-    from arq import cron
-    from arq.connections import RedisSettings
-    from arq.worker import Worker
-
-    from core.settings import load_settings
-    from app.workers import tasks  # noqa: F401  (导入即注册所有任务)
-    from core.queue import _TASK_REGISTRY
-except Exception as e:
-    _write_err(f"IMPORT ERROR: {e}")
-    _write_err(traceback.format_exc())
-    raise
+from core.settings import load_settings
+from app.workers import tasks  # noqa: F401  (导入即注册所有任务)
+from core.queue import _TASK_REGISTRY
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +67,19 @@ def _cron_jobs():
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    import os
+    from logging.handlers import TimedRotatingFileHandler
+    LOG_DIR = "/config/logs" if os.path.exists("/config") else "logs"
+    os.makedirs(LOG_DIR, exist_ok=True)
+    file_handler = TimedRotatingFileHandler(
+        os.path.join(LOG_DIR, "worker.log"),
+        when='midnight', interval=1, backupCount=10, encoding='utf-8'
+    )
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler(), file_handler]
+    )
 
     # Redis 未启用时优雅退出 (supervisord 以 exitcode=0 不重启)
     from core.queue import is_arq_enabled
@@ -106,9 +104,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        _write_err(f"MAIN ERROR: {e}")
-        _write_err(traceback.format_exc())
-        raise
+    main()

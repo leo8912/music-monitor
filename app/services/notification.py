@@ -40,9 +40,6 @@ class NotificationService:
 
         # WeCom
         wecom_cfg = notify_cfg.get('wecom', {})
-        if not wecom_cfg:
-            return
-
         if wecom_cfg.get('enabled') and (wecom_cfg.get('corpid') or wecom_cfg.get('corp_id')):
             try:
                 cls._wecom = WeComNotifier(
@@ -61,7 +58,7 @@ class NotificationService:
         if tg_cfg.get('enabled') and tg_cfg.get('bot_token'):
             try:
                 cls._telegram = TelegramNotifier(
-                    token=tg_cfg.get('bot_token'),
+                    bot_token=tg_cfg.get('bot_token'),
                     chat_id=tg_cfg.get('chat_id')
                 )
                 logger.info("NotificationService: Telegram initialized")
@@ -123,11 +120,7 @@ class NotificationService:
                     "🔽 正在自动下载高清音质，完成后将推送试听卡片。\n"
                     "💬 试听后回复「待定」查看入库列表，喜欢即可收藏。"
                 )
-                await run_in_threadpool(
-                    cls._telegram.send_message,
-                    text,
-                    image_url=cover
-                )
+                await cls._telegram.send_message(text, image_url=cover)
             except Exception as e:
                 logger.error(f"Telegram new-song send failed: {e}")
 
@@ -213,11 +206,7 @@ class NotificationService:
         # 4. Send Telegram
         if cls._telegram:
             try:
-                await run_in_threadpool(
-                    cls._telegram.send_message,
-                    message_text,
-                    image_url=pic_url
-                )
+                await cls._telegram.send_message(message_text, image_url=pic_url)
             except Exception as e:
                 logger.error(f"Telegram send failed: {e}")
 

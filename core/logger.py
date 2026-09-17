@@ -21,5 +21,8 @@ class APILogHandler(logging.Handler):
         except Exception:
             self.handleError(record)
 
+    def get_recent_logs(self):
+        return list(self.buffer)
+
 api_log_handler = APILogHandler()
 api_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
