@@ -142,5 +142,5 @@ def load_settings(config_file: str | None = None) -> AppSettings:
     infra = {k: v for k, v in data.items() if k in AppSettings.model_fields}
     if not infra:
         return settings
-    merged = {**settings.model_dump(), **infra}
+    merged = {**infra, **settings.model_dump()}
     return AppSettings.model_validate(merged)
