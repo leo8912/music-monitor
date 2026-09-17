@@ -25,7 +25,7 @@ def _redis_settings() -> RedisSettings:
     if settings.unix_socket:
         import os
         if os.path.exists(settings.unix_socket):
-            return RedisSettings(host=settings.unix_socket)
+            return RedisSettings(unix_socket_path=settings.unix_socket)
     return RedisSettings.from_dsn(settings.url)
 
 

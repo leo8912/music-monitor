@@ -174,7 +174,7 @@ async def _enqueue_arq(job_name: str, *args, **kwargs) -> Optional[str]:
         if _arq_pool is None:
             settings = load_settings().redis
             if settings.unix_socket and _path_exists(settings.unix_socket):
-                redis_settings = RedisSettings(host=settings.unix_socket)
+                redis_settings = RedisSettings(unix_socket_path=settings.unix_socket)
             else:
                 # url 形如 redis://host:port/db
                 redis_settings = RedisSettings.from_dsn(settings.url)
