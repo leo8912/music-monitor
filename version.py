@@ -3,10 +3,10 @@
 自动读取并提供版本号信息
 """
 
-__backend_version__ = "2.12.0"
-__frontend_version__ = "2.12.0"
+__backend_version__ = "2.12.1"
+__frontend_version__ = "2.12.1"
 # 自动生成的构建时间 (Updated by Agent)
-__build_date__ = "2026-09-17 13:30:00"
+__build_date__ = "2026-09-17 14:00:00"
 
 def get_version_info():
     """获取版本信息"""

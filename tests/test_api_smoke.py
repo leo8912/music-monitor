@@ -157,9 +157,6 @@ async def test_auth_enforced_via_router_dependencies(smoke_client):
 # ===========================================================================
 # 已确认缺陷（重建后应逐条修复并删除对应 xfail）
 # ===========================================================================
-@pytest.mark.xfail(
-    strict=True, reason="R9: system.py 调用了 APILogHandler 上不存在的 get_recent_logs"
-)
 async def test_known_broken_logs_endpoint(smoke_client):
     assert (await smoke_client.get("/api/logs")).status_code == 200
 
