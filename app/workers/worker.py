@@ -71,7 +71,7 @@ async def shutdown(ctx):
 def _cron_jobs():
     """周期任务: 与 APScheduler 的 3 个定时任务保持一致。"""
     return [
-        cron(tasks.release_check, minute=0, hour="*/6", run_at_startup=False),
+        cron(tasks.release_check, minute=0, hour="0,6,12,18", run_at_startup=False),
         cron(tasks.file_integrity, hour=3, minute=17),
         cron(tasks.asset_localize, hour=4, minute=23),
     ]
