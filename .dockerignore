@@ -40,7 +40,6 @@ pytest.ini
 pyproject.toml
 run_dev.bat
 run_dev.ps1
-version.py
 .editorconfig
 full_docker_logs.txt
 docker-compose*.yml

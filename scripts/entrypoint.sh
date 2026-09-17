@@ -20,6 +20,9 @@ if [ ! -f /config/config.yaml ] && [ -f /app/config.example.yaml ]; then
     cp /app/config.example.yaml /config/config.yaml
 fi
 
+# Ensure Redis persistence directory exists
+mkdir -p /config/redis
+
 # 如果 PUID 不是 0 (root)，则创建用户并切换
 if [ "$PUID" != "0" ]; then
     # 创建组（如果不存在）
